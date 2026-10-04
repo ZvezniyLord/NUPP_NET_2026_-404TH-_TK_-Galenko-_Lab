@@ -112,6 +112,14 @@ static async Task RunLab2()
     // Data = підпапка; async.json = ім'я файлу.
     string asyncDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "async-participants.json");
 
+    // Знімаємо старий файл (якщо він є), щоб повторний dotnet run
+    // знову працював із рівно 2000 НОВИМИ об'єктами, а не накопичував
+    // дані попереднього запуску (детермінований запуск).
+    if (File.Exists(asyncDataPath))
+    {
+        File.Delete(asyncDataPath);
+    }
+
     // Створюємо async CRUD-сервіс.
     // ICrudServiceAsync<T> : IEnumerable<T> — сервіс сам послідовність.
     // where T : IEntity — T має Id.

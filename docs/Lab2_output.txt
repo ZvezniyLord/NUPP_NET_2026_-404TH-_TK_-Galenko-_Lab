@@ -33,50 +33,50 @@ JSON-файл: N:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\participan
 
 === PARALLEL CREATION ===
 Count created: 2000
-Time: 23 ms
+Time: 24 ms
 
 2. LINQ статистика (всього 2000 виконавців):
-   Вік (Age): min=18, max=60, avg=38,84
-   Досвід (YearsOfExperience): min=0, max=35, avg=17,66
+   Вік (Age): min=18, max=60, avg=39,42
+   Досвід (YearsOfExperience): min=0, max=35, avg=17,26
 
 3. Select / Where / Aggregate / OrderBy:
-   Where: виконавці з досвідом >= 10 років: 1442
-   Select: вибрано 2000 StageName, перше = "Sirena"
-   Aggregate: сумарний досвід (sum) = 35328 років
+   Where: виконавці з досвідом >= 10 років: 1419
+   Select: вибрано 2000 StageName, перше = "Astra"
+   Aggregate: сумарний досвід (sum) = 34519 років
    OrderBy(Age) — перші 3 (наймолодші):
-      - Vestra: 18 років
-      - Astra: 18 років
-      - Vestra: 18 років
+      - Lyra: 18 років
+      - Lyra: 18 років
+      - Borealis: 18 років
 
 4. Пагінація (ReadAllAsync(page, amount)):
    Сторінка 1 (10 елем.):
 
-      - Sirena, 32 років, досвід 5
-      - Lyra, 19 років, досвід 6
-      - Vestra, 19 років, досвід 25
-      - Vestra, 35 років, досвід 12
-      - Borealis, 46 років, досвід 31
-      - Vestra, 59 років, досвід 34
-      - Lyra, 43 років, досвід 8
-      - Borealis, 30 років, досвід 16
-      - Sirena, 55 років, досвід 5
-      - Eklipsa, 59 років, досвід 9
+      - Astra, 31 років, досвід 10
+      - Eklipsa, 46 років, досвід 20
+      - Halcyon, 45 років, досвід 35
+      - Melodia, 20 років, досвід 23
+      - Astra, 33 років, досвід 2
+      - Nordwind, 19 років, досвід 32
+      - Eklipsa, 19 років, досвід 4
+      - Lyra, 18 років, досвід 24
+      - Halcyon, 37 років, досвід 35
+      - Borealis, 29 років, досвід 31
    Сторінка 2 (10 елем.):
 
-      - Nordwind, 21 років, досвід 9
-      - Eklipsa, 50 років, досвід 2
-      - Eklipsa, 23 років, досвід 24
-      - Melodia, 28 років, досвід 10
-      - Vestra, 21 років, досвід 13
-      - Melodia, 30 років, досвід 10
-      - Zorya, 53 років, досвід 25
-      - Vestra, 39 років, досвід 14
-      - Zorya, 37 років, досвід 23
-      - Nordwind, 37 років, досвід 33
+      - Melodia, 54 років, досвід 25
+      - Borealis, 31 років, досвід 33
+      - Melodia, 32 років, досвід 10
+      - Zorya, 19 років, досвід 4
+      - Halcyon, 48 років, досвід 1
+      - Nordwind, 46 років, досвід 8
+      - Halcyon, 55 років, досвід 35
+      - Zorya, 48 років, досвід 18
+      - Sirena, 40 років, досвід 1
+      - Melodia, 35 років, досвід 35
 
 5. IEnumerable / foreach:
    foreach по сервісу: 2000 об'єктів
-   Перший об'єкт: Сольний виконавець: Sirena, Estonia, 32 років, голос: бас, діапазон: C3-G5
+   Перший об'єкт: Сольний виконавець: Astra, Slovakia, 31 років, голос: сопрано, діапазон: D4-B5
 
 6. Асинхронне збереження:
    Файл: N:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\async-participants.json
@@ -97,11 +97,13 @@ Max concurrent in section: 3
 
 9. AutoResetEvent demo:
 
-=== AUTO RESET EVENT DEMO ===
-Producers: 5, Consumers: 5
-All 5 producers and 5 consumers completed.
-Items after producers: [1, 11, 21, 31, 41, 0, 0, 0, 0, 0]
-AutoResetEvent auto-reset after each WaitOne.
+=== AUTO RESET EVENT PRODUCER/CONSUMER ===
+Elements to produce/consume (M) = 500
+Produced: 500
+Consumed: 500
+Sum of consumed values: 125250
+Shared list empty after run: True
+Produced == Consumed == M: True
 
 
 === ЛАБОРАТОРНА РОБОТА №2 ЗАВЕРШЕНО ===

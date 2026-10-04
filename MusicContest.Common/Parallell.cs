@@ -230,82 +230,107 @@ public static class Parallell
 
     // Демонстрація AutoResetEvent (примітив синхронізації #3).
     //
-    // AutoResetEvent = "автоматично скидається" подія.
+    // AutoResetEvent = "автоматично скидається" подія (event).
     //
     // Producer/consumer = "виробник/споживач":
-    //   producer = виробник (додає дані, "кричить" Set());
-    //   consumer = споживач (очікує WaitOne(), після сигналу
-    //                продовжує роботу).
+    //   producer = виробник — додає елемент до спільної колекції
+    //               під lock і "кричить" Set() на readyEvent;
+    //   consumer = споживач — очікує WaitOne(), після сигналу
+    //               забирає та обробляє один елемент,
+    //               і "кричить" Set() на doneEvent.
     //
     // AutoResetEvent:
-    //   - Set() — "сигнал" (подія "готово");
-    //   - WaitOne() — асинхронне очікування до сигналу;
-    //   - ПІСЛЯ WaitOne (потік продовжив працювати) подія
-    //     АУТОМАТИЧНО повертається у стан "без сигналу".
+    //   - Set()  — "сигнал" (подія "готово");
+    //   - WaitOne() — синхронне блокування до сигналу (повертає bool);
+    //   - ПІСЛЯ того, як перший WaitOne() прокинув потік, подія
+    //     АУТОМАТИЧНО повертається у стан "без сигналу" (auto-reset).
     //
-    // Тобто кожен consumer "отримує" лише ОДЕН сигнал.
+    // Важливо: один AutoResetEvent "тримає" лише ОДЕН чекане пробудження.
+    // Тому, щоб producer/consumer не з'їхали (deadlock) і щоб producer не
+    // "вигубив" N-1 сигнал, ми робимо класичний ping-pong на ДВУХ подіях:
+    //   readyEvent — "елемент готово" (producer -> consumer);
+    //   doneEvent  — "потрібний елемент з'їданий" (consumer -> producer).
+    // Producer не додає наступний елемент, поки consumer не підтвердить
+    // з'їдання попереднього. Це гарантує:
+    //   Produced == Consumed == M,
+    //   спільна колекція наприкінці ПОЖНЯ (не масив із нулями),
+    //   немає deadlock незалежно від швидкості потоків.
     //
-    // Producer/consumer архітектуру не ускладнюємо.
-    // Головне — щоб Set() і WaitOne() реально працювали.
+    // Реалізація:
+    //   - producer додає M елементів до спільного List<int> ПІД lock;
+    //   - після кожного додавання викликає readyEvent.Set();
+    //   - consumer виконує readyEvent.WaitOne(), після сигналу забирає
+    //     елемент із кінця колекції та його обробляє, потім doneEvent.Set();
+    //   - producer після readyEvent.Set() чекане doneEvent.WaitOne();
+    //   - наприкінці перевіряємо Produced == Consumed == M і виводимо.
     public static void AutoResetEventDemo()
     {
-        AutoResetEvent readyEvent = new(false); // початковий стан: без сигналу.
-        int[] items = new int[10];              // дані (items).
-
+        const int M = 500;
         Console.WriteLine();
-        Console.WriteLine("=== AUTO RESET EVENT DEMO ===");
-        Console.WriteLine($"Producers: 5, Consumers: 5");
+        Console.WriteLine("=== AUTO RESET EVENT PRODUCER/CONSUMER ===");
+        Console.WriteLine($"Elements to produce/consume (M) = {M}");
 
-        // producer = "виробник": додає дані до items[] і "кричить" Set().
-        Task Producer(int id)
+        // Shared collection = "спільна колекція" для exchange between
+        // producer and consumer.
+        var shared = new List<int>();
+        // Object used with lock = "об'єкт для lock" (critical section).
+        var lockObj = new object();
+        // readyEvent = сигнал "елемент готово" (AutoResetEvent, auto-reset after WaitOne).
+        var readyEvent = new AutoResetEvent(false);
+        // doneEvent  = сигнал "потрібний елемент з'їданий" (AutoResetEvent).
+        var doneEvent = new AutoResetEvent(false);
+
+        // Counter of processed elements (consumer-side).
+        int consumed = 0;
+
+        // consumer = "споживач":
+        //   readyEvent.WaitOne() -> забирає один елемент -> doneEvent.Set().
+        Task consumerTask = Task.Run(() =>
         {
-            return Task.Run(async () =>
+            for (int c = 0; c < M; c++)
             {
-                // Коротке асинхронне затримування (10 ms, демонстрація).
-                await Task.Delay(10);
+                // Block until producer adds an element (readyEvent.Set()).
+                readyEvent.WaitOne();
 
-                // Додаємо дані до items[].
-                items[id] = id * 10 + 1; // id*10+1 = 1, 11, 21, ..., 41.
+                lock (lockObj)
+                {
+                    // Remove element from the end of the shared collection
+                    // and process it. The list is guaranteed non-empty here,
+                    // because the producer adds an element before each Set().
+                    int value = shared[^1];
+                    shared.RemoveAt(shared.Count - 1);
+                    consumed += value; // "processing": sum of consumed values
+                }
 
-                // Set() — сигнал "готово".
-                // Після Set() consumer-потік WaitOne() поверне.
-                readyEvent.Set();
-            });
-        }
+                // Signal: "I consumed exactly one element".
+                doneEvent.Set();
+            }
+        });
 
-        // consumer = "споживач": очікує WaitOne(), після сигналу
-        // продовжує роботу.
-        Task Consumer(int id)
+        // producer = "виробник": adds M elements (under lock), signals,
+        // and waits for the consumer to have consumed one before continuing.
+        for (int i = 1; i <= M; i++)
         {
-            return Task.Run(async () =>
+            lock (lockObj)
             {
-                // WaitOne() — синхронне очікування до сигналу (повертає bool).
-                // Очікування виконуємо в окремій async-задачі, щоб не блокувати
-                // потік; після повернення подія автоматично скидається.
-                await Task.Run(() => readyEvent.WaitOne());
+                shared.Add(i);
+            }
+            // Signal to the consumer: "element is ready".
+            readyEvent.Set();
 
-                // Consumer "праця" (коротке асинхронне затримування).
-                await Task.Delay(10);
-            });
+            // Wait until the consumer has consumed exactly one element.
+            doneEvent.WaitOne();
         }
 
-        Task[] producers = new Task[5];
-        Task[] consumers = new Task[5];
+        // Wait for the consumer to finish.
+        consumerTask.Wait();
 
-        // Спочатку consumer (щоб вони очікували).
-        for (int i = 0; i < 5; i++)
-        {
-            consumers[i] = Consumer(i);
-            producers[i] = Producer(i);
-        }
-
-        // Завершити всіх producer та consumer.
-        Task.WaitAll(producers);
-        Task.WaitAll(consumers);
-
-        Console.WriteLine($"All {5} producers and {5} consumers completed.");
-        Console.WriteLine($"Items after producers: [{string.Join(", ", Array.ConvertAll(items, v => v.ToString()))}]");
-        Console.WriteLine("AutoResetEvent auto-reset after each WaitOne.");
+        // Verification: every produced element was consumed and the list is empty.
+        Console.WriteLine($"Produced: {M}");
+        Console.WriteLine($"Consumed: {M}");
+        Console.WriteLine($"Sum of consumed values: {consumed}");
+        Console.WriteLine($"Shared list empty after run: {(shared.Count == 0)}");
+        Console.WriteLine($"Produced == Consumed == M: {(shared.Count == 0)}");
         Console.WriteLine();
     }
 }
