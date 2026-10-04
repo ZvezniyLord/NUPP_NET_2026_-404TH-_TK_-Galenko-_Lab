@@ -15,18 +15,19 @@ namespace MusicContest.Common.Models;
 // Створити new ContestParticipant() напряму не можна — створюємо конкретного нащадка.
 public abstract class ContestParticipant : IEntity
 {
-    // Статичне поле / властивість.
-    // static означає: значення належить самому класу, а не окремому об'єкту.
-    // Тобто один CreatedCount спільний для всіх SoloSinger і VocalGroup.
-    // private set: читати можна ззовні, змінювати — лише всередині цього класу.
-    public static int CreatedCount { get; private set; }
+    // СТАТИЧНЕ ПОЛЕ.
+    // Field = поле. На відміну від властивості з get/set, це безпосередня змінна класу.
+    // static означає: існує лише одна спільна копія _createdCount
+    // для всіх об'єктів SoloSinger і VocalGroup.
+    // private захищає лічильник від довільної зміни з Program.cs.
+    private static int _createdCount;
 
     // Статичний конструктор.
     // Виконується автоматично лише один раз перед першим використанням класу.
     // Його не викликають через new.
     static ContestParticipant()
     {
-        CreatedCount = 0;
+        _createdCount = 0;
     }
 
     // Властивості базового класу:
@@ -47,8 +48,8 @@ public abstract class ContestParticipant : IEntity
         // Guid.NewGuid() автоматично генерує новий унікальний Id.
         Id = Guid.NewGuid();
 
-        // ++ збільшує лічильник створених об'єктів на 1.
-        CreatedCount++;
+        // ++ збільшує спільне статичне поле-лічильник на 1.
+        _createdCount++;
     }
 
     // Конструктор з параметрами.
@@ -69,9 +70,10 @@ public abstract class ContestParticipant : IEntity
     }
 
     // Статичний метод належить класу, а не конкретному об'єкту.
+    // Через нього безпечно читаємо значення приватного статичного поля.
     // Виклик: ContestParticipant.GetCreatedCount().
     public static int GetCreatedCount()
     {
-        return CreatedCount;
+        return _createdCount;
     }
 }
