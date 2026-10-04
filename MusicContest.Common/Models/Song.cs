@@ -1,20 +1,27 @@
 namespace MusicContest.Common.Models;
 
+// Song = пісня.
+// Клас реалізує IEntity, тому його також можна зберігати у CrudService<Song>.
 public class Song : IEntity
 {
+    // Title = назва пісні;
+    // OriginalArtist = оригінальний виконавець;
+    // DurationSeconds = тривалість у секундах;
+    // Key = музична тональність.
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string OriginalArtist { get; set; } = string.Empty;
     public int DurationSeconds { get; set; }
     public string Key { get; set; } = string.Empty;
 
-    // Конструктор
+    // Конструктор без параметрів одразу генерує унікальний Id.
     public Song()
     {
         Id = Guid.NewGuid();
     }
 
-    // Конструктор з параметрами
+    // : this() спочатку викликає попередній конструктор,
+    // а потім заповнює інші властивості.
     public Song(string title, string originalArtist, int durationSeconds, string key) : this()
     {
         Title = title;
@@ -23,14 +30,19 @@ public class Song : IEntity
         Key = key;
     }
 
-    // Метод
+    // Метод переводить тривалість із секунд у формат "хвилини:секунди".
     public string GetFormattedDuration()
     {
+        // TimeSpan = проміжок часу.
         TimeSpan duration = TimeSpan.FromSeconds(DurationSeconds);
+
+        // :00 змушує виводити секунди двома цифрами, наприклад 3:05.
         return $"{(int)duration.TotalMinutes}:{duration.Seconds:00}";
     }
 
-    // Статичний метод
+    // Статичний фабричний метод.
+    // FromMinutes = "створити з хвилин".
+    // Метод приймає хвилини, переводить їх у секунди і повертає новий Song.
     public static Song FromMinutes(string title, string originalArtist, double minutes, string key)
     {
         return new Song(title, originalArtist, (int)Math.Round(minutes * 60), key);
