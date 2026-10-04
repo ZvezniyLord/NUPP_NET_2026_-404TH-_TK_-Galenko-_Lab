@@ -1,0 +1,107 @@
+=== MUSIC CONTEST CRUD DEMO (Lab 1) ===
+
+1. Після Create:
+- 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+- 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Northern Lights, Україна, 24 років, учасників: 4, жанр: pop / soul
+
+2. Read за Id:
+Сольний виконавець: Astra, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+Коротко: Astra (Україна)
+
+3. Після Update:
+- 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra Nova, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+- 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Northern Lights, Україна, 24 років, учасників: 4, жанр: pop / soul
+
+4. Після Remove гурту:
+- 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra Nova, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+
+Створено об'єктів-нащадків ContestParticipant: 2
+Пісня: Gravity; тривалість: 3:54
+
+5. Делегат і подія:
+Подія ScoreChanged: Astra Nova: 86,5 -> 92,0
+Виступ завершено: True
+
+6. Дані після Save та Load:
+- 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra Nova, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+JSON-файл: N:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\participants.json
+
+==================================================
+=== ЛАБОРАТОРНА РОБОТА №2 ===
+Багатопотоковість. Асинхронність. IEnumerable. LINQ.
+==================================================
+
+=== PARALLEL CREATION ===
+Count created: 2000
+Time: 23 ms
+
+2. LINQ статистика (всього 2000 виконавців):
+   Вік (Age): min=18, max=60, avg=38,84
+   Досвід (YearsOfExperience): min=0, max=35, avg=17,66
+
+3. Select / Where / Aggregate / OrderBy:
+   Where: виконавці з досвідом >= 10 років: 1442
+   Select: вибрано 2000 StageName, перше = "Sirena"
+   Aggregate: сумарний досвід (sum) = 35328 років
+   OrderBy(Age) — перші 3 (наймолодші):
+      - Vestra: 18 років
+      - Astra: 18 років
+      - Vestra: 18 років
+
+4. Пагінація (ReadAllAsync(page, amount)):
+   Сторінка 1 (10 елем.):
+
+      - Sirena, 32 років, досвід 5
+      - Lyra, 19 років, досвід 6
+      - Vestra, 19 років, досвід 25
+      - Vestra, 35 років, досвід 12
+      - Borealis, 46 років, досвід 31
+      - Vestra, 59 років, досвід 34
+      - Lyra, 43 років, досвід 8
+      - Borealis, 30 років, досвід 16
+      - Sirena, 55 років, досвід 5
+      - Eklipsa, 59 років, досвід 9
+   Сторінка 2 (10 елем.):
+
+      - Nordwind, 21 років, досвід 9
+      - Eklipsa, 50 років, досвід 2
+      - Eklipsa, 23 років, досвід 24
+      - Melodia, 28 років, досвід 10
+      - Vestra, 21 років, досвід 13
+      - Melodia, 30 років, досвід 10
+      - Zorya, 53 років, досвід 25
+      - Vestra, 39 років, досвід 14
+      - Zorya, 37 років, досвід 23
+      - Nordwind, 37 років, досвід 33
+
+5. IEnumerable / foreach:
+   foreach по сервісу: 2000 об'єктів
+   Перший об'єкт: Сольний виконавець: Sirena, Estonia, 32 років, голос: бас, діапазон: C3-G5
+
+6. Асинхронне збереження:
+   Файл: N:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\async-participants.json
+   Збережено: True
+7. lock demo:
+
+=== LOCK DEMO ===
+Threads: 8 x 10000
+Expected: 80000
+Actual:   80000
+Match:    True
+8. SemaphoreSlim demo:
+
+=== SEMAPHORE SLIM DEMO ===
+Workers: 10, max concurrent: 3
+All 10 workers completed.
+Max concurrent in section: 3
+
+9. AutoResetEvent demo:
+
+=== AUTO RESET EVENT DEMO ===
+Producers: 5, Consumers: 5
+All 5 producers and 5 consumers completed.
+Items after producers: [1, 11, 21, 31, 41, 0, 0, 0, 0, 0]
+AutoResetEvent auto-reset after each WaitOne.
+
+
+=== ЛАБОРАТОРНА РОБОТА №2 ЗАВЕРШЕНО ===

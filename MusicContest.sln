@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.Common", "Musi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.Console", "MusicContest.Console\MusicContest.Console.csproj", "{43ECA94F-4F3C-43A6-A89A-E341A9016E81}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.Common.Tests", "MusicContest.Common.Tests\MusicContest.Common.Tests.csproj", "{E8A42432-9F79-4F57-A27F-AD7E25459B74}"
+EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
         Debug|Any CPU = Debug|Any CPU
@@ -20,5 +22,9 @@ Global
         {43ECA94F-4F3C-43A6-A89A-E341A9016E81}.Debug|Any CPU.Build.0 = Debug|Any CPU
         {43ECA94F-4F3C-43A6-A89A-E341A9016E81}.Release|Any CPU.ActiveCfg = Release|Any CPU
         {43ECA94F-4F3C-43A6-A89A-E341A9016E81}.Release|Any CPU.Build.0 = Release|Any CPU
+        {E8A42432-9F79-4F57-A27F-AD7E25459B74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {E8A42432-9F79-4F57-A27F-AD7E25459B74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {E8A42432-9F79-4F57-A27F-AD7E25459B74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {E8A42432-9F79-4F57-A27F-AD7E25459B74}.Release|Any CPU.Build.0 = Release|Any CPU
     EndGlobalSection
 EndGlobal

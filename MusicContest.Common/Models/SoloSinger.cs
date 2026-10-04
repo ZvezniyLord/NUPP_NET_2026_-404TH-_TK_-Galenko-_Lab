@@ -48,4 +48,44 @@ public class SoloSinger : ContestParticipant
     {
         return YearsOfExperience >= minimumYears;
     }
+
+    // Статичний фабрічний метод CreateNew = "створити новий" із згенерованими даними.
+    //
+    // Random = генератор псевдовипадкових чисел.
+    // Random.Shared = спільний (shared) екземпляр Random у сучасному .NET,
+    // який потокобезпечний (thread-safe) і зручний для паралельного
+    // створення об'єктів у різних потоках: не треба створювати
+    // власний Random для кожного потоку (це класична помилка).
+    //
+    // Рандомні логічні значення:
+    //   StageName  = сценічне ім'я (з випадкового списку);
+    //   Country    = країна;
+    //   Age        = вік: 18-60 років;
+    //   VoiceType  = тип голосу;
+    //   VocalRange = діапазон;
+    //   YearsOfExperience = років досвіду: 0-35.
+    public static SoloSinger CreateNew()
+    {
+        // rng.Next(max) повертає 0..max-1; rng.Next(min, max) повертає min..max-1.
+        // Тобто age = 18 + Next(43) -> 18..60, experience = Next(36) -> 0..35.
+        Random rng = Random.Shared;
+
+        string[] names = { "Astra", "Nordwind", "Sirena", "Borealis", "Eklipsa",
+            "Halcyon", "Lyra", "Melodia", "Vestra", "Zorya" };
+        string[] countries = { "Україна", "Poland", "Czechia", "Slovakia", "Romania",
+            "Moldova", "Bulgaria", "Latvia", "Lithuania", "Estonia" };
+        string[] voiceTypes = { "сопрано", "мецо", "тенор", "бас" };
+        string[] ranges = { "C4-A5", "D4-B5", "A3-E6", "C3-G5", "F3-C6", "B3-G5" };
+
+        int age = 18 + rng.Next(43);                          // 18..60
+        int experience = rng.Next(36);                        // 0..35
+
+        return new SoloSinger(
+            names[rng.Next(names.Length)],
+            countries[rng.Next(countries.Length)],
+            age,
+            voiceTypes[rng.Next(voiceTypes.Length)],
+            ranges[rng.Next(ranges.Length)],
+            experience);
+    }
 }
