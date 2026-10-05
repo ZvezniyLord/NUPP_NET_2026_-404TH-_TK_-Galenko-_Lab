@@ -38,9 +38,9 @@ public class SynchronizationDemosTests
     // SEMAPHORESLIM-демонстрація: 10 worker'ів, maxConcurrency = 3.
     // ============================================================
 
-    // Тест: семафор РЕАЛЬНО ОБМЕЖУЄ (обмежує, "обмежує") concurrent (одна-часну)
-    // кількість: виміряний максимум НЕ перевищує (не перевищує) заявленого
-    // maxConcurrency. Якщо семафор не працював, максимум став би 10.
+    // Тест: семафор РЕАЛЬНО ОБМЕЖУЄ одночасність:
+    // виміряний максимум НЕ перевищує заявленого maxConcurrency.
+    // Якби семафор не працював, максимум став би 10.
     [Fact]
     public async Task SemaphoreDemo_MeasuredMaxDoesNotExceedLimit()
     {
@@ -52,8 +52,8 @@ public class SynchronizationDemosTests
             maxConcurrency,
             console: null);
 
-        // Межа — НЕ "надрукована", а ФАКТИЧНИЙ (з лічильника) максимум.
-        // Межа НЕ перевищує (не перевищує) заявлений maxConcurrency (3).
+        // Межа — НЕ "надрукована", а ФАКТИЧНИЙ (з лічильника) максимум:
+        // він НЕ перевищує заявлений maxConcurrency.
         Assert.True(result.MeasuredMaxConcurrency <= result.MaxConcurrencySetting,
             $"Виміряний максимум {result.MeasuredMaxConcurrency} перевищує ліміт {result.MaxConcurrencySetting}.");
     }

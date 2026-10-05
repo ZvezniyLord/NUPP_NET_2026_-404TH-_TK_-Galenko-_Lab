@@ -44,7 +44,7 @@ public class CrudServiceAsyncTests
         await service.CreateAsync(first);
 
         // Assert.ThrowsAsync: перевіряє, що метод НАСПРАВДІ кинув
-        // (загубив? кинув) виключення (exception) потрібного типу.
+        // виключення саме цього типу.
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => service.CreateAsync(second));
     }
@@ -399,7 +399,7 @@ public class CrudServiceAsyncTests
         string filePath = GetTempJsonFile();
         try
         {
-            // 10 concurrent (одна-часних) SaveAsync на ОДИН файл.
+            // 10 SaveAsync одночасно на ОДИН файл.
             Task[] saves = new Task[concurrentSaveCount];
             for (int i = 0; i < concurrentSaveCount; i++)
             {

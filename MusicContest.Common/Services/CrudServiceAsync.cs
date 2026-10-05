@@ -85,7 +85,8 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
 
         T? found = snapshot.FirstOrDefault(x => x.Id == id);
 
-        // FirstOrDefault повертає null для реєстрового типу, якщо нічого не знайдено.
+        // FirstOrDefault, якщо нічого не знайдено, повертає
+        // default значення: null для референс-типів.
         if (found is null)
         {
             throw new KeyNotFoundException($"Елемент з Id {id} не знайдено.");
@@ -228,11 +229,11 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
     }
 
     // IENUMERABLE<T>: пряма ітерація foreach (var item in service).
-    //.GetEnumerator повертає enumerator (перекладач) над SNAPSHOT:
-    // foreach не бачить внутрішню List<T>, а тому одночасні
-    // CreateAsync/UpdateAsync/RemoveAsync не ламають ітерацію
-    // і не викликають InvalidOperationException
-    // ("Collection was modified" — колекцію змінено).
+    // GetEnumerator повертає IEnumerator над SNAPSHOT (миттєвою копією):
+    // foreach бачить незмінну копію, а не внутрішню List<T>, тому
+    // одночасні CreateAsync/UpdateAsync/RemoveAsync не ламають ітерацію
+    // і не кидають InvalidOperationException ("Collection was modified"
+    // — колекцію змінено під час ітерації).
     public IEnumerator<T> GetEnumerator()
     {
         List<T> snapshot = BuildSnapshot();
@@ -240,11 +241,9 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
     }
 
     // IEnumerator (не generic) — обов'язкова частина IEnumerable<T>
-    // (у C# IEnumerable<T> успадковує IEnumerable, тому
-    // неgeneric-GetEnumerator теж повинен бути реалізований).
-    // IEnumerator<T> успадковує IEnumerator, тому повернутий
-    // typed enumerator (типований перекладач) коректно
-    // перетворюється в IEnumerable (узагальнено
-    // типований ітератор).
+    // (IEnumerable<T> успадковує IEnumerable, тож не-generic метод
+    // теж треба переоб'явити). IEnumerator<T> успадковує IEnumerator,
+    // тож повернутий IEnumerator<T> автоматично відповідає
+    // не-generic сигнатурі.
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

@@ -10,8 +10,8 @@ Console.OutputEncoding = Encoding.UTF8;
 Console.WriteLine("=== MUSIC CONTEST CRUD DEMO ===");
 Console.WriteLine();
 
-// ЛАБОРАТОРНА РОБОТА №1 — зберігаємо демонстрацію, яку
-// вже мав (яка була) в базовій версії (безпосередньо попереду).
+// ЛАБОРАТОРНА РОБОТА №1 — демонстрація CRUD, подій,
+// Save/Load (базовий варіант проєкту).
 // Створюємо generic (універсальний) CRUD-сервіс.
 // T тут дорівнює ContestParticipant, тому цей сервіс зберігає
 // будь-яких нащадків ContestParticipant: і SoloSinger, і VocalGroup.
@@ -26,7 +26,7 @@ SoloSinger singer = new(
     "A3-E6",       // vocalRange = вокальний діапазон
     8)             // yearsOfExperience = років досвіду
 {
-    // Для детермінованого (одного) результату задаємо постійний GUID.
+    // Для детермінованого результату задаємо постійний GUID.
     Id = Guid.Parse("00000000-0000-0000-0000-000000000001")
 };
 
@@ -120,7 +120,7 @@ Console.WriteLine("ЛАБОРАТОРНА РОБОТА №2");
 Console.WriteLine("=========================================");
 
 // ------------------------------------------------------------
-// 1. PARALLEL CREATION (parallel — паралельно, Creation — створення)
+// 1. PARALLEL CREATION (паралельне створення об'єктів)
 // ------------------------------------------------------------
 Console.WriteLine();
 Console.WriteLine("1. PARALLEL CREATION (Parallel + Stopwatch):");
@@ -159,14 +159,15 @@ int longerThanAverage = parallelResult.Songs
     .Count();
 Console.WriteLine($"   Where (Duration > Average): {longerThanAverage}");
 
-// Select (перетворення) — вибір (вибрані) Title з довжиною.
+// Select (вибір) — найдовша за тривалістю пісня:
+// сортуємо за спаданням і беремо перший Title.
 string? longestTitle = parallelResult.Songs
     .OrderByDescending(x => x.DurationSeconds)
     .Select(x => x.Title)
     .First();
 Console.WriteLine($"   Select/OrderBy (найдовша пісня за Time): {longestTitle}");
 
-// Aggregate (агрегація) — сума всіх тривалостей (в сумі).
+// Aggregate (агрегація) — сумарна тривалість усіх пісень.
 double sumOfDurations = parallelResult.Songs
     .Aggregate(0.0, (acc, x) => acc + x.DurationSeconds);
 Console.WriteLine($"   Aggregate (сума тривалостей, с): {sumOfDurations:0}");
@@ -212,9 +213,8 @@ foreach (Song s in presetSongs)
 int totalSongs = (await asyncSongService.ReadAllAsync()).Count;
 Console.WriteLine($"   Елементів у сервісі: {totalSongs}");
 
-// ReadAllAsync(page: 2, amount: 2) — друга сторінка
-// з двома (2) елементами: пісні з індексів 2 і 3
-// ("Storm" і "Calm" — з третьої (з третьої)).
+// ReadAllAsync(page: 2, amount: 2) — друга сторінка, два елементи:
+// пісні з індексів 2 і 3 ("Storm" і "Calm").
 List<Song> pageTwo = await asyncSongService.ReadAllAsync(page: 2, amount: 2);
 Console.WriteLine($"   ReadAllAsync(page: 2, amount: 2): {string.Join(", ", pageTwo.Select(s => s.Title))}");
 
@@ -229,10 +229,10 @@ Console.WriteLine($"   ReadAllAsync(page: 99, amount: 2): елементів {pa
 Console.WriteLine();
 Console.WriteLine("4. IENUMERABLE: foreach безпосередньо по сервісу (snapshot):");
 
-// foreach (var item in service) працює ЗАВЯКИ ТАКОМУ (завдяки)
-// реалізації ICrudServiceAsync<T> : IEnumerable<T>.
-// Enumerator (перекладач) працює зі SNAPSHOT (миттєвою копією),
-// а не з внутрішнім mutable (змінним) List<T>.
+// foreach (var item in service) працює завдяки реалізації
+// ICrudServiceAsync<T> : IEnumerable<T>. IEnumerator ітерує
+// SNAPSHOT (миттєву копію), а не внутрішній змінюваний List<T>,
+// тому одночасні зміни сервісу не ламають цикл.
 int visited = 0;
 foreach (Song item in asyncSongService)
 {
@@ -244,31 +244,28 @@ Console.WriteLine($"   Загальна кількість відвіданих:
 // ------------------------------------------------------------
 // 5. SAVEASYNC (збереження в JSON)
 // ------------------------------------------------------------
-// Створюємо асинхронний збереження (збереження) у JSON,
-// а також DEMO (демонстрацію) конкурентного (конкурентного)
-// збереження: 3 SaveAsync одночасно,
-// файл залишається валідним.
+// АСІНХРОННЕ (async) generic-збереження в JSON,
+// і демо конкурентного збереження:
+// 3 SaveAsync одночасно, файл залишається валідним.
 Console.WriteLine();
 Console.WriteLine("5. SAVEASYNC (збереження в JSON):");
 
 string lab2DataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
 string lab2FilePath = Path.Combine(lab2DataDirectory, "lab2_songs.json");
 
-// Детермінований (однократний) запуск: перед новим demo
-// (демо) "очищаємо" попереднє демонстраційне
-// (демо) збереження, щоб результати кожного
-// (кожного) запуску були однаковими.
+// Детермінований запуск: прибираємо файл попередньої
+// демонстрації, щоб результат кожного запуску був однаковим.
 if (File.Exists(lab2FilePath))
 {
     File.Delete(lab2FilePath);
 }
 
-// Одна (одна) SaveAsync: сервіс -> JSON-файл.
+// Одна SaveAsync: сервіс -> JSON-файл.
 await asyncSongService.SaveAsync(lab2FilePath);
 
-// Конкурентні (одна-часні) SaveAsync:
-// три одночасні (concurrent) записи в ОДИН (одін) файл,
-// захист — через SemaphoreSlim (лише один writer одночасно).
+// Три SaveAsync одночасно в ОДИЙ файл:
+// SemaphoreSlim (рівень 1) гарантує, що одночасно
+// пише файл лише один writer.
 Task[] concurrentSaves =
 {
     asyncSongService.SaveAsync(lab2FilePath),
@@ -277,10 +274,8 @@ Task[] concurrentSaves =
 };
 await Task.WhenAll(concurrentSaves);
 
-// Перевірка валідації (validity) JSON:
-// файл можна десеріалізувати (зворотна серіалізація)
-// без помилок і містить саме ті елементи,
-// що (що) в сервісі.
+// Перевірка валідності JSON: файл десеріалізується без
+// помилок і містить саме ті елементи, що є в сервісі.
 string jsonAfterSaves = await File.ReadAllTextAsync(lab2FilePath);
 List<Song>? savedSongs =
     System.Text.Json.JsonSerializer.Deserialize<List<Song>>(jsonAfterSaves);

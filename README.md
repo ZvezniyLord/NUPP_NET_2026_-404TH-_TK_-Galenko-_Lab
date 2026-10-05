@@ -76,8 +76,8 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 ### LINQ
 
 `Min`, `Max`, `Average`, `Where`, `Select`, `Aggregate`, `OrderBy` та
-`Skip`/`Take` (пагінація) на числових властивості моделей (trivality
-`DurationSeconds` пісень створених в Parallel).
+`Skip`/`Take` (пагінація) на числовій властивості моделей (тривалість
+`DurationSeconds` пісень, створених у Parallel).
 
 ### Parallel
 
@@ -90,18 +90,83 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 `SoloSinger.CreateNew()`, `VocalGroup.CreateNew()`, `Song.CreateNew()`,
 `Performance.CreateNew()` — використовують `Random.Shared` (thread-safe).
 
+### Урок: як читати код ЛР2
+
+Порядок читання: кожен пункт — один механізм і його файл.
+Коментарі в коді перекладають англійські терміни українською —
+те саме, що й у ЛР1.
+
+1. **Асинхронність (async) та `Task<T>`** — файл `Services/ICrudServiceAsync.cs`.
+   Асинхронний метод не повертає дані напряму, а повертає `Task<T>`
+   — «обіцянку»: «дані з'являться потім». Викликаючий код зупиняється
+   на `await` і чекає, не блокуючи потік пулу (інша робота на ньому
+   може йти).
+2. **Snapshot (миттєва копія)** — `Services/CrudServiceAsync.cs`,
+   метод `BuildSnapshot()`. Повертати внутрішню `List<T>` назовні
+   небезпечно: зовнішній код може її змінити, і сервіс не побачить.
+   Тому під `lock` робиться `ToList()` — копія. Читання та `foreach`
+   завжди бачять колекцію у стані «на момент фото», а не живий список.
+3. **Критичні секції** — ті самі файли, методи `CreateAsync`,
+   `UpdateAsync`, `RemoveAsync`. Перевірка «чи є такий Id?» і зміна
+   (Add/заміна/RemoveAt) стоять в одному `lock`: перевірка та зміна —
+   атомарна (atomic) дія, два потоки не можуть «вприснути» однаковий
+   Id між ними.
+4. **Пагінація через LINQ** — `ReadAllAsync(page, amount)`.
+   Використовується вираз `Skip((page - 1) * amount).Take(amount)`:
+   нумерація сторінок з 1; сторінка поза межами — порожня колекція
+   (не помилка); недійсна `page`/`amount` —
+   `ArgumentOutOfRangeException`.
+5. **Збереження (SaveAsync)** — ті самі файли. Спочатку snapshot і
+   JSON-серіалізація, потім `SemaphoreSlim` на рівні 1: одночасно в
+   файл пише лише ОДИН запис (writer); `await WaitAsync` —
+   асинхронне очікування (потік пулу не блокується). `finally`
+   гарантує `Release` навіть, якщо запис упав.
+6. **IEnumerable<T>** — інтерфейс `ICrudServiceAsync<T> : IEnumerable<T>`
+   та метод `GetEnumerator()` у реалізації. Саме тому в `Program.cs`
+   можна написати звичайний `foreach (var item in service)`:
+   foreach іде по snapshot, а не по живому `List<T>`.
+7. **Parallel** — `Services/Parallell.cs`. `Parallel.For(0, 2000, ...)`:
+   тіло циклу виконують різні потоки пулу одночасно; збір —
+   `ConcurrentBag<Song>` (thread-safe, без lock); час вимірює
+   `Stopwatch`.
+8. **Lock-демонстрація (гоніжка потоків)** — `Services/SynchronizationDemos.cs`.
+   Операція `counter++` — це три кроки: read-modify-write (прочитати,
+   змінити, записати). Без синхронізації два потоки читають одне й те
+   саме значення — одне зростання губиться. `lock (gate)` — взаємне
+   виключення (mutual exclusion): в критичній секції одночасно один
+   потік, інші чекають.
+9. **SemaphoreSlim-демонстрація** — ті самі файли. У семафора 3
+   «ліцензії»: `WaitAsync` бере одну, `Release` повертає — в ділянці
+   одночасно не більше 3 worker'ів. Важливо: максимум паралельності
+   НЕ написано вручну, а ВИМІРЯНО атомарним лічильником
+   (`Interlocked.Increment` + `Interlocked.CompareExchange`).
+10. **AutoResetEvent producer/consumer** — ті самі файли.
+    Producer кладє елементи у буфер `ConcurrentQueue<int>` і на кожен
+    з них робить `itemReady.Set()` — пробуджує рівно ОДНОГО потік,
+    який чекає `WaitOne()`. Consumer справді знімає елементи
+    (`TryDequeue`) і їх рахує. Deadlock (мертве блокування)
+    неможливий: producer ні на що не чекає.
+11. **Атомарні операції** — `Interlocked.Increment`/`Decrement` та
+    `Volatile.Read` (читання актуального значення, без старих
+    копій із кешу CPU). Усі демо повертають СПРАВЖНІ (real) значення
+    з лічильників, а не числа з коментаря — саме їх перевірять тести.
+12. **Тести** — `MusicContest.Common.Tests`: кожен механізм
+    перевіряється окремим тестом (lock: actual == 8 × 10 000;
+    semaphore: виміряний max ≤ 3, якби семафора не було — був би 10;
+    producer/consumer: produced == consumed == 500 і порожній буфер).
+
 ### Тести
 
 `MusicContest.Common.Tests` (xUnit):
-- CreateAsync (dodatiy element, duplicate Id),
-- ReadAsync (pravil'nenyi element, Unknown Id),
-- Empty ReadAllAsync,
-- UpdateAsync (update, unknown Id),
-- RemoveAsync (remove, unknown Id),
-- pagination, out-of-range, invalid page/amount,
-- IEnumerable/foreach over the service,
-- thread-safe parallel create (8 × 500 = 4000, Count == 4000),
-- SaveAsync, concurrent SaveAsync (file valid, elements count).
+- CreateAsync: додає елемент, duplicate Id → InvalidOperationException;
+- ReadAsync: правильний елемент, невідомий Id → KeyNotFoundException;
+- ReadAllAsync: порожній сервіс → порожня колекція;
+- UpdateAsync: оновлення, невідомий Id → KeyNotFoundException;
+- RemoveAsync: видалення, невідомий Id → KeyNotFoundException;
+- пагінація: правильна сторінка, out-of-range, invalid page/amount;
+- IEnumerable/foreach по сервісу (snapshot);
+- thread-safe parallel create: 8 × 500 = 4 000, Count == 4 000;
+- SaveAsync, concurrent SaveAsync: файл валідний, елементів рівно стільки.
 
 ### Запуск
 
