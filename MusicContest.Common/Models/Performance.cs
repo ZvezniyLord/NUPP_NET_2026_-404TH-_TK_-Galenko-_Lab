@@ -62,4 +62,21 @@ public class Performance : IEntity
     {
         IsCompleted = true;
     }
+
+    // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
+    // Фабрика — метод, який повертає готовий об'єкт із рандомними,
+    // але реалістичними значеннями.
+    // Random.Shared — спільна thread-safe копія Random: метод можна
+    // викликати з безлічі потоків одночасно.
+    public static Performance CreateNew()
+    {
+        // Random.Shared: безпечний для потоку instance (копія) Random.
+        Random random = Random.Shared;
+
+        return new Performance(
+            $"Artist-{random.Next(1, 1000)}",    // ParticipantStageName
+            $"Song-{Guid.NewGuid():N}",           // SongTitle
+            Math.Round(random.NextDouble() * 100, 1) // Score: 0.0-100.0 (з округленням)
+        );
+    }
 }

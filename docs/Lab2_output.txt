@@ -1,0 +1,83 @@
+=== MUSIC CONTEST CRUD DEMO ===
+
+1. Після Create:
+- 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+- 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Northern Lights, Україна, 24 років, учасників: 4, жанр: pop / soul
+
+2. Read за Id:
+Сольний виконавець: Astra, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+Коротко: Astra (Україна)
+
+3. Після Update:
+- 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra Nova, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+- 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Northern Lights, Україна, 24 років, учасників: 4, жанр: pop / soul
+
+4. Після Remove гурту:
+- 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra Nova, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+
+Створено об'єктів-нащадків ContestParticipant: 2
+Пісня: Gravity; тривалість: 3:54
+
+5. Делегат і подія:
+Подія ScoreChanged: Astra Nova: 86,5 -> 92,0
+Виступ завершено: True
+
+6. Дані після Save та Load:
+- 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra Nova, Україна, 21 років, голос: сопрано, діапазон: A3-E6
+JSON-файл: N:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\participants.json
+
+=========================================
+ЛАБОРАТОРНА РОБОТА №2
+=========================================
+
+1. PARALLEL CREATION (Parallel + Stopwatch):
+Об'єктів створено: 2000 із 2000 планових
+Фактичний час: 8,992 ms
+
+2. LINQ (на створених Parallel-об'єктах):
+   Count:       2000
+   Min (DurationSeconds): 120 s
+   Max (DurationSeconds): 359 s
+   Average (DurationSeconds): 240,52 s
+   Where (Duration > Average): 1007
+   Select/OrderBy (найдовша пісня за Time): Song-1985
+   Aggregate (сума тривалостей, с): 481040
+   OrderBy/Top-3 (найдовші пісні):
+      - Song-1985: 359 s, G major
+      - Song-268: 359 s, C major
+      - Song-199: 359 s, D minor
+
+3. ASYNC GENERIC CRUD + ПАГІНАЦІЯ (ReadAllAsync(page, amount)):
+   Елементів у сервісі: 5
+   ReadAllAsync(page: 2, amount: 2): Storm, Calm
+   ReadAllAsync(page: 99, amount: 2): елементів 0 (порожня сторінка)
+
+4. IENUMERABLE: foreach безпосередньо по сервісу (snapshot):
+   - Morning (відвідано: 1)
+   - Sunset (відвідано: 2)
+   - Storm (відвідано: 3)
+   - Calm (відвідано: 4)
+   - Night (відвідано: 5)
+   Загальна кількість відвіданих: 5
+
+5. SAVEASYNC (збереження в JSON):
+   Конкурентне збереження (3 одночасні SaveAsync) завершено.
+   Валідний (valid) JSON: True
+   Елементів у файлі після конкурентного Save: 5
+   JSON-файл: N:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\lab2_songs.json
+
+6. LOCK: 8 потоків × 10 000 increments (критична секція):
+Expected: 80000
+Actual:   80000
+Match:    True
+
+7. SEMAPHORESLIM: 10 worker'ів, maxConcurrency = 3:
+Worker'ів: 10; зазначено maxConcurrency = 3
+ФАКТИЧНО виміряно максимум одночасних worker'ів: 3
+
+8. AUTORESETEVENT (producer/consumer), M = 500:
+Produced:  500
+Consumed:  500
+Produced == Consumed == M: True
+Buffer empty: True
+Run exit code: 0
