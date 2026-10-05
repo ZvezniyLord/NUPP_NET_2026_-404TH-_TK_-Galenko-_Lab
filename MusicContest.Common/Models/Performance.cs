@@ -62,4 +62,34 @@ public class Performance : IEntity
     {
         IsCompleted = true;
     }
+
+    // Статичний фабричний метод CreateNew = "створити новий" із згенерованими даними.
+    //
+    // Random = генератор псевдовипадкових чисел.
+    // Random.Shared = спільний (shared) екземпляр Random у сучасному .NET,
+    // який потокобезпечний (thread-safe) і зручний для паралельного створення
+    // об'єктів у різних потоках.
+    //
+    // Рандомні логічні значення:
+    //   ParticipantStageName = сценічне ім'я (з випадкового списку);
+    //   SongTitle            = назва пісні (з випадкового списку);
+    //   Score                = оцінка: 0-100;
+    //   IsCompleted          = false (виступ ще не завершений).
+    public static Performance CreateNew()
+    {
+        Random rng = Random.Shared;
+
+        string[] performers = { "Astra", "Nordwind", "Sirena", "Borealis", "Eklipsa",
+            "Halcyon", "Lyra", "Melodia", "Vestra", "Zorya" };
+        string[] songs = { "Gravity", "Midnight", "Horizon", "Breeze", "Firefly",
+            "Aurora", "Delta", "Echo", "Harmony", "Iris" };
+
+        // Score = оцінка: 0-100. NextDouble() -> [0,1), помножили на 100 -> [0,100).
+        double score = rng.NextDouble() * 100;
+
+        return new Performance(
+            performers[rng.Next(performers.Length)],
+            songs[rng.Next(songs.Length)],
+            score);
+    }
 }
