@@ -47,4 +47,22 @@ public class Song : IEntity
     {
         return new Song(title, originalArtist, (int)Math.Round(minutes * 60), key);
     }
+
+    // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
+    // Фабрика — метод, який повертає готовий об'єкт із рандомними,
+    // але реалістичними значеннями.
+    // Random.Shared — спільна thread-safe копія Random, яку безпечно
+    // використовують паралельні потоки.
+    public static Song CreateNew()
+    {
+        // Random.Shared: безпечний для потоку instance (копія) Random.
+        Random random = Random.Shared;
+
+        return new Song(
+            $"Song-{Guid.NewGuid():N}",             // унікальна назва
+            $"Artist-{random.Next(1, 1000)}",        // оригінальний виконавець
+            random.Next(120, 360),                   // тривалість: 2-6 хвилин
+            new[] { "C major", "F major", "G major", "A minor", "D minor" }
+                [random.Next(0, 5)]);                // тональність
+    }
 }
