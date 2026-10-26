@@ -1,7 +1,5 @@
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using MusicContest.Common;
 using MusicContest.Common.Extensions;
 using MusicContest.Common.Models;
 using MusicContest.Common.Services;
@@ -9,16 +7,8 @@ using MusicContest.Common.Services;
 // UTF-8 потрібен, щоб українські символи коректно відображалися в консолі.
 Console.OutputEncoding = Encoding.UTF8;
 
-// async Main: якщо в топ-рівних статментах є await,
-// компілятор сам генерує async Task Main().
-// async = метод може використовувати await і повертає Task/Task<T>.
-// await = асинхронне очікування завершення Task без блокування потоку.
-//
-// RunLab1 — синхронна (synchronous) демонстрація ЛР1. Вона не має I/O-очікувань
-// у Task, тому викликається без await (просто RunLab1()).
-// RunLab2 — async (містить await через SaveAsync), тому очікуємо через await.
-RunLab1();
-await RunLab2();
+Console.WriteLine("=== MUSIC CONTEST CRUD DEMO ===");
+Console.WriteLine();
 
 // ЛАБОРАТОРНА РОБОТА №1 — демонстрація CRUD, подій,
 // Save/Load (базовий варіант проєкту).
@@ -52,18 +42,12 @@ VocalGroup group = new(
     Id = Guid.Parse("00000000-0000-0000-0000-000000000002")
 };
 
-    // Шлях до файлу для async CRUD.
-    // AppContext.BaseDirectory = папка, звідки запущена програма.
-    // Data = підпапка; async.json = ім'я файлу.
-    string asyncDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "async-participants.json");
+// CREATE = додавання об'єктів до внутрішньої колекції CRUD-сервісу.
+participantService.Create(singer);
+participantService.Create(group);
 
-    // Знімаємо старий файл (якщо він є), щоб повторний dotnet run
-    // знову працював із рівно 2000 НОВИМИ об'єктами, а не накопичував
-    // дані попереднього запуску (детермінований запуск).
-    if (File.Exists(asyncDataPath))
-    {
-        File.Delete(asyncDataPath);
-    }
+Console.WriteLine("1. Після Create:");
+PrintParticipants(participantService.ReadAll());
 
 // READ = пошук одного об'єкта за унікальним Id.
 Console.WriteLine();
@@ -79,21 +63,11 @@ singer.StageName = "Astra Nova";
 participantService.Update(singer);
 PrintParticipants(participantService.ReadAll());
 
-    // -------------------------------------------------------------
-    // 2. LINQ статистика
-    // -------------------------------------------------------------
-    // LINQ = Language Integrated Query = інтегровані у мову запити.
-    //
-    // Count = кількість;
-    // Min = мінімум;
-    // Max = максимум;
-    // Average = середнє;
-    // Where = фільтрація;
-    // Select = проєкція / вибір потрібного значення;
-    // OrderBy = сортування;
-    // Aggregate = накопичувальна операція.
-    //
-    // Лямбда: x => x.Age означає "для кожного елемента x взяти Age".
+// REMOVE = видалення об'єкта.
+Console.WriteLine();
+Console.WriteLine("4. Після Remove гурту:");
+participantService.Remove(group);
+PrintParticipants(participantService.ReadAll());
 
 // Виклик статичного методу.
 Console.WriteLine();
@@ -131,22 +105,10 @@ participantService.Save(filePath);
 CrudService<ContestParticipant> loadedService = new();
 loadedService.Load(filePath);
 
-    // -------------------------------------------------------------
-    // 5. IEnumerable / foreach
-    // -------------------------------------------------------------
-    // IEnumerable<T> — сервіс є послідовністю:
-    // його можна перебирати через foreach.
-    //
-    // foreach (T item in service) — перебирає snapshot колекції.
-    Console.WriteLine();
-    Console.WriteLine("5. IEnumerable / foreach:");
-    int foreachCount = 0;
-    foreach (SoloSinger s in service)
-    {
-        foreachCount++;
-    }
-    Console.WriteLine($"   foreach по сервісу: {foreachCount} об'єктів");
-    Console.WriteLine($"   Перший об'єкт: {(await service.ReadAsync(page1.First().Id)).GetDescription()}");
+Console.WriteLine();
+Console.WriteLine("6. Дані після Save та Load:");
+PrintParticipants(loadedService.ReadAll());
+Console.WriteLine($"JSON-файл: {filePath}");
 
 // ============================================================
 // ЛАБОРАТОРНА РОБОТА №2
