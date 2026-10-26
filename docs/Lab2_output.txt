@@ -32,32 +32,32 @@ JSON-файл: O:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\participan
 
 1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.ForEachAsync):
 Об'єктів створено: 2000 із 2000 планових
-Фактичний час: 10,793 ms
+Фактичний час: 10,840 ms
 
 2. LINQ (min/max/average на створених об'єктах):
    Count:       2000
    Min (DurationSeconds): 120 s
    Max (DurationSeconds): 359 s
-   Average (DurationSeconds): 239,74 s
-   Where (Duration > Average): 1000
-   Select/OrderBy (найдовша пісня): Song-70db35f66c9f4186a88abc3743f95c32
-   Aggregate (сума тривалостей, с): 479488
+   Average (DurationSeconds): 239,54 s
+   Where (Duration > Average): 980
+   Select/OrderBy (найдовша пісня): Song-a93693a987bd4f288ca41b0f7a8471ca
+   Aggregate (сума тривалостей, с): 479089
    OrderBy/Top-3 (найдовші пісні):
-      - Song-70db35f66c9f4186a88abc3743f95c32: 359 s, F major
-      - Song-2ff79c8141d24e88b0d617de6f642be3: 359 s, F major
-      - Song-a4dbab383d6c42768bcb2e31d0b78aff: 359 s, A minor
+      - Song-a93693a987bd4f288ca41b0f7a8471ca: 359 s, C major
+      - Song-b905f09aaf4e4f13ab4a937ac98cab69: 359 s, C major
+      - Song-519e5fd8e673446fbc787a2b975faae4: 359 s, A minor
 
 3. ПАГІНАЦІЯ (ReadAllAsync(page, amount)):
-   Page 1 (5): Song-2e82a42fd957431e8de7053fd883ec77, Song-3ba8303836fa40198e81b0f31d85ca2c, Song-8bee0fb2a89b4e7b9b5e0aa2ede1b240, Song-8f643b3881904820b36e33605204db6e, Song-434fcc875537446794577097b111a213
-   Page 2 (5): Song-5355ed561cdf4b46a5f6ff7d0c3e7849, Song-784c04f38e90458db7c52dbf6ddf35b5, Song-a77ec73e3ede4da4a671518cca9efc52, Song-9ef457a23c2243c6a8c4f357a53b2e16, Song-0396fb94e1214ec9b0c644e90083915d
+   Page 1 (5): Song-8e83e35f8c4f4668b5c042820e36c735, Song-4fd043e70dd649228d81de7eb875c784, Song-4cd52ccd22104b24b46fc33c6ad42e28, Song-989fdedc0596456ea0ce66d3ed6b46ed, Song-250c110aaa4f4252bab061c7e087ac10
+   Page 2 (5): Song-8f11118bef3a4b7bbbc0e67c78a48310, Song-62180ffab18e47a599b7d6f5d9ac9193, Song-73deb4ae8a674197bbb0ae3a55927e3d, Song-f637b5f1219f4293881ca45a456fd40a, Song-9d9ba76304cd44ea8519bea300487d8c
    Page 999 (5): елементів 0 (порожня сторінка)
 
 4. IENUMERABLE: foreach безпосередньо по сервісу (перші 5 + сума):
-   - Song-2e82a42fd957431e8de7053fd883ec77 (332 s)
-   - Song-3ba8303836fa40198e81b0f31d85ca2c (243 s)
-   - Song-8bee0fb2a89b4e7b9b5e0aa2ede1b240 (167 s)
-   - Song-8f643b3881904820b36e33605204db6e (166 s)
-   - Song-434fcc875537446794577097b111a213 (297 s)
+   - Song-8e83e35f8c4f4668b5c042820e36c735 (153 s)
+   - Song-4fd043e70dd649228d81de7eb875c784 (131 s)
+   - Song-4cd52ccd22104b24b46fc33c6ad42e28 (280 s)
+   - Song-989fdedc0596456ea0ce66d3ed6b46ed (237 s)
+   - Song-250c110aaa4f4252bab061c7e087ac10 (318 s)
    Загальна кількість відвіданих: 2000
 
 5. SAVEASYNC (збереження колекції у JSON за FilePath):
