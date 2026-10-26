@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using MusicContest.Common.Models;
 
@@ -14,59 +15,63 @@ namespace MusicContest.Common.Services;
 // потоками одночасно; код після Parallel.For біжить лише після завершення
 // ВСІХ ітерацій (join point — точка зшивання).
 //
-// Parallel.ForEachAsync — паралельний перебір з АСИНХРОННИМ тілом: кожен
-// елемент обробляється в await-методі, тому потоки пулу не блокуюються
-// під час CreateAsync. Саме цей варіант використовується тут, бо CRUD-сервіс
-// асинхронний.
+// Чому тіло не блокує потік на await: всередині Parallel.For ми лише
+// ЗАПУСКАЄМО асинхронні CreateAsync (повернений Task зберігаємо у
+// ConcurrentBag<Task>), а чекаємо на них ОДНАЧАСНО через Task.WhenAll
+// ПІСЛЯ join point. Блокування GetAwaiter().GetResult() всередині тіла
+// могло б «з'їсти» потіки пулу (thread starvation — виснаження пулу),
+// саме тому тут використовується await-зшивання (Task.WhenAll), а не блокуюче очікування.
 public static class Parallell
 {
     // Кількість об'єктів для демонстрації (за умови: не менше 1000).
     public const int DefaultObjectCount = 2000;
 
     /// <summary>
-    /// Паралельно створює count об'єктів Song (через Song.CreateNew()) і
-    /// додає їх у CRUD-сервіс service.CreateAsync. Фактичний час вимірюється
-    /// Stopwatch; реальна кількість рахується з самого сервісу.
+    /// Parallel.For паралельно створює count об'єктів Song (через
+    /// Song.CreateNew()) і запускає їх додавання у CRUD-сервіс
+    /// service.CreateAsync. Після join point усі додавання зшиваються
+    /// через Task.WhenAll. Час вимірює Stopwatch; реальна кількість
+    /// зчитується з колекції самого сервісу.
     /// </summary>
     public static async Task<ParallelCreateResult> RunAsync(
         CrudServiceAsync<Song> service,
         int count,
         TextWriter? console = null)
     {
-        // Атомарний лічильник успішних створень: Interlocked.Increment —
-        // безпечне зростання під конкурентними потоками (без lock).
-        int created = 0;
+        // ConcurrentBag<Task<bool>> — thread-safe збір запущених Tasks:
+        // різні потоки пулу одночасно кладуть у нього завдання без lock.
+        ConcurrentBag<Task<bool>> addTasks = new();
 
         // Stopwatch — секундомір: StartNew() запускає, Stop() зупиняє,
-        // Elapsed — фактичний (real) проміжок часу.
+        // Elapsed — фактичний (real) проміжок часу створення + додавання.
         Stopwatch stopwatch = Stopwatch.StartNew();
 
-        // Parallel.ForEachAsync: ітерації 0..count-1 обробляються одночасно
-        // різними потоками пулу; тіло — async (await CreateAsync).
-        await Parallel.ForEachAsync(
-            Enumerable.Range(0, count),
-            new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
-            async (i, cancellationToken) =>
-            {
-                // Новий об'єкт створюється РІЗНИМ потоком через фабричний
-                // метод CreateNew() (Random.Shared — thread-safe генератор).
-                Song song = Song.CreateNew();
+        // Parallel.For(0, count, body): ітерації 0..count-1 виконуються
+        // одночасно різними потоками пулу. Тіло:
+        //   1) створює об'єкт фабричним CreateNew() (Random.Shared — thread-safe);
+        //   2) запускає асинхронне додавання у CRUD-сервіс і зберігає Task.
+        Parallel.For(0, count, i =>
+        {
+            Song song = Song.CreateNew();
 
-                // Додавання в CRUD-сервіс: ConcurrentDictionary всередині
-                // сервісу вже thread-safe, тому паралельні CreateAsync
-                // не гублять елементи.
-                bool added = await service.CreateAsync(song);
+            // CreateAsync не блокує потік: TryAdd у ConcurrentDictionary
+            // (вбудована thread-safe колекція) виконується одразу, решта —
+            // асинхронне «очікування», потік пулу залишається вільним.
+            addTasks.Add(service.CreateAsync(song));
+        });
 
-                if (added)
-                {
-                    Interlocked.Increment(ref created);
-                }
-            });
+        // JOIN POINT: Parallel.For завершив усі ітерації. Тепер одночасно
+        // чекаємо на ВСІ запущені додавання (Task.WhenAll — зшивання задач).
+        bool[] addedResults = await Task.WhenAll(addTasks);
 
         stopwatch.Stop();
 
-        // РЕАЛЬНА кількість — з колекції сервісу, а не з лічильника:
-        // перевіряємо, що CRUD-сервіс справді зберіг усі об'єкти.
+        // Скільки CreateAsync повернули true (уся кількість має бути повною:
+        // Guid.Id у CreateNew унікальний, duplicate неможливий).
+        int created = addedResults.Count(added => added);
+
+        // РЕАЛЬНА кількість — з колекції сервісу: перевіряємо, що жоден
+        // елемент не загубився під конкурентним додаванням.
         int actualCount = (await service.ReadAllAsync()).Count();
 
         ParallelCreateResult result = new(actualCount, count, stopwatch.Elapsed);

@@ -86,7 +86,7 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 ### Parallel
 
 `Parallell.cs` — паралельне створення 2000 об'єктів (від 1000 за умовою)
-через `Parallel.ForEachAsync`: кожний об'єкт створюється фабричним
+через `Parallel.For` + `Task.WhenAll` після join point: кожний об'єкт створюється фабричним
 методом `Song.CreateNew()` і додається в асинхронний CRUD-сервіс
 `CrudServiceAsync<Song>.CreateAsync`; фактичний час вимірюється
 `Stopwatch`, реальна кількість зчитується з самого сервісу.
@@ -110,7 +110,7 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 2. **Snapshot (миттєва копія)** — `Services/CrudServiceAsync.cs`,
    метод `BuildSnapshot()`. Повертати внутрішню колекцію назовні
    небезпечно: зовнішній код може її змінити, і сервіс не побачить.
-   Тому під `lock` робиться копія `_items.Values.OrderBy(x => x.Id).ToList()` — копія у детермінованому порядку за Id. Читання та `foreach`
+   Тому робиться копія `_items.Values.OrderBy(x => x.Id).ToList()` — копія у детермінованому порядку за Id. Читання та `foreach`
    завжди бачять колекцію у стані «на момент фото», а не живий список.
 3. **Thread-safe колекція замість ручних критичних секцій** — ті самі файли, методи `CreateAsync`,
    `UpdateAsync`, `RemoveAsync`. `ConcurrentDictionary<Guid, T>` — вбудована поточно-безпечна колекція .NET:
@@ -131,8 +131,8 @@ snapshot, тому `foreach (var item in service)` безпечний серед
    та метод `GetEnumerator()` у реалізації. Саме тому в `Program.cs`
    можна написати звичайний `foreach (var item in service)`:
    foreach іде по snapshot, а не по живій колекції сервісу.
-7. **Parallel** — `Services/Parallell.cs`. `Parallel.ForEachAsync` паралельно створює та додає об'єкти у CRUD-сервіс:
-   кожний `Song.CreateNew()` + `await CreateAsync` виконується різними потоками пулу;
+7. **Parallel** — `Services/Parallell.cs`. `Parallel.For(0, count, ...)`: тіло паралельно створює об'єкти та запускає їх додавання у CRUD-сервіс:
+   кожний `Song.CreateNew()` + запуск `CreateAsync` виконується різними потоками пулу без блокування; після join point усі Tasks зшиваються через `Task.WhenAll`;
    `ConcurrentDictionary` у сервісі thread-safe сам; реальну кількість зчитують з сервісу, час вимірює
    `Stopwatch`.
 8. **Lock-демонстрація (гоніжка потоків)** — `Services/SynchronizationDemos.cs`.
@@ -187,10 +187,20 @@ dotnet run --project MusicContest.Console
 сесія: перед демонстрацією `lab2_songs.json` очищається, тому
 результати не накопичуються між запусками.
 
+### Звітні файли та результати перевірок
+
+Звіт: `docs/Lab2_Report.pdf` (PDF-звіт лабораторної №2). Реальні журнали:
+`docs/Lab2_build.txt`, `docs/Lab2_test.txt`, `docs/Lab2_output.txt`.
+
+Результати перевірок (фактичні, з журналів):
+- `dotnet build MusicContest.sln`: Build succeeded, 0 Warning(s), 0 Error(s) — exit code 0;
+- `dotnet test MusicContest.Common.Tests`: Passed! Failed: 0, Passed: 22, Total: 22 — exit code 0 (процес завершився сам, без зависання);
+- `dotnet run --project MusicContest.Console`: exit code 0; Parallel.For створив 2000 із 2000 об'єктів через CRUD-сервіс; LINQ по реальній колекції: Min = 120 s, Max = 359 s, Average ≈ 239,18 s; SaveAsync — у файлі 2000 елементів після 3 конкурентних saves; lock Match: True (80000); SemaphoreSlim виміряний max = 3; AutoResetEvent Produced = Consumed = 500.
+
 ## Git / GitHub
 
 Робоча гілка ЛР1: `lab1`.
 Робоча гілка ЛР2: `lab2` — містить код ЛР1 та ЛР2; розробкова гілка: `lab2-qwen38`.
 
 Готова лабораторна робота №2 подається через Pull Request із гілки `lab2`:
-у `master`, або у `lab1`, якщо PR із `lab1` ще не закритий.
+у `master`, або у `lab1`, якщо PR із `lab1` ще не закритий. Фактично відкритий Pull Request #2 `lab2 → lab1` (PR лабораторної №1 ще відкритий): https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/pull/2. Експериментальна гілка `lab2-qwen38` для здачі не використовується.

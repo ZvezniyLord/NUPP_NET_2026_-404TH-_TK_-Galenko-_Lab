@@ -125,7 +125,7 @@ Console.WriteLine("=========================================");
 //    CrudServiceAsync<Song>.CreateAsync (клас Parallell).
 // ------------------------------------------------------------
 Console.WriteLine();
-Console.WriteLine("1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.ForEachAsync):");
+Console.WriteLine("1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.For + Task.WhenAll):");
 
 string lab2DataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
 string lab2FilePath = Path.Combine(lab2DataDirectory, "lab2_songs.json");

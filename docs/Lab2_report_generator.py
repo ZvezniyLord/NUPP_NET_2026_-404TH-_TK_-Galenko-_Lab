@@ -197,9 +197,9 @@ class Report:
             "пагінація детермінована.\n"
             "- SaveAsync(): File.WriteAllTextAsync у файл за FilePath; статичний "
             "SemaphoreSlim (1 мітка) — одночасно пише лише один writer.\n"
-            "- Parallell.RunAsync: Parallel.ForEachAsync створює об'єкти через "
-            "Song.CreateNew() і додає їх у CrudServiceAsync<Song>.CreateAsync; час — Stopwatch, "
-            "реальна кількість — з колекції сервісу.\n"
+            "- Parallell.RunAsync: Parallel.For паралельно створює об'єкти через "
+            "Song.CreateNew() та запускає CrudServiceAsync<Song>.CreateAsync; після join point — "
+            "Task.WhenAll; час — Stopwatch, реальна кількість — з колекції сервісу.\n"
             "- SynchronizationDemos: lock (8 потоків × 10 000 increments), SemaphoreSlim "
             "(10 worker'ів, maxConcurrency = 3), AutoResetEvent (producer/consumer, M = 500); "
             "лічильники — Interlocked.\n"
@@ -219,8 +219,8 @@ class Report:
             "   page/amount <= 0 — ArgumentOutOfRangeException.\n"
             "5. CreateNew(): статичні фабрики Song/SoloSinger/VocalGroup/Performance\n"
             "   (Random.Shared — thread-safe генератор).\n"
-            "6. Parallell: Parallel.ForEachAsync створює 2000 Song через CRUD-сервіс;\n"
-            "   Stopwatch; реальна кількість з сервісу.\n"
+            "6. Parallell: Parallel.For створює 2000 Song; додавання через CRUD-сервіс,\n"
+            "   зшивання Task.WhenAll після join point; Stopwatch; реальна кількість з сервісу.\n"
             "7. LINQ на цифровій властивості DurationSeconds: Min, Max, Average,\n"
             "   Where, Select, OrderByDescending, Aggregate, Skip/Take.\n"
             "8. SaveAsync(): колекція збережена у JSON за FilePath; 3 конкурентні\n"
@@ -233,6 +233,7 @@ class Report:
 
         pdf.add_page()
         heading("Лабораторна робота №2 — MusicContest (C#/.NET 8)", 16)
+        body("Студент: Галенко; група: 404TH; варіант оцінювання: TK. Репозиторій: NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab, фінальна гілка lab2.", 11)
         pdf.ln(4)
         heading("Тема та мета", 13)
         body(theme, 12)

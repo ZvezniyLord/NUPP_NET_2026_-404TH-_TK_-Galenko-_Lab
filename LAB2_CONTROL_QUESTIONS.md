@@ -34,7 +34,7 @@
 Кожен використовуємо там, де він потрібний:
 - async CRUD, SaveAsync — для IO (файли, API, DB).
 - Parallel.For / Parallel.ForEachAsync — паралельні операції (в нас — створення
-  2000 об'єктів через CRUD-сервіс; ForEachAsync — бо тіло async).
+  2000 об'єктів через CRUD-сервіс: Parallel.For + Task.WhenAll після join point).
 
 ## 4. async/await
 
@@ -232,7 +232,7 @@ block 5): 3 конкурентні SaveAsync, елементів у файлі
 `Stop`). Код після `Parallel.For` виконується **тільки
 після** завершення ВСІХ ітерацій (join point — точка
 зшивання). Не використовувати для IO (там async).
-Для async-тіла використовують `Parallel.ForEachAsync`. У нашій демонстрації (в нас —
+Для async-операцій тіло Parallel.For лише запускає Tasks (без блокування потоку), а зшиває їх через Task.WhenAll після join point. У нашій демонстрації (в нас —
 паралельно створюємо 2000 Song через `Song.CreateNew()` (`Random.Shared`) і
 `await service.CreateAsync(song)` — CRUD-сервіс thread-safe сам. Результат: `ActualCount` (з
 колекції, а не з коментаря), `Elapsed` (з Stopwatch) —
