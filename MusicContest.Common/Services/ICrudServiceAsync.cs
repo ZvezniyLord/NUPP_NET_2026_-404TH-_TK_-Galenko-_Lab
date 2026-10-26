@@ -1,64 +1,48 @@
+using MusicContest.Common.Models;
+
 namespace MusicContest.Common.Services;
 
-// ICrudServiceAsync<T> = асинхронний generic-контракт CRUD.
+// АСІНХРОННИЙ (async) generic-контракт CRUD-сервісу (ЛР2).
 //
-// generic тип T = тип елементів буде визначений на момент створення об'єкта-сервісу.
-// Обмеження "where T : IEntity" (у реалізації) вимагає, щоб T мав унікальний
-// Id (GUID) — це необхідна умова для пошуку, оновлення та видалення.
+// Асинхронність: метод не повертає дані напряму, а повертає Task<T> —
+// «обіцянку»: «дані з'являться потім». Викликаючий код чекає через await
+// БЕЗ БЛОКУВАННЯ потоку: за час очікування потік пулу (thread pool)
+// може виконувати іншу роботу.
 //
-// CRUD:
-//   CreateAsync  = створити (Create);
-//   ReadAsync    = прочитати (Read);
-//   UpdateAsync  = оновити (Update);
-//   RemoveAsync  = видалити (Remove);
-//   SaveAsync    = асинхронно зберегти колекцію у файл JSON.
+// Generic тип T: один і той самий сервіс працює з будь-якою сутністю,
+// що реалізує IEntity (має Guid Id) — Song, SoloSinger, VocalGroup...
 //
-// ICrudServiceAsync<T> : IEnumerable<T> — сервіс сам є послідовністю:
-// його можна перебирати через foreach (foreach (T item in service)).
-//
-// async-методи повертають Task<T>.
-// Task<T> = об'єкт-обіцянка: після завершення операції можна отримати результат T.
-// async = метод може використовувати await і повертає Task/Task<T>.
-// IMPORTANT: async НЕ створює новий потік — це лише синтаксис, який дозволяє
-//            "зупинитися" на I/O (файл, мережа) без блокування потоку.
-public interface ICrudServiceAsync<T> : IEnumerable<T>
+// IEnumerable<T>: інтерфейс успадковує IEnumerable<T>, тому об'єкт сервісу
+// можна безпосередньо ітерувати: foreach (var item in service) { ... }
+public interface ICrudServiceAsync<T> : IEnumerable<T> where T : IEntity
 {
-    // Add element (Create). Повертає true, якщо елемент було додано.
-    // При дублі Id (повторному створенні об'єкта з тим самим Id)
-    // метод кидає InvalidOperationException.
+    // CREATE: додає елемент. true — додано; false — такий Id вже існує.
     public Task<bool> CreateAsync(T element);
 
-    // Get one element by its Guid.
-    // Повертає елемент за його Id.
-    // Якщо елемент не знайдено — кидає KeyNotFoundException.
+    // READ: повертає елемент за його Guid.
+    // Якщо елемент не знайдено — KeyNotFoundException.
     public Task<T> ReadAsync(Guid id);
 
-    // Get a snapshot (copy) of the entire collection.
-    // Повертає знімок (копію) всієї колекції.
-    // Знімок — це копія, тому зовнішній код не має прямого доступу
-    // до внутрішнього List<T> сервісу.
+    // READ ALL: миттєва копія (snapshot) усіх елементів у детермінованому
+    // порядку. Зовнішній код не може змінити стан сервісу через цю колекцію.
     public Task<IEnumerable<T>> ReadAllAsync();
 
-    // Pagination (пагінація): page = номер сторінки,
-    // amount = кількість елементів на сторінці.
-    // Повертає елементи сторінки.
-    // Якщо сторінка за межами колекції — повертається порожня колекція.
-    // Якщо page <= 0 або amount <= 0 — ArgumentOutOfRangeException.
+    // READ ALL із пагінацією (pagination): сторінка page (нумерація з 1)
+    // містить amount елементів. Наприклад page = 2, amount = 20 — елементи
+    // з 21 по 40. page <= 0 або amount <= 0 — ArgumentOutOfRangeException;
+    // сторінка за межами колекції — порожня колекція (не помилка).
     public Task<IEnumerable<T>> ReadAllAsync(int page, int amount);
 
-    // Update existing element (Update).
-    // Оновлює наявний елемент (шуканний за Id).
-    // Повертає true. Якщо елемент не знайдено — KeyNotFoundException.
+    // UPDATE: замінює елемент із таким самим Id новою версією.
+    // true — оновлено; false — елемента з таким Id немає.
     public Task<bool> UpdateAsync(T element);
 
-    // Delete existing element (Remove).
-    // Видалити наявний елемент (шуканний за Id).
-    // Повертає true. Якщо елемент не знайдено — KeyNotFoundException.
+    // REMOVE: видаляє елемент за його Id.
+    // true — видалено; false — елемента з таким Id немає.
     public Task<bool> RemoveAsync(T element);
 
-    // SaveAsync = save the current collection to disk asynchronously
-    // (JSON) to the file whose path was given in the constructor.
-    // Асинхронно зберегти колекцію у файл JSON.
-    // Шлях до файлу задано в конструкторі сервісу.
+    // SAVE: асинхронно серіалізує колекцію у JSON-файл за шляхом FilePath.
+    // true — файл записано. Одночасний запис захищено семафором: лише один
+    // writer пише файл одночасно, тож паралельні SaveAsync не псують JSON.
     public Task<bool> SaveAsync();
 }

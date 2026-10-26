@@ -49,43 +49,23 @@ public class SoloSinger : ContestParticipant
         return YearsOfExperience >= minimumYears;
     }
 
-    // Статичний фабрічний метод CreateNew = "створити новий" із згенерованими даними.
-    //
-    // Random = генератор псевдовипадкових чисел.
-    // Random.Shared = спільний (shared) екземпляр Random у сучасному .NET,
-    // який потокобезпечний (thread-safe) і зручний для паралельного
-    // створення об'єктів у різних потоках: не треба створювати
-    // власний Random для кожного потоку (це класична помилка).
-    //
-    // Рандомні логічні значення:
-    //   StageName  = сценічне ім'я (з випадкового списку);
-    //   Country    = країна;
-    //   Age        = вік: 18-60 років;
-    //   VoiceType  = тип голосу;
-    //   VocalRange = діапазон;
-    //   YearsOfExperience = років досвіду: 0-35.
+    // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
+    // Фабрика (factory) — метод, який повертає готовий об'єкт.
+    // Через Random.Shared (спільна thread-safe копія Random)
+    // кожен виклик повертає РІЗНІ значення — безпечно для паралельного
+    // (parallel) створення сотень і тисяч об'єктів у потоках.
     public static SoloSinger CreateNew()
     {
-        // rng.Next(max) повертає 0..max-1; rng.Next(min, max) повертає min..max-1.
-        // Тобто age = 18 + Next(43) -> 18..60, experience = Next(36) -> 0..35.
-        Random rng = Random.Shared;
-
-        string[] names = { "Astra", "Nordwind", "Sirena", "Borealis", "Eklipsa",
-            "Halcyon", "Lyra", "Melodia", "Vestra", "Zorya" };
-        string[] countries = { "Україна", "Poland", "Czechia", "Slovakia", "Romania",
-            "Moldova", "Bulgaria", "Latvia", "Lithuania", "Estonia" };
-        string[] voiceTypes = { "сопрано", "мецо", "тенор", "бас" };
-        string[] ranges = { "C4-A5", "D4-B5", "A3-E6", "C3-G5", "F3-C6", "B3-G5" };
-
-        int age = 18 + rng.Next(43);                          // 18..60
-        int experience = rng.Next(36);                        // 0..35
+        // Random.Shared — статичний instance (копія) Random,
+        // безпечний для потоку: його можуть одночасно читати різні потоки.
+        Random random = Random.Shared;
 
         return new SoloSinger(
-            names[rng.Next(names.Length)],
-            countries[rng.Next(countries.Length)],
-            age,
-            voiceTypes[rng.Next(voiceTypes.Length)],
-            ranges[rng.Next(ranges.Length)],
-            experience);
+            $"Singer-{Guid.NewGuid():N}",       // унікальне сценічне ім'я
+            $"Country-{random.Next(1, 31)}",     // країна: від 1 до 30
+            random.Next(16, 40),                 // age: від 16 до 40 років
+            $"Voice-{random.Next(1, 6)}",        // voiceType: варіант голосу
+            $"R{random.Next(3, 8)}",             // vocalRange: діапазон
+            random.Next(0, 15));                 // yearsOfExperience: 0-14 років
     }
 }

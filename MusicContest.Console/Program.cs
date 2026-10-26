@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,90 +20,37 @@ Console.OutputEncoding = Encoding.UTF8;
 RunLab1();
 await RunLab2();
 
-static void RunLab1()
+// ЛАБОРАТОРНА РОБОТА №1 — демонстрація CRUD, подій,
+// Save/Load (базовий варіант проєкту).
+// Створюємо generic (універсальний) CRUD-сервіс.
+// T тут дорівнює ContestParticipant, тому цей сервіс зберігає
+// будь-яких нащадків ContestParticipant: і SoloSinger, і VocalGroup.
+CrudService<ContestParticipant> participantService = new();
+
+// Створюємо об'єкт SoloSinger.
+SoloSinger singer = new(
+    "Astra",       // stageName = сценічне ім'я
+    "Україна",     // country = країна
+    21,            // age = вік
+    "сопрано",     // voiceType = тип голосу
+    "A3-E6",       // vocalRange = вокальний діапазон
+    8)             // yearsOfExperience = років досвіду
 {
-    Console.WriteLine("=== MUSIC CONTEST CRUD DEMO (Lab 1) ===");
-    Console.WriteLine();
+    // Для детермінованого результату задаємо постійний GUID.
+    Id = Guid.Parse("00000000-0000-0000-0000-000000000001")
+};
 
-    // Створюємо generic CRUD-сервіс (синхронну версію з ЛР1).
-    // T = ContestParticipant: сервіс зберігає нащадків: SoloSinger і VocalGroup.
-    CrudService<ContestParticipant> participantService = new();
-
-    SoloSinger singer = new("Astra", "Україна", 21, "сопрано", "A3-E6", 8)
-    {
-        Id = Guid.Parse("00000000-0000-0000-0000-000000000001")
-    };
-
-    VocalGroup group = new("Northern Lights", "Україна", 24, 4, "pop / soul", true)
-    {
-        Id = Guid.Parse("00000000-0000-0000-0000-000000000002")
-    };
-
-    participantService.Create(singer);
-    participantService.Create(group);
-
-    Console.WriteLine("1. Після Create:");
-    PrintParticipants(participantService.ReadAll());
-
-    Console.WriteLine();
-    Console.WriteLine("2. Read за Id:");
-    ContestParticipant found = participantService.Read(singer.Id);
-    Console.WriteLine(found.GetDescription());
-    Console.WriteLine($"Коротко: {found.ToShortInfo()}");
-
-    Console.WriteLine();
-    Console.WriteLine("3. Після Update:");
-    singer.StageName = "Astra Nova";
-    participantService.Update(singer);
-    PrintParticipants(participantService.ReadAll());
-
-    Console.WriteLine();
-    Console.WriteLine("4. Після Remove гурту:");
-    participantService.Remove(group);
-    PrintParticipants(participantService.ReadAll());
-
-    Console.WriteLine();
-    Console.WriteLine($"Створено об'єктів-нащадків ContestParticipant: {ContestParticipant.GetCreatedCount()}");
-
-    Song song = Song.FromMinutes("Gravity", "Sara Bareilles", 3.9, "F major");
-    Console.WriteLine($"Пісня: {song.Title}; тривалість: {song.GetFormattedDuration()}");
-
-    Performance performance = new(singer.StageName, song.Title, 86.5)
-    {
-        Id = Guid.Parse("00000000-0000-0000-0000-000000000003")
-    };
-
-    performance.ScoreChanged += (item, oldScore, newScore) =>
-    {
-        Console.WriteLine($"Подія ScoreChanged: {item.ParticipantStageName}: {oldScore:F1} -> {newScore:F1}");
-    };
-
-    Console.WriteLine();
-    Console.WriteLine("5. Делегат і подія:");
-    performance.SetScore(92.0);
-    performance.Complete();
-    Console.WriteLine($"Виступ завершено: {performance.IsCompleted}");
-
-    string dataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
-    string filePath = Path.Combine(dataDirectory, "participants.json");
-    participantService.Save(filePath);
-
-    CrudService<ContestParticipant> loadedService = new();
-    loadedService.Load(filePath);
-
-    Console.WriteLine();
-    Console.WriteLine("6. Дані після Save та Load:");
-    PrintParticipants(loadedService.ReadAll());
-    Console.WriteLine($"JSON-файл: {filePath}");
-}
-
-static async Task RunLab2()
+// Другий тип нащадка — VocalGroup.
+VocalGroup group = new(
+    "Northern Lights",
+    "Україна",
+    24,
+    4,             // memberCount = кількість учасників
+    "pop / soul",  // genre = жанр
+    true)          // hasBackingVocals = є бек-вокал
 {
-    Console.WriteLine();
-    Console.WriteLine("==================================================");
-    Console.WriteLine("=== ЛАБОРАТОРНА РОБОТА №2 ===");
-    Console.WriteLine("Багатопотоковість. Асинхронність. IEnumerable. LINQ.");
-    Console.WriteLine("==================================================");
+    Id = Guid.Parse("00000000-0000-0000-0000-000000000002")
+};
 
     // Шлях до файлу для async CRUD.
     // AppContext.BaseDirectory = папка, звідки запущена програма.
@@ -120,25 +65,19 @@ static async Task RunLab2()
         File.Delete(asyncDataPath);
     }
 
-    // Створюємо async CRUD-сервіс.
-    // ICrudServiceAsync<T> : IEnumerable<T> — сервіс сам послідовність.
-    // where T : IEntity — T має Id.
-    ICrudServiceAsync<SoloSinger> service = new CrudServiceAsync<SoloSinger>(asyncDataPath);
+// READ = пошук одного об'єкта за унікальним Id.
+Console.WriteLine();
+Console.WriteLine("2. Read за Id:");
+ContestParticipant found = participantService.Read(singer.Id);
+Console.WriteLine(found.GetDescription());
+Console.WriteLine($"Коротко: {found.ToShortInfo()}");
 
-    // -------------------------------------------------------------
-    // 1. Паралельне створення об'єктів через Parallell.CreateInParallel
-    // -------------------------------------------------------------
-    // Func<SoloSinger> = функція, що повертає SoloSinger.
-    // SoloSinger.CreateNew — статичний метод, підходить як Func<SoloSinger>.
-    //
-    // count = кількість.
-    // Створюємо 2000 об'єктів — багатопотоковість буде очевидною.
-    int count = 2000;
-    Parallell.CreateInParallel(service, count, SoloSinger.CreateNew);
-
-    // ReadAllAsync() = отримати snapshot всієї колекції.
-    // snapshot = знімок / копія стану колекції у конкретний момент.
-    IEnumerable<SoloSinger> singers = await service.ReadAllAsync();
+// UPDATE = оновлення.
+Console.WriteLine();
+Console.WriteLine("3. Після Update:");
+singer.StageName = "Astra Nova";
+participantService.Update(singer);
+PrintParticipants(participantService.ReadAll());
 
     // -------------------------------------------------------------
     // 2. LINQ статистика
@@ -156,78 +95,41 @@ static async Task RunLab2()
     //
     // Лямбда: x => x.Age означає "для кожного елемента x взяти Age".
 
-    int ageCount = singers.Count();
-    int minAge = singers.Min(s => s.Age);
-    int maxAge = singers.Max(s => s.Age);
-    double avgAge = singers.Average(s => s.Age);
+// Виклик статичного методу.
+Console.WriteLine();
+Console.WriteLine($"Створено об'єктів-нащадків ContestParticipant: {ContestParticipant.GetCreatedCount()}");
 
-    int expMin = singers.Min(s => s.YearsOfExperience);
-    int expMax = singers.Max(s => s.YearsOfExperience);
-    double expAvg = singers.Average(s => s.YearsOfExperience);
+Song song = Song.FromMinutes("Gravity", "Sara Bareilles", 3.9, "F major");
+Console.WriteLine($"Пісня: {song.Title}; тривалість: {song.GetFormattedDuration()}");
 
-    Console.WriteLine();
-    Console.WriteLine($"2. LINQ статистика (всього {ageCount} виконавців):");
-    Console.WriteLine($"   Вік (Age): min={minAge}, max={maxAge}, avg={avgAge:F2}");
-    Console.WriteLine($"   Досвід (YearsOfExperience): min={expMin}, max={expMax}, avg={expAvg:F2}");
+// Створюємо об'єкт виступу.
+Performance performance = new(singer.StageName, song.Title, 86.5)
+{
+    Id = Guid.Parse("00000000-0000-0000-0000-000000000003")
+};
 
-    // -------------------------------------------------------------
-    // 3. Select / Where / Aggregate / OrderBy
-    // -------------------------------------------------------------
-    Console.WriteLine();
-    Console.WriteLine("3. Select / Where / Aggregate / OrderBy:");
+// Підписка (subscribe) на подію (event).
+performance.ScoreChanged += (item, oldScore, newScore) =>
+{
+    Console.WriteLine($"Подія ScoreChanged: {item.ParticipantStageName}: {oldScore:F1} -> {newScore:F1}");
+};
 
-    // Where = фільтрація.
-    // Виконавці з досвідом >= 10 років.
-    var experienced = singers.Where(s => s.YearsOfExperience >= 10).ToList();
-    Console.WriteLine($"   Where: виконавці з досвідом >= 10 років: {experienced.Count()}");
+Console.WriteLine();
+Console.WriteLine("5. Делегат і подія:");
+performance.SetScore(92.0);
+performance.Complete();
+Console.WriteLine($"Виступ завершено: {performance.IsCompleted}");
 
-    // Select = проєкція / вибір потрібного значення.
-    // Видобрати StageName (тільки ім'я, без решти об'єкта).
-    var names = singers.Select(s => s.StageName).ToList();
-    Console.WriteLine($"   Select: вибрано {names.Count()} StageName, перше = \"{names.First()}\"");
+// SAVE / LOAD — додаткове завдання ЛР1.
+string dataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
+string filePath = Path.Combine(dataDirectory, "participants.json");
 
-    // Aggregate = накопичувальна операція.
-    // Сумарна кількість років досвіду (sum).
-    int totalExp = singers.Aggregate(0, (sum, s) => sum + s.YearsOfExperience);
-    Console.WriteLine($"   Aggregate: сумарний досвід (sum) = {totalExp} років");
+participantService.Save(filePath);
 
-    // OrderBy = сортування.
-    // Sort by Age (ascending).
-    var byAge = singers.OrderBy(s => s.Age).ToList();
-    var top3 = byAge.Take(3).ToList();
-    Console.WriteLine("   OrderBy(Age) — перші 3 (наймолодші):");
-    foreach (var s in top3)
-    {
-        Console.WriteLine($"      - {s.StageName}: {s.Age} років");
-    }
-
-    // -------------------------------------------------------------
-    // 4. Пагінація
-    // -------------------------------------------------------------
-    // page = номер сторінки (від 1);
-    // amount = кількість елементів на сторінці.
-    //
-    // Skip = пропустити N елементів;
-    // Take = взяти N елементів.
-    //
-    // page = 1, amount = 10 -> Skip(0).Take(10) -> елементи 1-10.
-    // page = 2, amount = 10 -> Skip(10).Take(10) -> елементи 11-20.
-    Console.WriteLine();
-    Console.WriteLine("4. Пагінація (ReadAllAsync(page, amount)):");
-
-    var page1 = await service.ReadAllAsync(1, 10);
-    Console.WriteLine("   Сторінка 1 (10 елем.):\n");
-    foreach (var s in page1)
-    {
-        Console.WriteLine($"      - {s.StageName}, {s.Age} років, досвід {s.YearsOfExperience}");
-    }
-
-    var page2 = await service.ReadAllAsync(2, 10);
-    Console.WriteLine("   Сторінка 2 (10 елем.):\n");
-    foreach (var s in page2)
-    {
-        Console.WriteLine($"      - {s.StageName}, {s.Age} років, досвід {s.YearsOfExperience}");
-    }
+// Новий порожній сервіс, щоб показати, що дані
+// відновлено з файлу, а не з пам'яті старого сервісу.
+CrudService<ContestParticipant> loadedService = new();
+loadedService.Load(filePath);
 
     // -------------------------------------------------------------
     // 5. IEnumerable / foreach
@@ -246,42 +148,189 @@ static async Task RunLab2()
     Console.WriteLine($"   foreach по сервісу: {foreachCount} об'єктів");
     Console.WriteLine($"   Перший об'єкт: {(await service.ReadAsync(page1.First().Id)).GetDescription()}");
 
-    // -------------------------------------------------------------
-    // 6. Асинхронне збереження (SaveAsync)
-    // -------------------------------------------------------------
-    Console.WriteLine();
-    Console.WriteLine("6. Асинхронне збереження:");
-    bool saved = await service.SaveAsync();
-    Console.WriteLine($"   Файл: {asyncDataPath}");
-    Console.WriteLine($"   Збережено: {saved}");
+// ============================================================
+// ЛАБОРАТОРНА РОБОТА №2
+// ============================================================
+// Тема: Багатопотоковість. Асинхронність. IEnumerable. LINQ.
+Console.WriteLine();
+Console.WriteLine("=========================================");
+Console.WriteLine("ЛАБОРАТОРНА РОБОТА №2");
+Console.WriteLine("=========================================");
 
-    // -------------------------------------------------------------
-    // 7. lock
-    // -------------------------------------------------------------
-    Console.WriteLine("7. lock demo:");
-    int lockResult = Parallell.LockDemo();
+// ------------------------------------------------------------
+// 1. ASYNC CRUD + PARALLEL CREATION: паралельно створюємо від
+//    тисячі об'єктів (тут 2000) через Song.CreateNew() і
+//    CrudServiceAsync<Song>.CreateAsync (клас Parallell).
+// ------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.ForEachAsync):");
 
-    // -------------------------------------------------------------
-    // 8. SemaphoreSlim
-    // -------------------------------------------------------------
-    Console.WriteLine("8. SemaphoreSlim demo:");
-    Parallell.SemaphoreDemo();
+string lab2DataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
+string lab2FilePath = Path.Combine(lab2DataDirectory, "lab2_songs.json");
 
-    // -------------------------------------------------------------
-    // 9. AutoResetEvent
-    // -------------------------------------------------------------
-    Console.WriteLine("9. AutoResetEvent demo:");
-    Parallell.AutoResetEventDemo();
-
-    Console.WriteLine();
-    Console.WriteLine("=== ЛАБОРАТОРНА РОБОТА №2 ЗАВЕРШЕНО ===");
+// Детермінований запуск: прибираємо файл попереднього запуску.
+if (File.Exists(lab2FilePath))
+{
+    File.Delete(lab2FilePath);
 }
 
-// Локальний статичний метод для виведення учасників.
-// IEnumerable<T> означає: метод приймає послідовність об'єктів.
+// Сервіс одразу знає свій FilePath — саме туди збереже колекцію (SaveAsync()).
+CrudServiceAsync<Song> songService = new(lab2FilePath);
+
+ParallelCreateResult parallelResult = await Parallell.RunAsync(
+    songService,
+    Parallell.DefaultObjectCount,
+    console: Console.Out);
+
+// ------------------------------------------------------------
+// 2. LINQ (Language Integrated Query) на створеній колекції:
+//    min / max / average цифрової властивості DurationSeconds.
+// ------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("2. LINQ (min/max/average на створених об'єктах):");
+
+// Зчитуємо колекцію з самого сервісу (snapshot), а не з окремого списку.
+List<Song> songs = (await songService.ReadAllAsync()).ToList();
+
+// Count (кількість) — скільки елементів у сервісі.
+int total = songs.Count();
+Console.WriteLine($"   Count:       {total}");
+
+// Min (мінімум) — мінімальна тривалість пісні.
+int minDuration = songs.Min(x => x.DurationSeconds);
+Console.WriteLine($"   Min (DurationSeconds): {minDuration} s");
+
+// Max (максимум) — максимальна тривалість пісні.
+int maxDuration = songs.Max(x => x.DurationSeconds);
+Console.WriteLine($"   Max (DurationSeconds): {maxDuration} s");
+
+// Average (середнє) — середня тривалість пісні.
+double avgDuration = songs.Average(x => x.DurationSeconds);
+Console.WriteLine($"   Average (DurationSeconds): {avgDuration:F2} s");
+
+// Where (фільтр) — пісні довші за середню тривалість.
+int longerThanAverage = songs.Where(x => x.DurationSeconds > avgDuration).Count();
+Console.WriteLine($"   Where (Duration > Average): {longerThanAverage}");
+
+// Select + OrderByDescending — найдовша пісня: сортуємо за спаданням,
+// беремо перший Title.
+string? longestTitle = songs
+    .OrderByDescending(x => x.DurationSeconds)
+    .Select(x => x.Title)
+    .First();
+Console.WriteLine($"   Select/OrderBy (найдовша пісня): {longestTitle}");
+
+// Aggregate (агрегація) — сумарна тривалість усіх пісень.
+double sumOfDurations = songs.Aggregate(0.0, (acc, x) => acc + x.DurationSeconds);
+Console.WriteLine($"   Aggregate (сума тривалостей, с): {sumOfDurations:0}");
+
+// OrderBy/Top-3 — три найдовші пісні.
+List<Song> topThree = songs
+    .OrderByDescending(x => x.DurationSeconds)
+    .Take(3)
+    .ToList();
+Console.WriteLine("   OrderBy/Top-3 (найдовші пісні):");
+foreach (Song s in topThree)
+{
+    Console.WriteLine($"      - {s.Title}: {s.DurationSeconds} s, {s.Key}");
+}
+
+// ------------------------------------------------------------
+// 3. ПАГІНАЦІЯ (pagination): ReadAllAsync(page, amount) на тій самій
+//    великій колекції (2000 елементів). Сторінки по 5 елементів.
+// ------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("3. ПАГІНАЦІЯ (ReadAllAsync(page, amount)):");
+
+int pageSize = 5;
+
+IEnumerable<Song> pageOne = await songService.ReadAllAsync(page: 1, amount: pageSize);
+Console.WriteLine($"   Page 1 ({pageSize}): {string.Join(", ", pageOne.Select(s => s.Title))}");
+
+IEnumerable<Song> pageTwo = await songService.ReadAllAsync(page: 2, amount: pageSize);
+Console.WriteLine($"   Page 2 ({pageSize}): {string.Join(", ", pageTwo.Select(s => s.Title))}");
+
+// Сторінка за межами колекції — порожня колекція (не помилка).
+IEnumerable<Song> pageBeyond = await songService.ReadAllAsync(page: 999, amount: pageSize);
+Console.WriteLine($"   Page 999 ({pageSize}): елементів {pageBeyond.Count()} (порожня сторінка)");
+
+// ------------------------------------------------------------
+// 4. IENUMERABLE<T>: foreach безпосередньо по сервісу (snapshot).
+//    Enumerator ітерує миттєву копію, а не внутрішню колекцію, тому
+//    одночасні зміни сервісу не ламають цикл.
+// ------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("4. IENUMERABLE: foreach безпосередньо по сервісу (перші 5 + сума):");
+
+int visited = 0;
+foreach (Song item in songService)
+{
+    if (visited < 5)
+    {
+        Console.WriteLine($"   - {item.Title} ({item.DurationSeconds} s)");
+    }
+    visited++;
+}
+Console.WriteLine($"   Загальна кількість відвіданих: {visited}");
+
+// ------------------------------------------------------------
+// 5. SAVEASYNC: збереження згенерованої колекції у файл + демо
+//    конкурентного збереження (3 одночасні SaveAsync, файл валідний).
+// ------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("5. SAVEASYNC (збереження колекції у JSON за FilePath):");
+
+await songService.SaveAsync();
+
+Task[] concurrentSaves =
+{
+    songService.SaveAsync(),
+    songService.SaveAsync(),
+    songService.SaveAsync()
+};
+await Task.WhenAll(concurrentSaves);
+
+// Перевірка валідності JSON: файл десеріалізується без помилок і
+// містить саме ті елементи, що є в сервісі.
+string jsonAfterSaves = await File.ReadAllTextAsync(lab2FilePath);
+List<Song>? savedSongs = System.Text.Json.JsonSerializer.Deserialize<List<Song>>(jsonAfterSaves);
+Console.WriteLine($"   Конкурентне збереження (3 одночасні SaveAsync) завершено.");
+Console.WriteLine($"   Валідний (valid) JSON: {savedSongs is not null}");
+Console.WriteLine($"   Елементів у файлі після конкурентного Save: {(savedSongs ?? new()).Count}");
+Console.WriteLine($"   Файл: {lab2FilePath}");
+
+// ------------------------------------------------------------
+// 6. LOCK (взаємне виключення): 8 потоків × 10 000 increment
+// ------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("6. LOCK: 8 потоків × 10 000 increments (критична секція):");
+await SynchronizationDemos.RunLockDemoAsync(
+    threadCount: 8,
+    incrementsPerThread: 10_000,
+    console: Console.Out);
+
+// ------------------------------------------------------------
+// 7. SEMAPHORESLIM: 10 worker'ів, maxConcurrency = 3
+// ------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("7. SEMAPHORESLIM: 10 worker'ів, maxConcurrency = 3:");
+await SynchronizationDemos.RunSemaphoreDemoAsync(
+    workerCount: 10,
+    maxConcurrency: 3,
+    console: Console.Out);
+
+// ------------------------------------------------------------
+// 8. AUTORESETEVENT — справжня producer/consumer (M = 500)
+// ------------------------------------------------------------
+Console.WriteLine();
+Console.WriteLine("8. AUTORESETEVENT (producer/consumer), M = 500:");
+await SynchronizationDemos.RunProducerConsumerDemoAsync(
+    itemCount: 500,
+    console: Console.Out);
+
+// Локальний статичний метод для багаторазового виведення учасників.
 static void PrintParticipants(IEnumerable<ContestParticipant> participants)
 {
-    // foreach перебирає кожен елемент колекції по черзі.
     foreach (ContestParticipant participant in participants)
     {
         Console.WriteLine($"- {participant.Id} | {participant.GetDescription()}");

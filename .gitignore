@@ -21,5 +21,6 @@ TestResults/
 artifacts/
 packages/
 !packages/build/
-.idea/
-Data/
+
+# Portable .NET SDK (завантажений локально, не є частиною коду)
+.tools/

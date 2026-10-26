@@ -48,36 +48,21 @@ public class Song : IEntity
         return new Song(title, originalArtist, (int)Math.Round(minutes * 60), key);
     }
 
-    // Статичний фабричний метод CreateNew = "створити новий" із згенерованими даними.
-    //
-    // Random = генератор псевдовипадкових чисел.
-    // Random.Shared = спільний (shared) екземпляр Random у сучасному .NET,
-    // який потокобезпечний (thread-safe) і зручний для паралельного створення
-    // об'єктів у різних потоках: не треба створювати власний Random для
-    // кожного потоку (це класична помилка).
-    //
-    // Рандомні логічні значення:
-    //   Title         = назва пісні (з випадкового списку);
-    //   OriginalArtist = виконавець;
-    //   DurationSeconds = тривалість у секундах: 120-360;
-    //   Key           = музична тональність (з випадкового списку).
+    // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
+    // Фабрика — метод, який повертає готовий об'єкт із рандомними,
+    // але реалістичними значеннями.
+    // Random.Shared — спільна thread-safe копія Random, яку безпечно
+    // використовують паралельні потоки.
     public static Song CreateNew()
     {
-        Random rng = Random.Shared;
-
-        string[] titles = { "Gravity", "Midnight", "Horizon", "Breeze", "Firefly",
-            "Aurora", "Delta", "Echo", "Harmony", "Iris" };
-        string[] artists = { "Sara", "Mila", "Vika", "Ost", "Polo", "Rina",
-            "Sofia", "Tara", "Uliana", "Vera" };
-        string[] keys = { "C major", "F major", "G major", "A minor", "B minor",
-            "D minor", "E major", "G minor" };
-
-        int durationSeconds = 120 + rng.Next(241); // 120..360
+        // Random.Shared: безпечний для потоку instance (копія) Random.
+        Random random = Random.Shared;
 
         return new Song(
-            titles[rng.Next(titles.Length)],
-            artists[rng.Next(artists.Length)],
-            durationSeconds,
-            keys[rng.Next(keys.Length)]);
+            $"Song-{Guid.NewGuid():N}",             // унікальна назва
+            $"Artist-{random.Next(1, 1000)}",        // оригінальний виконавець
+            random.Next(120, 360),                   // тривалість: 2-6 хвилин
+            new[] { "C major", "F major", "G major", "A minor", "D minor" }
+                [random.Next(0, 5)]);                // тональність
     }
 }
