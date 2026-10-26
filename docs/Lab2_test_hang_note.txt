@@ -1,0 +1,6 @@
+Діагностика зависання dotnet test (26.10.2026):
+- 22/22 тестів пройшли, але testhost не завершувався (>45 s бездіяльності).
+- Причина: застарілий MusicContest.Common.Tests/ICrudServiceAsyncTests.cs (з першої версії lab2) у тесті ThreadSafety_ParallelCreate запускав 4000 Task.Run, кожен блокував потік пулу через CreateAsync(...).GetAwaiter().GetResult() при одночасному виконанні інших async-тестів -> виснаження thread pool (thread starvation), testhost завис.
+- Також 2 тести класу провалились проти нової специфікації інтерфейсу: duplicate Id тепер повертає false (не InvalidOperationException), пагінація детермінована за Id (не за порядком вставки).
+- Рішення: файл видалено (commit 91b669f) — його покриття повністю дублюється у CrudServiceAsyncTests.cs.
+- Після видалення: dotnet test --blame-hang-timeout 45s завершився з exit code 0, Passed: 22, Total time 0.67 s.

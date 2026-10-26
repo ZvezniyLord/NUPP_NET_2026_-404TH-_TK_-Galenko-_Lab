@@ -48,4 +48,24 @@ public class SoloSinger : ContestParticipant
     {
         return YearsOfExperience >= minimumYears;
     }
+
+    // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
+    // Фабрика (factory) — метод, який повертає готовий об'єкт.
+    // Через Random.Shared (спільна thread-safe копія Random)
+    // кожен виклик повертає РІЗНІ значення — безпечно для паралельного
+    // (parallel) створення сотень і тисяч об'єктів у потоках.
+    public static SoloSinger CreateNew()
+    {
+        // Random.Shared — статичний instance (копія) Random,
+        // безпечний для потоку: його можуть одночасно читати різні потоки.
+        Random random = Random.Shared;
+
+        return new SoloSinger(
+            $"Singer-{Guid.NewGuid():N}",       // унікальне сценічне ім'я
+            $"Country-{random.Next(1, 31)}",     // країна: від 1 до 30
+            random.Next(16, 40),                 // age: від 16 до 40 років
+            $"Voice-{random.Next(1, 6)}",        // voiceType: варіант голосу
+            $"R{random.Next(3, 8)}",             // vocalRange: діапазон
+            random.Next(0, 15));                 // yearsOfExperience: 0-14 років
+    }
 }
