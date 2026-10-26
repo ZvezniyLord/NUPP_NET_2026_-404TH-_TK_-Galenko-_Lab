@@ -42,20 +42,24 @@
 `CrudServiceAsync<T>` (`Services/CrudServiceAsync.cs`,
 `Services/ICrudServiceAsync.cs`):
 
-- асинхронні методи: `CreateAsync`, `ReadAsync`, `ReadAllAsync`,
-  `ReadAllAsync(page, amount)`, `UpdateAsync`, `RemoveAsync`, `SaveAsync`;
-- внутрішня колекція — `List<T>`, доступ захищений `lock` (критичні
-  секції під `_gate`);
-- методи читання та ітерація повертають **snapshot** (копію), а не
-  внутрішню `List<T>`;
-- `CreateAsync` при повторному Id — `InvalidOperationException`;
-- `ReadAsync`/`UpdateAsync`/`RemoveAsync` при відсутньому Id —
+- асинхронні методи за інтерфейсом завдання: `CreateAsync`/`UpdateAsync`/
+  `RemoveAsync` повертають `Task<bool>`, `ReadAsync` — `Task<T>`,
+  `ReadAllAsync` та `ReadAllAsync(page, amount)` — `Task<IEnumerable<T>>`,
+  `SaveAsync()` — `Task<bool>`;
+- внутрішня колекція — `ConcurrentDictionary<Guid, T>`: ВБУДОВANA
+  thread-safe колекція .NET (`System.Collections.Concurrent`), операції
+  `TryAdd`/`TryUpdate`/`TryRemove` атомарні під конкурентним доступом;
+- методи читання та ітерація повертають **snapshot** (копію, впорядковану
+  за Id), а не внутрішню колекцію — пагінація детермінована;
+- `CreateAsync` при повторному Id — `false`; `UpdateAsync`/`RemoveAsync`
+  при відсутньому Id — `false`; `ReadAsync` при відсутньому Id —
   `KeyNotFoundException`;
 - пагінація через LINQ: `Skip((page - 1) * amount).Take(amount)`,
   нумерація сторінок з 1; `page <= 0` або `amount <= 0` —
   `ArgumentOutOfRangeException`; сторінка поза межами — порожня
   колекція;
-- `SaveAsync` — асинхронний JSON-запис через `File.WriteAllTextAsync`,
+- сервіс зберігає колекцію у файл за властивістю `FilePath`:
+  `SaveAsync()` — асинхронний JSON-запис через `File.WriteAllTextAsync`,
   захист від одночасного запису — `SemaphoreSlim` (лише один writer).
 
 ### Thread safety та синхронізація
@@ -81,9 +85,11 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 
 ### Parallel
 
-`Parallell.cs` — паралельне створення 2000 об'єктів через
-`Parallel.For` + `ConcurrentBag<Song>` + `Random.Shared`; фактичний
-час вимірюється `Stopwatch`.
+`Parallell.cs` — паралельне створення 2000 об'єктів (від 1000 за умовою)
+через `Parallel.ForEachAsync`: кожний об'єкт створюється фабричним
+методом `Song.CreateNew()` і додається в асинхронний CRUD-сервіс
+`CrudServiceAsync<Song>.CreateAsync`; фактичний час вимірюється
+`Stopwatch`, реальна кількість зчитується з самого сервісу.
 
 ### Статичні фабрики
 
@@ -102,15 +108,15 @@ snapshot, тому `foreach (var item in service)` безпечний серед
    на `await` і чекає, не блокуючи потік пулу (інша робота на ньому
    може йти).
 2. **Snapshot (миттєва копія)** — `Services/CrudServiceAsync.cs`,
-   метод `BuildSnapshot()`. Повертати внутрішню `List<T>` назовні
+   метод `BuildSnapshot()`. Повертати внутрішню колекцію назовні
    небезпечно: зовнішній код може її змінити, і сервіс не побачить.
-   Тому під `lock` робиться `ToList()` — копія. Читання та `foreach`
+   Тому під `lock` робиться копія `_items.Values.OrderBy(x => x.Id).ToList()` — копія у детермінованому порядку за Id. Читання та `foreach`
    завжди бачять колекцію у стані «на момент фото», а не живий список.
-3. **Критичні секції** — ті самі файли, методи `CreateAsync`,
-   `UpdateAsync`, `RemoveAsync`. Перевірка «чи є такий Id?» і зміна
-   (Add/заміна/RemoveAt) стоять в одному `lock`: перевірка та зміна —
-   атомарна (atomic) дія, два потоки не можуть «вприснути» однаковий
-   Id між ними.
+3. **Thread-safe колекція замість ручних критичних секцій** — ті самі файли, методи `CreateAsync`,
+   `UpdateAsync`, `RemoveAsync`. `ConcurrentDictionary<Guid, T>` — вбудована поточно-безпечна колекція .NET:
+   `TryAdd` не додає duplicate Id навіть при одночасних викликах із потоків;
+   `TryUpdate` замінює лише існуючий ключ, а `TryRemove` атомарно видаляє —
+   зовнішній `lock` для CRUD-операцій тут не потрібен — безпеку забезпечує сама колекція.
 4. **Пагінація через LINQ** — `ReadAllAsync(page, amount)`.
    Використовується вираз `Skip((page - 1) * amount).Take(amount)`:
    нумерація сторінок з 1; сторінка поза межами — порожня колекція
@@ -124,10 +130,10 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 6. **IEnumerable<T>** — інтерфейс `ICrudServiceAsync<T> : IEnumerable<T>`
    та метод `GetEnumerator()` у реалізації. Саме тому в `Program.cs`
    можна написати звичайний `foreach (var item in service)`:
-   foreach іде по snapshot, а не по живому `List<T>`.
-7. **Parallel** — `Services/Parallell.cs`. `Parallel.For(0, 2000, ...)`:
-   тіло циклу виконують різні потоки пулу одночасно; збір —
-   `ConcurrentBag<Song>` (thread-safe, без lock); час вимірює
+   foreach іде по snapshot, а не по живій колекції сервісу.
+7. **Parallel** — `Services/Parallell.cs`. `Parallel.ForEachAsync` паралельно створює та додає об'єкти у CRUD-сервіс:
+   кожний `Song.CreateNew()` + `await CreateAsync` виконується різними потоками пулу;
+   `ConcurrentDictionary` у сервісі thread-safe сам; реальну кількість зчитують з сервісу, час вимірює
    `Stopwatch`.
 8. **Lock-демонстрація (гоніжка потоків)** — `Services/SynchronizationDemos.cs`.
    Операція `counter++` — це три кроки: read-modify-write (прочитати,
@@ -158,15 +164,15 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 ### Тести
 
 `MusicContest.Common.Tests` (xUnit):
-- CreateAsync: додає елемент, duplicate Id → InvalidOperationException;
+- CreateAsync: додає елемент (true), duplicate Id → false;
 - ReadAsync: правильний елемент, невідомий Id → KeyNotFoundException;
 - ReadAllAsync: порожній сервіс → порожня колекція;
-- UpdateAsync: оновлення, невідомий Id → KeyNotFoundException;
-- RemoveAsync: видалення, невідомий Id → KeyNotFoundException;
+- UpdateAsync: оновлення (true), невідомий Id → false;
+- RemoveAsync(element): видалення (true), невідомий Id → false;
 - пагінація: правильна сторінка, out-of-range, invalid page/amount;
 - IEnumerable/foreach по сервісу (snapshot);
-- thread-safe parallel create: 8 × 500 = 4 000, Count == 4 000;
-- SaveAsync, concurrent SaveAsync: файл валідний, елементів рівно стільки.
+- thread-safe parallel create: 8 × 500 = 4 000, Count == 4 000; Parallell.RunAsync: рівно count об'єктів у сервісі (≥1000 за умовою);
+- SaveAsync (за FilePath), concurrent SaveAsync: файл валідний, елементів рівно стільки; без FilePath → InvalidOperationException;
 
 ### Запуск
 
@@ -184,7 +190,7 @@ dotnet run --project MusicContest.Console
 ## Git / GitHub
 
 Робоча гілка ЛР1: `lab1`.
-Робоча гілка ЛР2 (Qwen 3.8, independent): `lab2-qwen38`.
+Робоча гілка ЛР2: `lab2` — містить код ЛР1 та ЛР2; розробкова гілка: `lab2-qwen38`.
 
-Готова лабораторна робота №2 подається через Pull Request
-`lab2-qwen38 -> lab1`.
+Готова лабораторна робота №2 подається через Pull Request із гілки `lab2`:
+у `master`, або у `lab1`, якщо PR із `lab1` ще не закритий.

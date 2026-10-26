@@ -21,8 +21,9 @@ import re
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
 
-FONT_REGULAR = r"C:\Windows\Fonts\ARIALUNI.ttf"
-FONT_BOLD = r"C:\Windows\Fonts\ARIALBD.ttf"
+# Unicode-шрифти з підтримкою кирилиці (українські літери і ґ є).
+FONT_REGULAR = r"C:\Windows\Fonts\arial.ttf"
+FONT_BOLD = r"C:\Windows\Fonts\arialbd.ttf"
 
 DOCS = "docs"
 
@@ -49,16 +50,14 @@ class Report:
                 return m.group(0).strip()
         return "<не знайдено>"
 
-    # ---------- Факти, дістаються реалістичним (real) шляхом з txt ----------
+    # ---------- Факти, дістаються реальним (real) шляхом з txt ----------
     @property
     def build_status(self) -> str:
         return self.find_line(self.build_lines, r"Build (succeeded|FAILED)")
 
     @property
     def build_warnings(self) -> str:
-        return self.find_line(
-            self.build_lines, r"(\d+) Warning\(s\)"
-        )
+        return self.find_line(self.build_lines, r"(\d+) Warning\(s\)")
 
     @property
     def build_errors(self) -> str:
@@ -85,6 +84,24 @@ class Report:
         return self.find_line(self.output_lines, r"Фактичний час: [\d.,]+ ms")
 
     @property
+    def min_duration(self) -> str:
+        return self.find_line(self.output_lines, r"Min \(DurationSeconds\): \d+ s")
+
+    @property
+    def max_duration(self) -> str:
+        return self.find_line(self.output_lines, r"Max \(DurationSeconds\): \d+ s")
+
+    @property
+    def avg_duration(self) -> str:
+        return self.find_line(self.output_lines, r"Average \(DurationSeconds\): [\d.,]+ s")
+
+    @property
+    def saved_elements(self) -> str:
+        return self.find_line(
+            self.output_lines, r"Елементів у файлі після конкурентного Save: \d+"
+        )
+
+    @property
     def lock_expected(self) -> str:
         return self.find_line(self.output_lines, r"Expected: \d+")
 
@@ -98,7 +115,9 @@ class Report:
 
     @property
     def semaphore_max(self) -> str:
-        return self.find_line(self.output_lines, r"ФАКТИЧНО виміряно максимум одночасних worker.?ів: \d+")
+        return self.find_line(
+            self.output_lines, r"ФАКТИЧНО виміряно максимум одночасних worker.?ів: \d+"
+        )
 
     @property
     def produced_consumed(self) -> str:
@@ -113,9 +132,10 @@ class Report:
     def test_summary_text(self) -> str:
         return "\n".join(self.test_lines[-3:])
 
-    def run_summary(self) -> str:
-        # Ті, хто був (the last) 40 рядків (lines) — демо блоків (blocks).
-        return "\n".join(self.output_lines[:45])
+    def run_output_full(self) -> str:
+        # УСІ рядки реального console run (крім рядка exit code).
+        lines = [line for line in self.output_lines if not line.startswith("Run exit code")]
+        return "\n".join(lines)
 
     @property
     def conclusion(self) -> str:
@@ -126,15 +146,16 @@ class Report:
             f"{self.build_warnings} — {self.build_errors}. "
             f"{self.test_summary}. "
             f"{self.exit_code}. "
-            f"Parallell: {self.parallel_objects}; {self.parallel_time}. "
+            f"Parallell + CRUD service: {self.parallel_objects}; {self.parallel_time}. "
+            f"LINQ: {self.min_duration} / {self.max_duration} / {self.avg_duration}. "
+            f"SaveAsync у файл: {self.saved_elements}. "
             f"Lock: {self.lock_expected} / {self.lock_actual} ({self.lock_match}). "
             f"SemaphoreSlim: {self.semaphore_max}. "
             f"Producer/Consumer: {self.produced_consumed}. "
             "Потіки (threads), асинхронність (async/await), IEnumerable, LINQ, "
-            f"Parallel та механізми синхронізації (lock, SemaphoreSlim, "
-            "AutoResetEvent) зроблено (implemented) та підтверджені "
-            "звітними файлами docs/Lab2_build.txt, docs/Lab2_test.txt та "
-            "docs/Lab2_output.txt."
+            "Parallel та примітиви синхронізації (lock, SemaphoreSlim, "
+            "AutoResetEvent) реалізовані та підтверджені звітними файлами "
+            "docs/Lab2_build.txt, docs/Lab2_test.txt та docs/Lab2_output.txt."
         )
 
     def render(self) -> bytes:
@@ -150,69 +171,64 @@ class Report:
             pdf.set_font("Uni", "", size)
             pdf.multi_cell(w=190, h=size + 2, text=text)
 
-        def mono(lines_text: str, size: int = 9) -> None:
-            # mono — блок з логами (монохромний, моношрифтовий).
+        def mono(lines_text: str, size: int = 8.5) -> None:
+            # mono — блок з логами (моноширинний rendering).
             pdf.set_font("Uni", "", size)
-            pdf.multi_cell(w=190, h=5, text=lines_text)
+            pdf.multi_cell(w=190, h=4.6, text=lines_text)
 
         theme = (
-            "Тема: Багатопотковість, асинхроність, IEnumerable, LINQ.\n"
-            "Мета: реалізувати асинхроний thread-safe generic CRUD (IEnumerable<T>, "
-            "пагінація) та провести демонстрації Parallel, lock, SemaphoreSlim, "
-            "AutoResetEvent, LINQ. Перевірка реалістичних (real) build/test/run "
-            "через dotnet (dotnet build, dotnet test, dotnet run)."
+            "Тема: Багатопотковість, асинхронність, IEnumerable, LINQ.\n"
+            "Мета: реалізувати асинхроний thread-safe generic CRUD-сервіс "
+            "(ICrudServiceAsync<T> : IEnumerable<T>, пагінація, збереження у "
+            "файл за FilePath), паралельно створити від 1000 об'єктів через "
+            "CreateNew() + клас Parallell + CRUD-сервіс, знайти LINQ-ом min/max/"
+            "average цифрових значень, зберегти колекцію у файл та продемонструвати "
+            "примітиви синхронізації. Перевірка реальними build/test/run через dotnet."
         )
         architecture = (
-            "Музичний конкурс (MusicContest) — предметна область, "
-            "збережена з ЛР1.\n"
-            "- CrudServiceAsync<T> : ICrudServiceAsync<T> : IEnumerable<T> "
-            "(where T : IEntity) — асинхроний CRUD: CreateAsync, ReadAsync, "
-            "ReadAllAsync, ReadAllAsync(page, amount), UpdateAsync, RemoveAsync, "
-            "SaveAsync.\n"
-            "  Внутрішня колекція List<T> захищена lock (_gate) — кожний "
-            "(each) критичний сектор (section) під lock. "
-            "Методи читання та ітерації (GetEnumerator) повертають SNAPSHOT "
-            "(копію), а не внутрішню колекцію (collection).\n"
-            "  SaveAsync — File.WriteAllTextAsync із статичним "
-            "(static) SemaphoreSlim (1): одночасно пише файл лише "
-            "(only) один (single) writer.\n"
-            "- Parallell — Parallel.For + ConcurrentBag<Song> + Random.Shared; "
-            "фактичний (actual) час вимірюється через Stopwatch.\n"
-            "- SynchronizationDemos: lock (8 потоків (threads) × 10 000 "
-            "зростань (increments)), SemaphoreSlim (10 worker'ів, "
-            "maxConcurrency = 3), AutoResetEvent (producer/consumer, M = 500); "
-            "лічильники (counters) — атомарні (Interlocked).\n"
-            "- Program.cs: демонстрації ЛР1 + блок ЛР2 (Parallel, LINQ, "
-            "пагінація, IEnumerable, SaveAsync, lock, SemaphoreSlim, "
-            "AutoResetEvent).\n"
-            "- MusicContest.Common.Tests (xUnit): 20 тестів, в том числі "
-            "(including) thread-safe parallel create (8 × 500 = 4000) та "
-            "concurrent SaveAsync."
+            "Музичний конкурс (MusicContest) — предметна область, збережена з ЛР1.\n"
+            "- ICrudServiceAsync<T> : IEnumerable<T> (where T : IEntity): CreateAsync/UpdateAsync/"
+            "RemoveAsync повертають Task<bool>, ReadAsync — Task<T>, ReadAllAsync та "
+            "ReadAllAsync(page, amount) — Task<IEnumerable<T>>, SaveAsync() — Task<bool>.\n"
+            "- CrudServiceAsync<T>: внутрішня колекція ConcurrentDictionary<Guid, T> — "
+            "ВБУДОВANA thread-safe колекція .NET; операції TryAdd/TryUpdate/TryRemove "
+            "атомарні під конкурентним доступом потоків без зовнішнього lock. Зчитування "
+            "та foreach працюють зі SNAPSHOT (миттєвою копією, впорядкованою за Id) — "
+            "пагінація детермінована.\n"
+            "- SaveAsync(): File.WriteAllTextAsync у файл за FilePath; статичний "
+            "SemaphoreSlim (1 мітка) — одночасно пише лише один writer.\n"
+            "- Parallell.RunAsync: Parallel.ForEachAsync створює об'єкти через "
+            "Song.CreateNew() і додає їх у CrudServiceAsync<Song>.CreateAsync; час — Stopwatch, "
+            "реальна кількість — з колекції сервісу.\n"
+            "- SynchronizationDemos: lock (8 потоків × 10 000 increments), SemaphoreSlim "
+            "(10 worker'ів, maxConcurrency = 3), AutoResetEvent (producer/consumer, M = 500); "
+            "лічильники — Interlocked.\n"
+            "- Program.cs: блок ЛР1 + блок ЛР2 (Parallel+CRUD, LINQ min/max/average, "
+            "пагінація, IEnumerable foreach, SaveAsync у файл, lock, SemaphoreSlim, AutoResetEvent).\n"
+            "- MusicContest.Common.Tests (xUnit): 22 тестів — CRUD-семантика bool, пагінація, "
+            "IEnumerable, thread-safe parallel create (8 × 500 = 4000), SaveAsync, concurrent "
+            "SaveAsync, Parallell.RunAsync."
         )
         features_md = (
-            "1. Async CRUD: CreateAsync / ReadAsync / ReadAllAsync /\n"
-            "   ReadAllAsync(page, amount) / UpdateAsync / RemoveAsync /\n"
-            "   SaveAsync.\n"
-            "2. Thread safety: List<T> синхронізований lock; snapshot для\n"
-            "   читання; JSON-запис захищений SemaphoreSlim.\n"
-            "3. IEnumerable<T>: ICrudServiceAsync<T> успадковує IEnumerable<T>;\n"
-            "   GetEnumerator працює зі snapshot.\n"
-            "4. LINQ: Min, Max, Average, Where, Select, Aggregate, OrderBy,\n"
-            "   Skip/Take (пагінація) — на тривалості (DurationSeconds) реальних\n"
-            "   Song.\n"
-            "5. Parallel: Parallel.For створює 2000 Song; ConcurrentBag<Song>;\n"
-            "   фактичний час через Stopwatch; виведено ActualCount та Elapsed.\n"
-            "6. lock: 8 потоків × 10 000 зростань; Expected/Actual/Match.\n"
-            "7. SemaphoreSlim: 10 worker'ів, maxConcurrency = 3; виміря\n"
-            "   (measured) фактичний максимум (Interlocked).\n"
-            "8. AutoResetEvent: producer/consumer; itemReady та\n"
-            "   producerFinished; producedCount / consumedCount (Interlocked);\n"
-            "   перевірка Produced == Consumed == M та Buffer empty.\n"
-            "9. SaveAsync: File.WriteAllTextAsync + статичний SemaphoreSlim (1);\n"
-            "   конкурентні (3) SaveAsync залишаються валідним (valid) JSON.\n"
-            "10. Unit tests (xUnit): 20 тестів (CRUD, пагінація, InvalidOperationException,\n"
-            "    KeyNotFoundException, ArgumentOutOfRangeException, IEnumerable,\n"
-            "    thread-safe, SaveAsync, concurrent SaveAsync)."
+            "1. Async generic CRUD: CreateAsync/ReadAsync/ReadAllAsync/\n"
+            "   ReadAllAsync(page, amount)/UpdateAsync/RemoveAsync/SaveAsync — за інтерфейсом завдання.\n"
+            "2. Thread safety: ConcurrentDictionary<Guid, T> (вбудована thread-safe колекція .NET);\n"
+            "   snapshot для читання; файловий запис захищений SemaphoreSlim.\n"
+            "3. IEnumerable<T>: foreach безпосередньо по сервісу (enumerator над snapshot).\n"
+            "4. Пагінація: Skip/Take, сторінки з 1; поза межами — порожня колекція;\n"
+            "   page/amount <= 0 — ArgumentOutOfRangeException.\n"
+            "5. CreateNew(): статичні фабрики Song/SoloSinger/VocalGroup/Performance\n"
+            "   (Random.Shared — thread-safe генератор).\n"
+            "6. Parallell: Parallel.ForEachAsync створює 2000 Song через CRUD-сервіс;\n"
+            "   Stopwatch; реальна кількість з сервісу.\n"
+            "7. LINQ на цифровій властивості DurationSeconds: Min, Max, Average,\n"
+            "   Where, Select, OrderByDescending, Aggregate, Skip/Take.\n"
+            "8. SaveAsync(): колекція збережена у JSON за FilePath; 3 конкурентні\n"
+            "   SaveAsync — файл залишається валідним (усі елементи).\n"
+            "9. Примітиви синхронізації: lock (Expected/Actual/Match), SemaphoreSlim\n"
+            "   (виміряний максимум одночасних worker'ів Interlocked), AutoResetEvent\n"
+            "   (producer/consumer на ConcurrentQueue, Produced == Consumed == M).\n"
+            "10. Unit tests (xUnit): 22 тестів."
         )
 
         pdf.add_page()
@@ -227,21 +243,22 @@ class Report:
 
         pdf.ln(2)
         heading("Виконані завдання", 13)
-        body(features_md[:1500], 11)
+        body(features_md[:2000], 11)
 
-        pdf.ln(2)
         pdf.add_page()
-        heading("Реальні результати", 13)
+        heading("Реальні результати виконання консольного застосунку", 13)
+        body(f"Run (dotnet run --project MusicContest.Console) — {self.exit_code}", 12)
+        mono(self.run_output_full())
+
+        pdf.add_page()
+        heading("Build та тести", 13)
         body("Build (dotnet build):", 12)
         mono(self.build_summary())
         pdf.ln(2)
         body("Tests (dotnet test MusicContest.Common.Tests):", 12)
         mono(self.test_summary_text())
         pdf.ln(2)
-        body(f"Run (dotnet run --project MusicContest.Console) — {self.exit_code}", 12)
-        mono(self.run_summary())
-        pdf.ln(2)
-        body("Висновок:", 12)
+        heading("Висновок:", 13)
         body(self.conclusion, 11)
 
         return bytes(pdf.output())
@@ -258,6 +275,8 @@ def main() -> None:
     print("Tests:", report.test_summary)
     print("Exit code:", report.exit_code)
     print("Parallell:", report.parallel_objects, "|", report.parallel_time)
+    print("LINQ:", report.min_duration, "/", report.max_duration, "/", report.avg_duration)
+    print("Save:", report.saved_elements)
     print("Lock:", report.lock_expected, "/", report.lock_actual, report.lock_match)
     print("Semaphore:", report.semaphore_max)
     print("Producer/Consumer:", report.produced_consumed)

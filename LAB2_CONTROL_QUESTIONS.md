@@ -33,8 +33,8 @@
 
 Кожен використовуємо там, де він потрібний:
 - async CRUD, SaveAsync — для IO (файли, API, DB).
-- Parallel / Parallel.For — для CPU-bound обчислень (в нас — створення
-  2000 об'єктів).
+- Parallel.For / Parallel.ForEachAsync — паралельні операції (в нас — створення
+  2000 об'єктів через CRUD-сервіс; ForEachAsync — бо тіло async).
 
 ## 4. async/await
 
@@ -71,7 +71,7 @@ Thread-safe — безпечна для одночасного доступу з
 - `ConcurrentStack<T>` — стек (LIFO), `Push` / `TryPop`.
 
 У нашому проєкті: `ConcurrentQueue<int>` у producer/consumer (буфер),
-`ConcurrentBag<Song>` у Parallel-демонстрації.
+`ConcurrentDictionary<Guid, T>` — внутрішня колекція CrudServiceAsync<T> (паралельні CreateAsync не гублять елементи); `lock` показується окремо в SynchronizationDemos.
 
 ## 7. lock
 
@@ -232,9 +232,9 @@ block 5): 3 конкурентні SaveAsync, елементів у файлі
 `Stop`). Код після `Parallel.For` виконується **тільки
 після** завершення ВСІХ ітерацій (join point — точка
 зшивання). Не використовувати для IO (там async).
-Використовувати для CPU-bound обчислень (в нас —
-створення 2000 Song через `Random.Shared` і
-`ConcurrentBag<Song>`). Результат: `ActualCount` (з
+Для async-тіла використовують `Parallel.ForEachAsync`. У нашій демонстрації (в нас —
+паралельно створюємо 2000 Song через `Song.CreateNew()` (`Random.Shared`) і
+`await service.CreateAsync(song)` — CRUD-сервіс thread-safe сам. Результат: `ActualCount` (з
 колекції, а не з коментаря), `Elapsed` (з Stopwatch) —
 справжні (real) значення.
 
@@ -253,3 +253,22 @@ block 5): 3 конкурентні SaveAsync, елементів у файлі
   `ArgumentOutOfRangeException`;
 - сторінка поза межами колекції → **порожня
  колекція** (не помилка).
+
+## 21. ICrudServiceAsync<T>: призначення та generic T
+
+`ICrudServiceAsync<T> : IEnumerable<T>` — контракт асинхронного CRUD-сервісу:
+`CreateAsync`, `ReadAsync(Guid)`, `ReadAllAsync()`, `ReadAllAsync(page, amount)`,
+`UpdateAsync(T)`, `RemoveAsync(T)` (усі повертають `Task<bool>` або `Task<T>`)
+та `SaveAsync()` — асинхронне збереження колекції у файл за `FilePath`.
+Призначення: єдиний уніфікований доступ до сховища сутностей (Create/Read/
+Update/Delete + пагінація + persist), повністю асинхронний і поточно-безпечний.
+
+Generic `T` доцільний, бо CRUD-логіка (додавання за Id, пошук за Id, заміна,
+видалення, серіалізація) НЕ залежить від конкретної моделі: один клас
+`CrudServiceAsync<T>` (`where T : IEntity`) обслуговує Song, SoloSinger,
+VocalGroup, Performance — без дублювання коду для кожного типу. Обмеження
+`IEntity` дає сервісу гарантію, що в будь-якого T є унікальний `Guid Id`.
+
+Семантика bool: `CreateAsync` повертає false при duplicate Id;
+`UpdateAsync`/`RemoveAsync` — false, якщо елемента з таким Id немає;
+`ReadAsync` кидає `KeyNotFoundException`; `SaveAsync()` — true після запису.

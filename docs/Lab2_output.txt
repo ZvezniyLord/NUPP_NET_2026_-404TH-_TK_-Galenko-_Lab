@@ -24,47 +24,47 @@
 
 6. Дані після Save та Load:
 - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Astra Nova, Україна, 21 років, голос: сопрано, діапазон: A3-E6
-JSON-файл: N:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\participants.json
+JSON-файл: O:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\participants.json
 
 =========================================
 ЛАБОРАТОРНА РОБОТА №2
 =========================================
 
-1. PARALLEL CREATION (Parallel + Stopwatch):
+1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.ForEachAsync):
 Об'єктів створено: 2000 із 2000 планових
-Фактичний час: 8,992 ms
+Фактичний час: 10,793 ms
 
-2. LINQ (на створених Parallel-об'єктах):
+2. LINQ (min/max/average на створених об'єктах):
    Count:       2000
    Min (DurationSeconds): 120 s
    Max (DurationSeconds): 359 s
-   Average (DurationSeconds): 240,52 s
-   Where (Duration > Average): 1007
-   Select/OrderBy (найдовша пісня за Time): Song-1985
-   Aggregate (сума тривалостей, с): 481040
+   Average (DurationSeconds): 239,74 s
+   Where (Duration > Average): 1000
+   Select/OrderBy (найдовша пісня): Song-70db35f66c9f4186a88abc3743f95c32
+   Aggregate (сума тривалостей, с): 479488
    OrderBy/Top-3 (найдовші пісні):
-      - Song-1985: 359 s, G major
-      - Song-268: 359 s, C major
-      - Song-199: 359 s, D minor
+      - Song-70db35f66c9f4186a88abc3743f95c32: 359 s, F major
+      - Song-2ff79c8141d24e88b0d617de6f642be3: 359 s, F major
+      - Song-a4dbab383d6c42768bcb2e31d0b78aff: 359 s, A minor
 
-3. ASYNC GENERIC CRUD + ПАГІНАЦІЯ (ReadAllAsync(page, amount)):
-   Елементів у сервісі: 5
-   ReadAllAsync(page: 2, amount: 2): Storm, Calm
-   ReadAllAsync(page: 99, amount: 2): елементів 0 (порожня сторінка)
+3. ПАГІНАЦІЯ (ReadAllAsync(page, amount)):
+   Page 1 (5): Song-2e82a42fd957431e8de7053fd883ec77, Song-3ba8303836fa40198e81b0f31d85ca2c, Song-8bee0fb2a89b4e7b9b5e0aa2ede1b240, Song-8f643b3881904820b36e33605204db6e, Song-434fcc875537446794577097b111a213
+   Page 2 (5): Song-5355ed561cdf4b46a5f6ff7d0c3e7849, Song-784c04f38e90458db7c52dbf6ddf35b5, Song-a77ec73e3ede4da4a671518cca9efc52, Song-9ef457a23c2243c6a8c4f357a53b2e16, Song-0396fb94e1214ec9b0c644e90083915d
+   Page 999 (5): елементів 0 (порожня сторінка)
 
-4. IENUMERABLE: foreach безпосередньо по сервісу (snapshot):
-   - Morning (відвідано: 1)
-   - Sunset (відвідано: 2)
-   - Storm (відвідано: 3)
-   - Calm (відвідано: 4)
-   - Night (відвідано: 5)
-   Загальна кількість відвіданих: 5
+4. IENUMERABLE: foreach безпосередньо по сервісу (перші 5 + сума):
+   - Song-2e82a42fd957431e8de7053fd883ec77 (332 s)
+   - Song-3ba8303836fa40198e81b0f31d85ca2c (243 s)
+   - Song-8bee0fb2a89b4e7b9b5e0aa2ede1b240 (167 s)
+   - Song-8f643b3881904820b36e33605204db6e (166 s)
+   - Song-434fcc875537446794577097b111a213 (297 s)
+   Загальна кількість відвіданих: 2000
 
-5. SAVEASYNC (збереження в JSON):
+5. SAVEASYNC (збереження колекції у JSON за FilePath):
    Конкурентне збереження (3 одночасні SaveAsync) завершено.
    Валідний (valid) JSON: True
-   Елементів у файлі після конкурентного Save: 5
-   JSON-файл: N:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\lab2_songs.json
+   Елементів у файлі після конкурентного Save: 2000
+   Файл: O:\NUPP-NET\MusicContest.Console\bin\Debug\net8.0\Data\lab2_songs.json
 
 6. LOCK: 8 потоків × 10 000 increments (критична секція):
 Expected: 80000
@@ -80,4 +80,5 @@ Produced:  500
 Consumed:  500
 Produced == Consumed == M: True
 Buffer empty: True
+
 Run exit code: 0
