@@ -19,7 +19,7 @@ public static class SynchronizationDemos
     // Оператор ++ складається з трьох кроків: read-modify-write
     // (прочитати — змінити — записати). Без синхронізації два потоки
     // можуть одночасно прочитати одне й те саме значення, і одне
-    // зростання "губиться" (race condition — гоніжка потоків).
+    // зростання "губиться" (race condition — стан гонитви потоків).
     // lock (gate) — взаємне виключення (mutual exclusion):
     // в критичній секції одночасно ОДИН потік, інші чекають.
     public static async Task<LockDemoResult> RunLockDemoAsync(
@@ -104,7 +104,7 @@ public static class SynchronizationDemos
 
         async Task WorkerAsync(int index)
         {
-            // Зайняти одну ліцензію; якщо немає — асинхронно чекати.
+            // Отримати один дозвіл; якщо немає — асинхронно чекати.
             await semaphore.WaitAsync();
 
             try
