@@ -239,7 +239,7 @@ def make_pdf(conn, pics):
                 label(chunk,37,y,7);y-=13
         y-=18
     label("Зображення таблиць отримано із SELECT/PRAGMA до файлу SQLite.",33,72,8)
-    label("Скріншот окремого GUI-клієнта БД можна додати при захисті.",33,55,8)
+    label("Знімки екрана DB Browser for SQLite наведено на наступних сторінках.",33,55,8)
     footer(6)
     mongo_png = DOCS / "Lab3_MongoDB.png"
     if mongo_png.exists():
@@ -257,7 +257,7 @@ def make_pdf(conn, pics):
     available_gui = [p for p in gui_pics if p.exists()]
     if available_gui:
         c.showPage()
-        label("7. Скриншоти DB Browser for SQLite (реальний GUI)",33,ph-55,12,True)
+        label("7. Знімки екрана DB Browser for SQLite",33,ph-55,12,True)
         y = ph-83
         for path in available_gui[:2]:
             label(path.stem.replace("Lab3_GUI_", ""),33,y,9,True)
