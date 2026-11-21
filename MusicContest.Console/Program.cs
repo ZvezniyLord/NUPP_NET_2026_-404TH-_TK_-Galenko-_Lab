@@ -10,7 +10,7 @@ Console.OutputEncoding = Encoding.UTF8;
 Console.WriteLine("=== MUSIC CONTEST CRUD DEMO ===");
 Console.WriteLine();
 
-// ЛАБОРАТОРНА РОБОТА №1 — демонстрація CRUD, подій,
+// Лабораторна робота №1: демонстрація CRUD, подій,
 // Save/Load (базовий варіант проєкту).
 // Створюємо generic (універсальний) CRUD-сервіс.
 // T тут дорівнює ContestParticipant, тому цей сервіс зберігає
@@ -30,7 +30,7 @@ SoloSinger singer = new(
     Id = Guid.Parse("00000000-0000-0000-0000-000000000001")
 };
 
-// Другий тип нащадка — VocalGroup.
+// Другий похідний тип: VocalGroup.
 VocalGroup group = new(
     "Дніпровські голоси",
     "Україна",
@@ -59,7 +59,7 @@ Console.WriteLine($"Коротко: {found.ToShortInfo()}");
 // UPDATE = оновлення.
 Console.WriteLine();
 Console.WriteLine("3. Після Update:");
-singer.StageName = "Олена Ковальчук — фіналістка";
+singer.StageName = "Олена Ковальчук (фіналістка)";
 participantService.Update(singer);
 PrintParticipants(participantService.ReadAll());
 
@@ -94,7 +94,7 @@ performance.SetScore(92.0);
 performance.Complete();
 Console.WriteLine($"Виступ завершено: {performance.IsCompleted}");
 
-// SAVE / LOAD — додаткове завдання ЛР1.
+// SAVE / LOAD: додаткове завдання ЛР1.
 string dataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
 string filePath = Path.Combine(dataDirectory, "participants.json");
 
@@ -136,7 +136,7 @@ if (File.Exists(lab2FilePath))
     File.Delete(lab2FilePath);
 }
 
-// Сервіс одразу знає свій FilePath — саме туди збереже колекцію (SaveAsync()).
+// FilePath задає шлях, за яким сервіс збереже колекцію методом SaveAsync().
 CrudServiceAsync<Song> songService = new(lab2FilePath);
 
 ParallelCreateResult parallelResult = await Parallell.RunAsync(
@@ -154,27 +154,27 @@ Console.WriteLine("2. LINQ (min/max/average на створених об'єкт�
 // Зчитуємо колекцію з самого сервісу (snapshot), а не з окремого списку.
 List<Song> songs = (await songService.ReadAllAsync()).ToList();
 
-// Count (кількість) — скільки елементів у сервісі.
+// Count показує кількість елементів у сервісі.
 int total = songs.Count();
 Console.WriteLine($"   Count:       {total}");
 
-// Min (мінімум) — мінімальна тривалість пісні.
+// Min знаходить найменшу тривалість пісні.
 int minDuration = songs.Min(x => x.DurationSeconds);
 Console.WriteLine($"   Min (DurationSeconds): {minDuration} s");
 
-// Max (максимум) — максимальна тривалість пісні.
+// Max знаходить найбільшу тривалість пісні.
 int maxDuration = songs.Max(x => x.DurationSeconds);
 Console.WriteLine($"   Max (DurationSeconds): {maxDuration} s");
 
-// Average (середнє) — середня тривалість пісні.
+// Average обчислює середню тривалість пісні.
 double avgDuration = songs.Average(x => x.DurationSeconds);
 Console.WriteLine($"   Average (DurationSeconds): {avgDuration:F2} s");
 
-// Where (фільтр) — пісні довші за середню тривалість.
+// Where залишає пісні, тривалість яких перевищує середнє значення.
 int longerThanAverage = songs.Where(x => x.DurationSeconds > avgDuration).Count();
 Console.WriteLine($"   Where (Duration > Average): {longerThanAverage}");
 
-// Select + OrderByDescending — найдовша пісня: сортуємо за спаданням,
+// Select разом з OrderByDescending дає змогу знайти найдовшу пісню.
 // беремо перший Title.
 string? longestTitle = songs
     .OrderByDescending(x => x.DurationSeconds)
@@ -182,11 +182,11 @@ string? longestTitle = songs
     .First();
 Console.WriteLine($"   Select/OrderBy (найдовша пісня): {longestTitle}");
 
-// Aggregate (агрегація) — сумарна тривалість усіх пісень.
+// Aggregate обчислює сумарну тривалість усіх пісень.
 double sumOfDurations = songs.Aggregate(0.0, (acc, x) => acc + x.DurationSeconds);
 Console.WriteLine($"   Aggregate (сума тривалостей, с): {sumOfDurations:0}");
 
-// OrderBy/Top-3 — три найдовші пісні.
+// OrderByDescending і Take(3) вибирають три найдовші пісні.
 List<Song> topThree = songs
     .OrderByDescending(x => x.DurationSeconds)
     .Take(3)
@@ -212,14 +212,14 @@ Console.WriteLine($"   Page 1 ({pageSize}): {string.Join(", ", pageOne.Select(s 
 IEnumerable<Song> pageTwo = await songService.ReadAllAsync(page: 2, amount: pageSize);
 Console.WriteLine($"   Page 2 ({pageSize}): {string.Join(", ", pageTwo.Select(s => s.Title))}");
 
-// Сторінка за межами колекції — порожня колекція (не помилка).
+// Якщо сторінка виходить за межі колекції, повертається порожня послідовність.
 IEnumerable<Song> pageBeyond = await songService.ReadAllAsync(page: 999, amount: pageSize);
 Console.WriteLine($"   Page 999 ({pageSize}): елементів {pageBeyond.Count()} (порожня сторінка)");
 
 // ------------------------------------------------------------
 // 4. IENUMERABLE<T>: foreach безпосередньо по сервісу (snapshot).
-//    Enumerator ітерує миттєву копію, а не внутрішню колекцію, тому
-//    одночасні зміни сервісу не ламають цикл.
+//    Enumerator перебирає snapshot, а не сам словник сервісу.
+//    Зміни словника не порушують перебір, але самі об'єкти не клонуються.
 // ------------------------------------------------------------
 Console.WriteLine();
 Console.WriteLine("4. IENUMERABLE: foreach безпосередньо по сервісу (перші 5 + сума):");
@@ -282,7 +282,7 @@ await SynchronizationDemos.RunSemaphoreDemoAsync(
     console: Console.Out);
 
 // ------------------------------------------------------------
-// 8. AUTORESETEVENT — справжня producer/consumer (M = 500)
+// 8. AUTORESETEVENT: демонстрація producer/consumer (M = 500)
 // ------------------------------------------------------------
 Console.WriteLine();
 Console.WriteLine("8. AUTORESETEVENT (producer/consumer), M = 500:");
