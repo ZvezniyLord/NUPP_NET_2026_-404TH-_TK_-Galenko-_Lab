@@ -19,7 +19,7 @@ flowchart LR
     D --> E["LINQ<br/>Min / Max / Average"]
     B --> F["SaveAsync"]
     F --> G[("JSON")]
-    H["lock / SemaphoreSlim<br/>AutoResetEvent"] --> B
+    H["Окремі демонстрації синхронізації"] --> I["lock / SemaphoreSlim / AutoResetEvent"]
 ```
 
 ## Перевірені результати
