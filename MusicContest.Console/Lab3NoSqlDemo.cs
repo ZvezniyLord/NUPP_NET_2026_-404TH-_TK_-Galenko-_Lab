@@ -28,7 +28,7 @@ public static class Lab3NoSqlDemo
         var songs = new RepositoryCrudServiceAsync<SongDocument>(
             new MongoRepository<SongDocument>(collection));
 
-        // Всі збережені зразки репертуару — українські.
+        // Усі збережені зразки репертуару належать до української музики.
         // Перезаписуються тільки записи нашого демонстраційного набору (id 1..8).
         var current = (await songs.ReadAllAsync()).ToList();
         for (int i = 0; i < UkrainianMusicData.Songs.Length; i++)
@@ -78,7 +78,7 @@ public static class Lab3NoSqlDemo
         Console.WriteLine($"DELETE: {await songs.RemoveAsync(read)}");
 
         foreach (var item in (await songs.ReadAllAsync()).OrderBy(x => x.DatabaseId))
-            Console.WriteLine($"MongoDB документ: {item.DatabaseId}, {item.Title} — " +
+            Console.WriteLine($"MongoDB документ: {item.DatabaseId}, {item.Title}; виконавець: " +
                 $"{item.OriginalArtist}; голосів={item.Stats.ListenerVotes}; " +
                 $"теги={string.Join("/", item.Stats.Tags)}");
         Console.WriteLine($"Documents count: {(await songs.ReadAllAsync()).Count()}");
