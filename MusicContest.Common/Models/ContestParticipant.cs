@@ -66,7 +66,21 @@ public abstract class ContestParticipant : IEntity
     // virtual означає, що клас-нащадок може перевизначити цей метод через override.
     public virtual string GetDescription()
     {
-        return $"{StageName}, {Country}, {Age} років";
+        return $"{StageName}, {Country}, {Age} {GetAgeUnit(Age)}";
+    }
+
+    private static string GetAgeUnit(int age)
+    {
+        int lastTwoDigits = age % 100;
+        if (lastTwoDigits is >= 11 and <= 14)
+            return "років";
+
+        return age % 10 switch
+        {
+            1 => "рік",
+            2 or 3 or 4 => "роки",
+            _ => "років"
+        };
     }
 
     // Статичний метод належить класу, а не конкретному об'єкту.
