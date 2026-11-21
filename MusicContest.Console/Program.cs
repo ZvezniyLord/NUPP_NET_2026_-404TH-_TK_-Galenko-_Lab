@@ -17,7 +17,7 @@ CrudService<ContestParticipant> participantService = new();
 // Створюємо об'єкт SoloSinger.
 // singer = співак / виконавець.
 SoloSinger singer = new(
-    "Astra",       // stageName = сценічне ім'я
+    "Олена Ковальчук",       // stageName = сценічне ім'я
     "Україна",     // country = країна
     21,            // age = вік
     "сопрано",     // voiceType = тип голосу
@@ -34,11 +34,11 @@ SoloSinger singer = new(
 // Створюємо другий тип нащадка — VocalGroup.
 // group = гурт.
 VocalGroup group = new(
-    "Northern Lights",
+    "Дніпровські голоси",
     "Україна",
     24,
     4,             // memberCount = кількість учасників
-    "pop / soul",  // genre = жанр
+    "народний поп",  // genre = жанр
     true)          // hasBackingVocals = є бек-вокал
 {
     // Постійний демонстраційний GUID другого об'єкта.
@@ -67,7 +67,7 @@ Console.WriteLine($"Коротко: {found.ToShortInfo()}");
 // Спочатку змінюємо властивість об'єкта, потім передаємо його сервісу.
 Console.WriteLine();
 Console.WriteLine("3. Після Update:");
-singer.StageName = "Astra Nova";
+singer.StageName = "Олена Ковальчук — фіналістка";
 participantService.Update(singer);
 PrintParticipants(participantService.ReadAll());
 
@@ -85,7 +85,7 @@ Console.WriteLine($"Створено об'єктів-нащадків ContestPar
 
 // Статичний фабричний метод FromMinutes створює Song,
 // приймаючи тривалість у хвилинах.
-Song song = Song.FromMinutes("Gravity", "Sara Bareilles", 3.9, "F major");
+Song song = Song.FromMinutes("Червона рута", "Володимир Івасюк", 3.9, "фа мажор");
 Console.WriteLine($"Пісня: {song.Title}; тривалість: {song.GetFormattedDuration()}");
 
 // Створюємо об'єкт виступу.
