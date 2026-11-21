@@ -56,18 +56,18 @@ MusicContest · Лабораторна робота №2                        
    MusicContest.Common -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/
     NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common/bin/Release/net8.0/
     MusicContest.Common.dll
-   MusicContest.Console -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/
-    NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Release/net8.0/
-    MusicContest.Console.dll
    MusicContest.Common.Tests -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/
     NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common.Tests/bin/Release/net8.0/
     MusicContest.Common.Tests.dll
+   MusicContest.Console -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/
+    NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Release/net8.0/
+    MusicContest.Console.dll
 
   Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-  Time Elapsed 00:00:03.93
+  Time Elapsed 00:00:05.86
 
 
  Результати автоматизованих тестів
@@ -76,7 +76,7 @@ MusicContest · Лабораторна робота №2                        
      Common.Tests.dll (.NETCoreApp,Version=v8.0)
   A total of 1 test files matched the specified pattern.
 
-  Passed! - Failed:  0, Passed: 22, Skipped:   0, Total:   22, Duration: 272 ms
+  Passed! - Failed:  0, Passed: 22, Skipped:   0, Total:   22, Duration: 293 ms
     - MusicContest.Common.Tests.dll (net8.0)
 
 
@@ -128,32 +128,32 @@ MusicContest · Лабораторна робота №2                        
 
   1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.For + Task.WhenAll):
   Об'єктів створено: 2000 із 2000 планових
-  Фактичний час: 19.731 ms
+  Фактичний час: 21.111 ms
 
   2. LINQ (min/max/average на створених об'єктах):
     Count:     2000
     Min (DurationSeconds): 120 s
     Max (DurationSeconds): 359 s
-    Average (DurationSeconds): 241.59 s
-    Where (Duration > Average): 1017
-    Select/OrderBy (найдовша пісня): Щедрик
-    Aggregate (сума тривалостей, с): 483170
+    Average (DurationSeconds): 240.79 s
+    Where (Duration > Average): 1014
+    Select/OrderBy (найдовша пісня): Плакала
+    Aggregate (сума тривалостей, с): 481575
     OrderBy/Top-3 (найдовші пісні):
+      - Плакала: 359 s, сі мінор
       - Щедрик: 359 s, мі мінор
-      - Думи: 359 s, ре мінор
-      - Несе Галя воду: 359 s, соль мажор
+      - Щедрик: 359 s, мі мінор
 
   3. ПАГІНАЦІЯ (ReadAllAsync(page, amount)):
-    Page 1 (5): Плакала, Несе Галя воду, Плакала, Плакала, Щедрик
-    Page 2 (5): Тримай, Несе Галя воду, Україна, Червона рута, Несе Галя воду
+    Page 1 (5): Несе Галя воду, Несе Галя воду, Несе Галя воду, Думи, Плакала
+    Page 2 (5): Щедрик, Обійми, Щедрик, Україна, Несе Галя воду
     Page 999 (5): елементів 0 (порожня сторінка)
 
   4. IENUMERABLE: foreach безпосередньо по сервісу (перші 5 + сума):
-    - Плакала (179 s)
-    - Несе Галя воду (181 s)
-    - Плакала (246 s)
-    - Плакала (176 s)
-    - Щедрик (162 s)
+    - Несе Галя воду (212 s)
+    - Несе Галя воду (345 s)
+    - Несе Галя воду (164 s)
+    - Думи (144 s)
+    - Плакала (174 s)
     Загальна кількість відвіданих: 2000
 
   5. SAVEASYNC (збереження колекції у JSON за FilePath):
@@ -173,8 +173,8 @@ MusicContest · Лабораторна робота №2                        
   Match: True
 
   7. SEMAPHORESLIM: 10 worker'ів, maxConcurrency = 3:
-  Worker'ів: 10; зазначено maxConcurrency = 3
-  ФАКТИЧНО виміряно максимум одночасних worker'ів: 3
+  Завдань: 10; задано maxConcurrency = 3
+  Виміряний максимум одночасних завдань: 3
 
   8. AUTORESETEVENT (producer/consumer), M = 500:
   Produced: 500
