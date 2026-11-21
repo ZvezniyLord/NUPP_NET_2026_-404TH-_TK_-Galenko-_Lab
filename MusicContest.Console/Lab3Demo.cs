@@ -7,7 +7,7 @@ using MusicContest.Infrastructure.Services;
 namespace MusicContest.ConsoleApp;
 
 // ЛР3 використовує справжню реляційну SQLite, а не список у пам'яті.
-// Всі навчальні конкурсанти, гурти та пісні — українські.
+// Усі навчальні учасники, гурти й пісні належать до української тематики.
 public static class Lab3Demo
 {
     public static async Task RunAsync()
@@ -44,7 +44,7 @@ public static class Lab3Demo
 
         Console.WriteLine("Перша сторінка, по 3 українські пісні:");
         foreach (var song in await songs.ReadAllAsync(1, 3))
-            Console.WriteLine($"  Пісня #{song.DatabaseId}: {song.Title} — {song.OriginalArtist}");
+            Console.WriteLine($"  Пісня #{song.DatabaseId}: {song.Title}; виконавець: {song.OriginalArtist}");
 
         var people = await db.Participants.AsNoTracking()
             .Include(x => x.Profile)
