@@ -79,8 +79,8 @@ public static class SynchronizationDemos
     // ============================================================
     // 2) SEMAPHORESLIM-демонстрація: 10 worker'ів, maxConcurrency = 3.
     // ============================================================
-    // SemaphoreSlim(max) — семафор-лічильник з max "ліцензіями".
-    // WaitAsync "забирає" ліцензію, Release — повертає її.
+    // SemaphoreSlim(max) — семафор-лічильник з max "дозволами".
+    // WaitAsync "забирає" дозвіл, Release — повертає її.
     // Не більше max потоків одночасно перебуває в ділянці,
     // обмеженій WaitAsync/Release. Очікування — асинхронне
     // (await, без блокування потоку).
@@ -92,7 +92,7 @@ public static class SynchronizationDemos
         int maxConcurrency,
         TextWriter? console = null)
     {
-        // Семафор з maxConcurrency ліцензіями.
+        // Семафор з maxConcurrency дозволами.
         SemaphoreSlim semaphore = new(maxConcurrency);
 
         // Лічильник поточно-активних worker'ів.
@@ -136,7 +136,7 @@ public static class SynchronizationDemos
             finally
             {
                 // Worker завершує: зменшити активний лічильник
-                // і повернути ліцензію семафору.
+                // і повернути дозвіл семафору.
                 Interlocked.Decrement(ref activeWorkers);
                 semaphore.Release();
             }
