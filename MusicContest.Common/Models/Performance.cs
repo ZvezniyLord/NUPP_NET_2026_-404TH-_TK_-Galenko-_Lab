@@ -5,7 +5,7 @@ namespace MusicContest.Common.Models;
 // Performance = виступ учасника.
 public class Performance : IEntity
 {
-    // Делегат — тип, який описує сигнатуру методу.
+    // Делегат визначає сигнатуру методу, який можна викликати через це посилання.
     // У нашому випадку метод-обробник повинен отримати:
     // сам виступ, стару оцінку та нову оцінку.
     public delegate void ScoreChangedHandler(Performance performance, double oldScore, double newScore);
@@ -66,10 +66,10 @@ public class Performance : IEntity
     }
 
     // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
-    // Фабрика — метод, який повертає готовий об'єкт із рандомними,
+    // Фабричний метод повертає готовий об'єкт із випадково вибраними,
     // але реалістичними значеннями.
-    // Random.Shared — спільна thread-safe копія Random: метод можна
-    // викликати з безлічі потоків одночасно.
+    // Random.Shared є спільним потокобезпечним генератором випадкових чисел. Його можна
+    // викликати з кількох потоків одночасно.
     public static Performance CreateNew()
     {
         var singers = UkrainianMusicData.Singers;
