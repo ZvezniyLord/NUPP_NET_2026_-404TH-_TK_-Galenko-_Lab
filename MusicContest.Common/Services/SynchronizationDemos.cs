@@ -50,7 +50,7 @@ public static class SynchronizationDemos
         await Task.WhenAll(workers);
 
         int expected = threadCount * incrementsPerThread;
-        int actual = counter; // ФАКТИЧНЕ значення лічильника.
+        int actual = counter; // фактичне значення лічильника.
 
         if (console is not null)
         {
@@ -126,8 +126,8 @@ public static class SynchronizationDemos
 
         if (console is not null)
         {
-            console.WriteLine($"Worker'ів: {workerCount}; зазначено maxConcurrency = {maxConcurrency}");
-            console.WriteLine($"ФАКТИЧНО виміряно максимум одночасних worker'ів: {measuredMax}");
+            console.WriteLine($"Завдань: {workerCount}; задано maxConcurrency = {maxConcurrency}");
+            console.WriteLine($"Виміряний максимум одночасних завдань: {measuredMax}");
         }
 
         return new SemaphoreDemoResult(maxConcurrency, measuredMax);
