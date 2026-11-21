@@ -26,7 +26,7 @@ def read_required(name: str) -> list[str]:
     return lines
 
 def render_pdf(number: int, goal: str, explanations: list[str], output: list[str],
-               build: list[str], tests: list[str]) -> Path:
+               build: list[str], tests: list[str] | None) -> Path:
     out = DOCS / f"Lab{number}_Report.pdf"
     pdfmetrics.registerFont(TTFont("DejaVu", str(FONT)))
     pdfmetrics.registerFont(TTFont("DejaVuBold", str(FONT_B)))
@@ -69,10 +69,16 @@ def render_pdf(number: int, goal: str, explanations: list[str], output: list[str
         line("• " + item, 9.2, indent=8)
     top -= 16
 
-    line("Фактичні результати збірки та тестів", 12, True)
-    for source, rows in (("dotnet build", build[-7:]), ("dotnet test", tests[-7:])):
-        line(source, 10, True, 8)
-        for item in rows:
+    line("Результати збірки", 12, True)
+    line("dotnet build", 10, True, 8)
+    for item in build[-7:]:
+        line(item, 8, indent=16)
+    top -= 8
+
+    if tests is not None:
+        line("Результати автоматизованих тестів", 12, True)
+        line("dotnet test", 10, True, 8)
+        for item in tests[-7:]:
             line(item, 8, indent=16)
         top -= 8
 
@@ -89,8 +95,14 @@ def render_pdf(number: int, goal: str, explanations: list[str], output: list[str
     return out
 
 def main():
-    build = read_required("Lab3_build.txt")
-    tests = read_required("Lab3_test.txt")
+    build_logs = {
+        1: read_required("Lab1_build.txt"),
+        2: read_required("Lab2_build.txt"),
+    }
+    test_logs = {
+        1: None,
+        2: read_required("Lab2_test.txt"),
+    }
     for number, goal, features in (
         (1, "моделювання класів C#, ООП, generic CRUD, делегатів, подій та JSON",
          ["Абстрактний клас ContestParticipant і наслідування SoloSinger/VocalGroup.",
@@ -113,7 +125,7 @@ def main():
             if header < 0:
                 raise ValueError("У реальному виході немає блоку ЛР2")
             lines = lines[max(0, header-1):]
-        render_pdf(number, goal, features, lines, build, tests)
+        render_pdf(number, goal, features, lines, build_logs[number], test_logs[number])
 
 if __name__ == "__main__":
     main()
