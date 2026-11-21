@@ -89,26 +89,29 @@ def png_erd(conn):
         "SoloSingers": (60, 405, 520, 615),
         "VocalGroups": (60, 715, 520, 920),
         "ParticipantProfiles": (1200, 405, 1690, 615),
-        "Performances": (595, 405, 1140, 615),
-        "Songs": (1200, 715, 1690, 925),
+        "Performances": (595, 405, 1140, 655),
+        "Songs": (1200, 715, 1690, 965),
         "ParticipantSongs": (595, 715, 1140, 960),
     }
     # Зв'язки намальовано за FK з PRAGMA; кардинальності відповідають PK/unique index.
+    # Ортогональні маршрути FK: жодна лінія не перетинає вміст інших таблиць.
     edges = [
-        ((790, 325), (300, 405), "TPT 1:1"),
-        ((930, 325), (300, 715), "TPT 1:1"),
-        ((1140, 225), (1450, 405), "1:1"),
-        ((850, 325), (850, 405), "1:N"),
-        ((1140, 535), (1450, 715), "N:1"),
-        ((850, 325), (850, 715), "1:N"),
-        ((1140, 810), (1200, 810), "N:1"),
+        ([(595, 240), (558, 240), (558, 444), (520, 444)], "TPT 1:1", (548, 370)),
+        ([(595, 285), (538, 285), (538, 812), (520, 812)], "TPT 1:1", (527, 677)),
+        ([(1140, 218), (1172, 218), (1172, 450), (1200, 450)], "1:1", (1170, 370)),
+        ([(852, 325), (852, 405)], "1:N", (861, 361)),
+        ([(595, 315), (574, 315), (574, 995), (815, 995), (815, 960)], "1:N", (583, 671)),
+        ([(1140, 551), (1177, 551), (1177, 827), (1200, 827)], "N:1", (1177, 690)),
+        ([(1140, 892), (1200, 892)], "N:1", (1176, 865)),
     ]
-    for (x1,y1),(x2,y2),label in edges:
-        d.line((x1,y1,x2,y2), fill="#7792aa", width=5)
-        d.ellipse((x2-6,y2-6,x2+6,y2+6), fill="#406c94")
-        mx,my = (x1+x2)//2,(y1+y2)//2
-        d.rectangle((mx-42,my-18,mx+52,my+17),fill="#ffffff")
-        d.text((mx-35,my-13),label,font=font(17,True),fill="#244864")
+    for pts, label, (mx, my) in edges:
+        d.line(pts, fill="#7792aa", width=4)
+        x2, y2 = pts[-1]
+        d.ellipse((x2-6, y2-6, x2+6, y2+6), fill="#406c94")
+        label_width = int(d.textlength(label, font=font(15, True)))
+        d.rounded_rectangle((mx-label_width//2-8, my-10, mx+label_width//2+8, my+13),
+                            radius=5, fill="#ffffff")
+        d.text((mx-label_width//2, my-8), label, font=font(15, True), fill="#244864")
     for table,(x1,y1,x2,y2) in boxes.items():
         d.rounded_rectangle((x1,y1,x2,y2),radius=15,fill="white",outline="#6182a1",width=3)
         d.rounded_rectangle((x1,y1,x2,y1+55),radius=14,fill="#234865")
