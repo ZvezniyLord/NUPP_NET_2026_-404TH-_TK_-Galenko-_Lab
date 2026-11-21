@@ -1,3 +1,5 @@
+using MusicContest.Common.Data;
+
 namespace MusicContest.Common.Models;
 
 // SoloSinger = сольний співак / сольний виконавець.
@@ -56,16 +58,9 @@ public class SoloSinger : ContestParticipant
     // (parallel) створення сотень і тисяч об'єктів у потоках.
     public static SoloSinger CreateNew()
     {
-        // Random.Shared — статичний instance (копія) Random,
-        // безпечний для потоку: його можуть одночасно читати різні потоки.
-        Random random = Random.Shared;
-
-        return new SoloSinger(
-            $"Singer-{Guid.NewGuid():N}",       // унікальне сценічне ім'я
-            $"Country-{random.Next(1, 31)}",     // країна: від 1 до 30
-            random.Next(16, 40),                 // age: від 16 до 40 років
-            $"Voice-{random.Next(1, 6)}",        // voiceType: варіант голосу
-            $"R{random.Next(3, 8)}",             // vocalRange: діапазон
-            random.Next(0, 15));                 // yearsOfExperience: 0-14 років
+        var seeds = UkrainianMusicData.Singers;
+        var selected = seeds[Random.Shared.Next(seeds.Length)];
+        return new SoloSinger(selected.StageName, "Україна", selected.Age,
+            selected.VoiceType, selected.VocalRange, selected.YearsOfExperience);
     }
 }
