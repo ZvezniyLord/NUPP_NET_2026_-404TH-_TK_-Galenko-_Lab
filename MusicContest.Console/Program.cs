@@ -7,6 +7,13 @@ using MusicContest.Common.Services;
 // UTF-8 потрібен, щоб українські символи коректно відображалися в консолі.
 Console.OutputEncoding = Encoding.UTF8;
 
+// Для CI: тільки EF Core демонстрація, без повторення ЛР1 і ЛР2.
+if (args.Contains("--lab3-only"))
+{
+    await MusicContest.ConsoleApp.Lab3Demo.RunAsync();
+    return;
+}
+
 Console.WriteLine("=== MUSIC CONTEST CRUD DEMO ===");
 Console.WriteLine();
 
@@ -298,3 +305,6 @@ static void PrintParticipants(IEnumerable<ContestParticipant> participants)
         Console.WriteLine($"- {participant.Id} | {participant.GetDescription()}");
     }
 }
+
+// ЛР3: робота з реляційною SQLite через EF Core + Repository.
+await MusicContest.ConsoleApp.Lab3Demo.RunAsync();
