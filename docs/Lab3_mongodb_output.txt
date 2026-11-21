@@ -1,0 +1,12 @@
+
+=========================================
+ЛР3 ДОДАТКОВЕ ЗАВДАННЯ: MongoDB Repository
+=========================================
+CREATE: True
+READ: Temporary Mongo song
+UPDATE: True
+DELETE: True
+MongoDB document: 2, Skyfall, votes=420, tags=soundtrack/soul
+MongoDB document: 1, Gravity, votes=250, tags=pop/ballad
+Documents count: 2
+MongoDB collection: MusicContestLab3.songs

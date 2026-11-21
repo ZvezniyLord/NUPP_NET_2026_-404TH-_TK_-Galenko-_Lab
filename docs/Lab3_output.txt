@@ -2,9 +2,9 @@
 =========================================
 ЛАБОРАТОРНА РОБОТА №3: EF Core + SQLite
 =========================================
-Створено початкові записи учасників, пісень, виступів і профілів.
+Відкрито раніше створену SQLite базу.
 CREATE: True
-READ: Temporary song, DatabaseId=3
+READ: Temporary song, DatabaseId=4
 UPDATE: True
 DELETE: True
 SAVE: True
