@@ -29,7 +29,7 @@ def png_sqlite_tables(conn):
     image = Image.new("RGB", (1550, 730), "#ffffff")
     d = ImageDraw.Draw(image)
     d.rectangle((0, 0, 1550, 80), fill="#13273c")
-    d.text((36, 20), "SQLite — список реально створених таблиць", font=font(32, True), fill="white")
+    d.text((36, 20), "SQLite: реально створені таблиці", font=font(32, True), fill="white")
     d.text((42, 106), f"Файл: {DB.name} | PRAGMA foreign_keys=ON | sqlite_master", font=font(22), fill="#263648")
     y = 170
     for name in names:
@@ -83,7 +83,7 @@ def png_erd(conn):
 
     image = Image.new("RGB", (1750, 1140), "#fcfdff")
     d = ImageDraw.Draw(image)
-    d.text((48, 24), "MusicContest — ERD (SQLite / Entity Framework Core)", font=font(33, True), fill="#13273c")
+    d.text((48, 24), "MusicContest: ERD (SQLite / Entity Framework Core)", font=font(33, True), fill="#13273c")
     boxes = {
         "ContestParticipants": (595, 105, 1140, 325),
         "SoloSingers": (60, 405, 520, 615),
@@ -166,9 +166,9 @@ def make_pdf(conn, pics):
     label("Реалізація: .NET 8, C#, EF Core, SQLite, Repository Pattern",33,ph-146,10)
     label("Ключові можливості",33,ph-192,13,True)
     lines = [
-      "1:1  Учасник — профіль (унікальний зовнішній ключ).",
-      "1:N  Учасник — виступи; пісня — виступи.",
-      "M:N  Учасники — пісні через ParticipantSongs.",
+      "1:1  Учасник має один профіль (унікальний зовнішній ключ).",
+      "1:N  Учасник має багато виступів; пісня може бути у багатьох виступах.",
+      "M:N  Учасники пов'язані з піснями через ParticipantSongs.",
       "TPT  ContestParticipants + SoloSingers / VocalGroups.",
       "CRUD  Generic RepositoryCrudServiceAsync<T> через IRepository<T>.",
       "Міграція  EF Core: 20261121130000_InitialCreate.",
@@ -229,7 +229,7 @@ def make_pdf(conn, pics):
     mongo_png = DOCS / "Lab3_MongoDB.png"
     if mongo_png.exists():
         c.showPage()
-        label("6. MongoDB — додаткове завдання",33,ph-55,15,True)
+        label("6. MongoDB: додаткове завдання",33,ph-55,15,True)
         yy=image_fit(mongo_png,ph-82,620)
         label("Зображення сформовано з реального запиту find() до MongoDB.",33,yy-4,9)
         footer(7)
