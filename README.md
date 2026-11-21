@@ -238,3 +238,18 @@ GitHub Actions при push до `lab3`. Відповіді на запитанн
 реальних SQL-запитів до SQLite, а не скріншоти програми DB Browser.
 За буквального трактування вимоги викладача додатково зробіть знімок
 вікна DB Browser for SQLite з відкритим `docs/musiccontest.db`.
+
+
+### Додаткове завдання: MongoDB
+
+`MusicContest.Nosql` містить `SongDocument` (вкладений `SongStatsDocument`) і
+`MongoRepository<T> : IRepository<T>` на базі `MongoDB.Driver`.
+Для локального запуску потрібен MongoDB на `localhost:27017`:
+
+```bash
+dotnet run --project MusicContest.Console -- --lab3-nosql
+```
+
+Можна налаштувати `MONGO_CONNECTION_STRING`. GitHub Actions запускає MongoDB
+через контейнер, виконує реальні CRUD-операції та додає в PDF зображення
+документів MongoDB, отриманих запитом до колекції `MusicContestLab3.songs`.
