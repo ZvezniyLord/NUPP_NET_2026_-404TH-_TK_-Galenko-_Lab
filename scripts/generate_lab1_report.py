@@ -151,13 +151,13 @@ def main() -> None:
     ]))
     story += [ft2, PageBreak(),
         Paragraph("Результати збірки", styles["SectionUA"]),
-        Preformatted("\n".join(build_log.splitlines()[-14:]), styles["LogUA"]),
+        Preformatted("\n".join(build_log.splitlines()[-14:]), styles["LogUA"], maxLineLength=88, newLineChars="    "),
         Paragraph("Фактичний вивід консольного застосунку", styles["SectionUA"]),
         Paragraph(
             "Нижче наведено журнал запуску, сформований безпосередньо під час виконання програми.",
             styles["BodyUA"]
         ),
-        Preformatted(output_log, styles["LogUA"])
+        Preformatted(output_log, styles["LogUA"], maxLineLength=88, newLineChars="    ")
     ]
 
     def footer(canvas, doc):
