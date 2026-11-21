@@ -14,6 +14,11 @@ concurrency:
 jobs:
   build-test-report:
     runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -26,7 +31,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Setup Python report dependencies
-        run: python -m pip install --quiet reportlab pillow
+        run: python -m pip install --quiet reportlab pillow pymongo
 
       - name: Restore
         run: dotnet restore MusicContest.sln
@@ -49,6 +54,26 @@ jobs:
           set -o pipefail
           dotnet run --project MusicContest.Console -c Release --no-build -- --lab3-only 2>&1 | tee docs/Lab3_output.txt
 
+      - name: Run optional MongoDB repository demonstration
+        shell: bash
+        run: |
+          set -o pipefail
+          python - <<'PY'
+          from pymongo import MongoClient
+          import time
+          for attempt in range(30):
+              try:
+                  MongoClient("mongodb://127.0.0.1:27017", serverSelectionTimeoutMS=2000).admin.command("ping")
+                  print("MongoDB ready")
+                  break
+              except Exception:
+                  time.sleep(2)
+          else:
+              raise RuntimeError("MongoDB service did not start")
+          PY
+          dotnet run --project MusicContest.Console -c Release --no-build -- --lab3-nosql 2>&1 | tee docs/Lab3_mongodb_output.txt
+          python scripts/generate_lab3_mongo_screenshot.py
+
       - name: Generate genuine SQLite table views and PDF
         run: python scripts/generate_lab3_report.py
 
@@ -57,7 +82,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/musiccontest.db docs/Lab3_build.txt docs/Lab3_test.txt docs/Lab3_output.txt docs/Lab3_*.png docs/Lab3_Report.pdf
+          git add docs/musiccontest.db docs/Lab3_build.txt docs/Lab3_test.txt docs/Lab3_output.txt docs/Lab3_mongodb_output.txt docs/Lab3_*.png docs/Lab3_Report.pdf
           if ! git diff --cached --quiet; then
             git commit -m "docs(lab3): verified SQLite database and PDF report [skip ci]"
             git push origin HEAD:lab3
