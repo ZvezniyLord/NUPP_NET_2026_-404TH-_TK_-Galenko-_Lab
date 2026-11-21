@@ -57,7 +57,9 @@ flowchart LR
 | Записи таблиці учасників | [Скріншот учасників](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_GUI_ContestParticipants.png) |
 | Записи таблиці пісень | [Скріншот пісень](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_GUI_Songs.png) |
 | MongoDB: додаткове завдання | [Документи MongoDB](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_MongoDB.png) |
-| Результати компіляції та тестів | [Build](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_build.txt) · [Tests](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_test.txt) |
+| Перевірка ЛР1 | [Журнал збірки](Lab1_build.txt) · [Консольний вивід](Lab1_output.txt) |
+| Перевірка ЛР2 | [Журнал збірки](Lab2_build.txt) · [22 тести](Lab2_test.txt) · [Консольний вивід](Lab2_output.txt) |
+| Перевірка ЛР3 | [Журнал збірки](Lab3_build.txt) · [27 тестів](Lab3_test.txt) · [Консольний вивід](Lab3_output.txt) |
 | Результати роботи консолі | [SQLite CRUD](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_output.txt) · [MongoDB CRUD](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_mongodb_output.txt) |
 | Відповіді на 13 контрольних запитань | [Контрольні запитання](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/LAB3_CONTROL_QUESTIONS.md) |
 | **Лабораторні №1–2** | [PDF ЛР1](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab1_Report.pdf) · [PDF ЛР2](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab2_Report.pdf) |
