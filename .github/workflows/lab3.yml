@@ -94,7 +94,7 @@ jobs:
         run: |
           rm -f docs/Lab3_GUI_*.png
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq sqlitebrowser xvfb scrot xdotool
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq sqlitebrowser xvfb scrot xdotool poppler-utils
           xvfb-run -a -s "-screen 0 1600x900x24" bash scripts/capture_db_browser.sh
 
       - name: Generate Lab1 and Lab2 PDF reports from actual outputs
@@ -102,6 +102,9 @@ jobs:
 
       - name: Generate genuine SQLite table views and PDF
         run: python scripts/generate_lab3_report.py
+
+      - name: Перевірити український текст і прев'ю PDF-звітів
+        run: python scripts/check_pdf_language.py docs/Lab1_Report.pdf docs/Lab2_Report.pdf docs/Lab3_Report.pdf
 
       - name: Publish generated SQLite, console logs and report
         shell: bash
