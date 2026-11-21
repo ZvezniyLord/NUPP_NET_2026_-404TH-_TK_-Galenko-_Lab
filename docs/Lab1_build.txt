@@ -1,0 +1,8 @@
+  MusicContest.Common -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common/bin/Release/net8.0/MusicContest.Common.dll
+  MusicContest.Console -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Release/net8.0/MusicContest.Console.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.11

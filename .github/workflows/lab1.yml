@@ -1,0 +1,60 @@
+name: Lab1 build and report
+on:
+  push:
+    branches: [lab1]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-run-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Отримати код
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Налаштувати .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Встановити засоби формування PDF
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-dejavu-core poppler-utils
+          python -m pip install --quiet reportlab
+
+      - name: Відновити залежності
+        run: dotnet restore MusicContest.sln
+
+      - name: Зібрати рішення
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet build MusicContest.sln --no-restore -c Release 2>&1 | tee docs/Lab1_build.txt
+
+      - name: Запустити консольний застосунок
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet run --project MusicContest.Console -c Release --no-build 2>&1 | tee docs/Lab1_output.txt
+
+      - name: Сформувати PDF-звіт із фактичних журналів
+        run: python scripts/generate_lab1_report.py
+
+      - name: Перевірити текст PDF і створити зображення першої сторінки
+        run: python scripts/check_pdf_language.py docs/Lab1_Report.pdf
+
+      - name: Зберегти звіт і журнали в гілці lab1
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/Lab1_Report.pdf docs/Lab1_Report_extracted.txt docs/Lab1_Report_preview.png docs/Lab1_build.txt docs/Lab1_output.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(lab1): regenerate report from verified console output [skip ci]"
+            git push origin HEAD:lab1
+          fi
