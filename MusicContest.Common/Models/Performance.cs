@@ -3,7 +3,7 @@ namespace MusicContest.Common.Models;
 // Performance = виступ учасника.
 public class Performance : IEntity
 {
-    // Делегат — тип, який описує сигнатуру методу.
+    // Делегат визначає сигнатуру методу, який можна викликати через це посилання.
     // У нашому випадку метод-обробник повинен отримати:
     // сам виступ, стару оцінку та нову оцінку.
     public delegate void ScoreChangedHandler(Performance performance, double oldScore, double newScore);
