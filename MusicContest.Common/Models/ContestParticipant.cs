@@ -75,7 +75,7 @@ public abstract class ContestParticipant : IEntity
         if (lastTwoDigits is >= 11 and <= 14)
             return "років";
 
-        return age % 10 switch
+        return (age % 10) switch
         {
             1 => "рік",
             2 or 3 or 4 => "роки",
