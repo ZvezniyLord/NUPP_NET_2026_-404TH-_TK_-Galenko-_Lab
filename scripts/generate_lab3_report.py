@@ -138,6 +138,21 @@ def png_erd(conn):
     image.save(target)
     return target
 
+def record_count_phrase(count: int) -> str:
+    """Правильне відмінювання слова «запис» після числівника."""
+    last_two = count % 100
+    last_one = count % 10
+    if 11 <= last_two <= 14:
+        word = "записів"
+    elif last_one == 1:
+        word = "запис"
+    elif 2 <= last_one <= 4:
+        word = "записи"
+    else:
+        word = "записів"
+    return f"{count} {word}"
+
+
 def make_pdf(conn, pics):
     pdfmetrics.registerFont(TTFont("DejaVuSans", str(FONT_FILE)))
     pdfmetrics.registerFont(TTFont("DejaVuSansBold", str(BOLD_FILE)))
@@ -162,11 +177,11 @@ def make_pdf(conn, pics):
 
     label("ЛАБОРАТОРНА РОБОТА №3",33,ph-65,18,True)
     label("Робота з БД в .NET. Entity Framework Core",33,ph-91,12)
-    label("Предметна область: MusicContest (вокальний конкурс)",33,ph-126,10)
+    label("Предметна область: MusicContest (український вокальний конкурс)",33,ph-126,10)
     label("Реалізація: .NET 8, C#, EF Core, SQLite, Repository Pattern",33,ph-146,10)
     label("Ключові можливості",33,ph-192,13,True)
     lines = [
-      "1:1  Учасник має один профіль (унікальний зовнішній ключ).",
+      "1:1  Учасник може мати один профіль (унікальний зовнішній ключ).",
       "1:N  Учасник має багато виступів; пісня може бути у багатьох виступах.",
       "M:N  Учасники пов'язані з піснями через ParticipantSongs.",
       "TPT  ContestParticipants + SoloSingers / VocalGroups.",
@@ -179,7 +194,7 @@ def make_pdf(conn, pics):
     label("Фактична база даних",33,y-15,13,True);y-=43
     for table in table_names(conn):
         count=conn.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
-        label(f"{table}: {count} записів",44,y,9);y-=22
+        label(f"{table}: {record_count_phrase(count)}",44,y,9);y-=22
     footer(1);c.showPage()
 
     label("1. Схема БД та таблиці",33,ph-55,15,True)
