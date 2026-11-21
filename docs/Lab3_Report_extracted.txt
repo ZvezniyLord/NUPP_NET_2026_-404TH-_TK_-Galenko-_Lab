@@ -1,14 +1,14 @@
 ЛАБОРАТОРНА РОБОТА №3
 Робота з БД в .NET. Entity Framework Core
 
-Предметна область: MusicContest (вокальний конкурс)
+Предметна область: MusicContest (український вокальний конкурс)
 
 Реалізація: .NET 8, C#, EF Core, SQLite, Repository Pattern
 
 
 
 Ключові можливості
-  1:1 Учасник має один профіль (унікальний зовнішній ключ).
+  1:1 Учасник може мати один профіль (унікальний зовнішній ключ).
 
   1:N Учасник має багато виступів; пісня може бути у багатьох виступах.
 
@@ -32,13 +32,13 @@
 
   Performances: 12 записів
 
-  SoloSingers: 4 записів
+  SoloSingers: 4 записи
 
   Songs: 8 записів
 
-  VocalGroups: 2 записів
+  VocalGroups: 2 записи
 
-  __EFMigrationsHistory: 1 записів
+  __EFMigrationsHistory: 1 запис
 
 
 
@@ -97,8 +97,8 @@ UPDATE: True
 DELETE: True
 SAVE: True
 Перша сторінка, по 3 українські пісні:
-  Пісня #6: Думи; виконавець: Артем Пивоваров і Надя Дорофєєва
   Пісня #1: Червона рута; виконавець: Володимир Івасюк
+  Пісня #7: Плакала; виконавець: KAZKA
   Пісня #2: Обійми; виконавець: Океан Ельзи
 Учасник #1: Олена Ковальчук; країна=Україна; профіль=True; пісень M:N=2;
 виступів 1:N=2
@@ -150,7 +150,7 @@ Build succeeded.
   0 Error(s)
 
 
-Time Elapsed 00:00:07.71
+Time Elapsed 00:00:07.75
 
 
 
@@ -162,7 +162,7 @@ _Lab/MusicContest.Common.Tests/bin/Release/net8.0/MusicContest.Common.Tests.dll
 A total of 1 test files matched the specified pattern.
 
 
-Passed! - Failed:    0, Passed:   27, Skipped:    0, Total:   27, Duration: 2 s -
+Passed! - Failed:    0, Passed:   27, Skipped:    0, Total:   27, Duration: 1 s -
 MusicContest.Common.Tests.dll (net8.0)
 
 
