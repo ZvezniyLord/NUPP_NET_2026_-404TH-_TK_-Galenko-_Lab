@@ -46,8 +46,7 @@
   `RemoveAsync` повертають `Task<bool>`, `ReadAsync` — `Task<T>`,
   `ReadAllAsync` та `ReadAllAsync(page, amount)` — `Task<IEnumerable<T>>`,
   `SaveAsync()` — `Task<bool>`;
-- внутрішня колекція — `ConcurrentDictionary<Guid, T>`: ВБУДОВANA
-  thread-safe колекція .NET (`System.Collections.Concurrent`), операції
+- внутрішня колекція — `ConcurrentDictionary<Guid, T>` — вбудована потокобезпечна колекція .NET (`System.Collections.Concurrent`), операції
   `TryAdd`/`TryUpdate`/`TryRemove` атомарні під конкурентним доступом;
 - методи читання та ітерація повертають **snapshot** (копію, впорядковану
   за Id), а не внутрішню колекцію — пагінація детермінована;
@@ -64,8 +63,7 @@
 
 ### Thread safety та синхронізація
 
-- `lock` — демонстрація 8 потоків × 10 000 зростань (ожидане
-  80 000, фактичне — з лічильника);
+- `lock` — демонстрація 8 потоків × 10 000 зростань (очікуване значення — 80 000; фактичне зчитується з лічильника);
 - `SemaphoreSlim` — 10 worker'ів, maxConcurrency = 3, фактичний
   максимум вимірюється атомарним лічильником;
 - `AutoResetEvent` — справжня producer/consumer-демонстрація
@@ -99,8 +97,7 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 ### Урок: як читати код ЛР2
 
 Порядок читання: кожен пункт — один механізм і його файл.
-Коментарі в коді перекладають англійські терміни українською —
-те саме, що й у ЛР1.
+Коментарі пояснюють призначення механізмів і значення основних англомовних термінів українською.
 
 1. **Асинхронність (async) та `Task<T>`** — файл `Services/ICrudServiceAsync.cs`.
    Асинхронний метод не повертає дані напряму, а повертає `Task<T>`
@@ -111,9 +108,9 @@ snapshot, тому `foreach (var item in service)` безпечний серед
    метод `BuildSnapshot()`. Повертати внутрішню колекцію назовні
    небезпечно: зовнішній код може її змінити, і сервіс не побачить.
    Тому робиться копія `_items.Values.OrderBy(x => x.Id).ToList()` — копія у детермінованому порядку за Id. Читання та `foreach`
-   завжди бачять колекцію у стані «на момент фото», а не живий список.
+   завжди бачать копію колекції, сформовану на момент читання, а не змінюваний внутрішній список.
 3. **Thread-safe колекція замість ручних критичних секцій** — ті самі файли, методи `CreateAsync`,
-   `UpdateAsync`, `RemoveAsync`. `ConcurrentDictionary<Guid, T>` — вбудована поточно-безпечна колекція .NET:
+   `UpdateAsync`, `RemoveAsync`. `ConcurrentDictionary<Guid, T>` — вбудована потокобезпечна колекція .NET:
    `TryAdd` не додає duplicate Id навіть при одночасних викликах із потоків;
    `TryUpdate` замінює лише існуючий ключ, а `TryRemove` атомарно видаляє —
    зовнішній `lock` для CRUD-операцій тут не потрібен — безпеку забезпечує сама колекція.
@@ -124,7 +121,7 @@ snapshot, тому `foreach (var item in service)` безпечний серед
    `ArgumentOutOfRangeException`.
 5. **Збереження (SaveAsync)** — ті самі файли. Спочатку snapshot і
    JSON-серіалізація, потім `SemaphoreSlim` на рівні 1: одночасно в
-   файл пише лише ОДИН запис (writer); `await WaitAsync` —
+   одночасно виконується лише одна операція запису; `await WaitAsync` —
    асинхронне очікування (потік пулу не блокується). `finally`
    гарантує `Release` навіть, якщо запис упав.
 6. **IEnumerable<T>** — інтерфейс `ICrudServiceAsync<T> : IEnumerable<T>`
@@ -135,14 +132,14 @@ snapshot, тому `foreach (var item in service)` безпечний серед
    кожний `Song.CreateNew()` + запуск `CreateAsync` виконується різними потоками пулу без блокування; після join point усі Tasks зшиваються через `Task.WhenAll`;
    `ConcurrentDictionary` у сервісі thread-safe сам; реальну кількість зчитують з сервісу, час вимірює
    `Stopwatch`.
-8. **Lock-демонстрація (гоніжка потоків)** — `Services/SynchronizationDemos.cs`.
+8. **Демонстрація `lock` (стан гонитви потоків)** — `Services/SynchronizationDemos.cs`.
    Операція `counter++` — це три кроки: read-modify-write (прочитати,
    змінити, записати). Без синхронізації два потоки читають одне й те
    саме значення — одне зростання губиться. `lock (gate)` — взаємне
    виключення (mutual exclusion): в критичній секції одночасно один
    потік, інші чекають.
 9. **SemaphoreSlim-демонстрація** — ті самі файли. У семафора 3
-   «ліцензії»: `WaitAsync` бере одну, `Release` повертає — в ділянці
+   дозвіл: `WaitAsync` отримує один дозвіл, а `Release` повертає його; у критичній ділянці
    одночасно не більше 3 worker'ів. Важливо: максимум паралельності
    НЕ написано вручну, а ВИМІРЯНО атомарним лічильником
    (`Interlocked.Increment` + `Interlocked.CompareExchange`).
@@ -160,6 +157,10 @@ snapshot, тому `foreach (var item in service)` безпечний серед
     перевіряється окремим тестом (lock: actual == 8 × 10 000;
     semaphore: виміряний max ≤ 3, якби семафора не було — був би 10;
     producer/consumer: produced == consumed == 500 і порожній буфер).
+
+#### Українські демонстраційні дані
+
+Фабричні методи `SoloSinger.CreateNew()`, `VocalGroup.CreateNew()`, `Song.CreateNew()` і `Performance.CreateNew()` використовують спільний набір `UkrainianMusicData`. Учасники та колективи мають українські назви, країна для учасників — Україна, а репертуар складається з українських пісень. Тривалість генерується окремо для демонстрації статистичних операцій LINQ.
 
 ### Тести
 
@@ -189,7 +190,7 @@ dotnet run --project MusicContest.Console
 
 ### Звітні файли та результати перевірок
 
-Звіт: `docs/Lab2_Report.pdf` (PDF-звіт лабораторної №2). Реальні журнали:
+PDF-звіт формується скриптом `docs/Lab2_report_generator.py` на основі фактичних журналів. `gen_pdf.py` залишено як сумісну команду запуску цього генератора. Звіт: `docs/Lab2_Report.pdf`. Журнали:
 `docs/Lab2_build.txt`, `docs/Lab2_test.txt`, `docs/Lab2_output.txt`.
 
 Результати перевірок (фактичні, з журналів):
