@@ -12,6 +12,7 @@
 - [README лабораторної](../README.md)
 - [Контрольні запитання](../CONTROL_QUESTIONS.md)
 - [Редакційна мовна політика](../EDITORIAL_LANGUAGE_POLICY.md)
+- [Редакційний стандарт природного тексту](../EDITORIAL_WRITING_STANDARD.md)
 
 ## Виконані завдання
 
