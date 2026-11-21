@@ -122,9 +122,16 @@ def png_erd(conn):
         yy = y1+65
         for col in cols[:7]:
             cid,name,datatype,notnull,default,pk = col
-            prefix = "PK " if pk else "FK " if name in fk_cols else "     "
-            d.text((x1+15,yy), f"{prefix}{name} : {datatype}",font=font(17),fill="#1d354c")
+            flags = []
+            if pk:
+                flags.append("PK")
+            if name in fk_cols:
+                flags.append("FK")
+            prefix = "/".join(flags) + " " if flags else "     "
+            column_type = f"{datatype} (GUID)" if name == "Id" and datatype.upper() == "TEXT" else datatype
+            d.text((x1+15,yy), f"{prefix}{name} : {column_type}",font=font(17),fill="#1d354c")
             yy += 27
+    d.text((55, 1013), "PK = первинний ключ; FK = зовнішній; PK/FK = обидві ролі; GUID має тип TEXT.",font=font(17),fill="#354b5e")
     d.text((55, 1053), "TPT = Table-per-Type; M:N = ContestParticipants ↔ ParticipantSongs ↔ Songs",font=font(21),fill="#354b5e")
     d.text((55, 1092), "Структура перевірена через sqlite_master / PRAGMA table_info / PRAGMA foreign_key_list.",font=font(17),fill="#57697a")
     target = DOCS / "Lab3_ERD.png"
