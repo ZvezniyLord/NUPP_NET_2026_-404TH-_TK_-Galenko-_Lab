@@ -32,32 +32,32 @@ JSON-файл: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET
 
 1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.For + Task.WhenAll):
 Об'єктів створено: 2000 із 2000 планових
-Фактичний час: 19.045 ms
+Фактичний час: 18.792 ms
 
 2. LINQ (min/max/average на створених об'єктах):
    Count:       2000
    Min (DurationSeconds): 120 s
    Max (DurationSeconds): 359 s
-   Average (DurationSeconds): 237.30 s
-   Where (Duration > Average): 981
-   Select/OrderBy (найдовша пісня): Думи
-   Aggregate (сума тривалостей, с): 474599
+   Average (DurationSeconds): 238.32 s
+   Where (Duration > Average): 1007
+   Select/OrderBy (найдовша пісня): Тримай
+   Aggregate (сума тривалостей, с): 476639
    OrderBy/Top-3 (найдовші пісні):
-      - Думи: 359 s, ре мінор
-      - Думи: 359 s, ре мінор
+      - Тримай: 359 s, ля мінор
+      - Тримай: 359 s, ля мінор
       - Тримай: 359 s, ля мінор
 
 3. ПАГІНАЦІЯ (ReadAllAsync(page, amount)):
-   Page 1 (5): Тримай, Щедрик, Несе Галя воду, Щедрик, Плакала
-   Page 2 (5): Плакала, Несе Галя воду, Думи, Червона рута, Плакала
+   Page 1 (5): Україна, Тримай, Щедрик, Червона рута, Україна
+   Page 2 (5): Обійми, Тримай, Обійми, Несе Галя воду, Червона рута
    Page 999 (5): елементів 0 (порожня сторінка)
 
 4. IENUMERABLE: foreach безпосередньо по сервісу (перші 5 + сума):
-   - Тримай (170 s)
-   - Щедрик (348 s)
-   - Несе Галя воду (127 s)
-   - Щедрик (233 s)
-   - Плакала (138 s)
+   - Україна (146 s)
+   - Тримай (357 s)
+   - Щедрик (230 s)
+   - Червона рута (326 s)
+   - Україна (272 s)
    Загальна кількість відвіданих: 2000
 
 5. SAVEASYNC (збереження колекції у JSON за FilePath):
