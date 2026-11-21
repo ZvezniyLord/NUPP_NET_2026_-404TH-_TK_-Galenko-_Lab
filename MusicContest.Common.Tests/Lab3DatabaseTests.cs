@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using MusicContest.Infrastructure.Data;
+using MusicContest.Common.Data;
 using MusicContest.Infrastructure.Models;
 using MusicContest.Infrastructure.Repositories;
 using MusicContest.Infrastructure.Services;
@@ -19,6 +20,34 @@ public class Lab3DatabaseTests
         var db = new MusicContestContext(options);
         await db.Database.MigrateAsync();
         return (connection, db);
+    }
+
+    [Fact]
+    public async Task UkrainianSeederCreatesRealisticRelationalSampleAndIsIdempotent()
+    {
+        var (connection, db) = await CreateAsync();
+        await using (connection)
+        await using (db)
+        {
+            Assert.True(await UkrainianDemoSeeder.EnsureAsync(db));
+            Assert.False(await UkrainianDemoSeeder.EnsureAsync(db));
+
+            var actualNames = await db.Participants.Select(x => x.StageName).ToListAsync();
+            var actualSongs = await db.Songs.Select(x => x.Title).ToListAsync();
+
+            Assert.Equal(UkrainianMusicData.Singers.Length + UkrainianMusicData.Groups.Length,
+                actualNames.Count);
+            Assert.Equal(UkrainianMusicData.Songs.Length, actualSongs.Count);
+            Assert.All(actualNames, name => Assert.DoesNotContain("Astra", name));
+            Assert.All(actualSongs, title => Assert.DoesNotContain("Gravity", title));
+            Assert.Contains("Олена Ковальчук", actualNames);
+            Assert.Contains("Червона рута", actualSongs);
+            Assert.Equal(actualNames.Count, await db.ParticipantProfiles.CountAsync());
+            Assert.Equal(actualNames.Count * 2, await db.Performances.CountAsync());
+            Assert.Equal(actualNames.Count * 2,
+                await db.Database.SqlQueryRaw<int>(
+                    "SELECT COUNT(*) AS Value FROM ParticipantSongs").SingleAsync());
+        }
     }
 
     [Fact]
