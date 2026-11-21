@@ -36,7 +36,7 @@ public class VocalGroup : ContestParticipant
 
     // Перевизначення GetDescription().
     // Тут проявляється поліморфізм: змінна може мати тип ContestParticipant,
-    // але виконається метод фактичного об'єкта — SoloSinger або VocalGroup.
+    // буде викликано метод фактичного типу об'єкта: SoloSinger або VocalGroup.
     public override string GetDescription()
     {
         return $"Вокальний гурт: {base.GetDescription()}, учасників: {MemberCount}, жанр: {Genre}";
@@ -49,7 +49,7 @@ public class VocalGroup : ContestParticipant
     }
 
     // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
-    // Фабрика — метод, який повертає готовий об'єкт.
+    // Фабричний метод повертає готовий об'єкт.
     // Random.Shared є спільним потокобезпечним генератором випадкових чисел.
     // Його можна викликати з кількох потоків одночасно.
     public static VocalGroup CreateNew()
