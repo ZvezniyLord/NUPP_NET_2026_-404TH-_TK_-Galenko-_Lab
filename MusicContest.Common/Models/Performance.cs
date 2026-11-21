@@ -1,3 +1,5 @@
+using MusicContest.Common.Data;
+
 namespace MusicContest.Common.Models;
 
 // Performance = виступ учасника.
@@ -70,13 +72,14 @@ public class Performance : IEntity
     // викликати з безлічі потоків одночасно.
     public static Performance CreateNew()
     {
-        // Random.Shared: безпечний для потоку instance (копія) Random.
-        Random random = Random.Shared;
-
-        return new Performance(
-            $"Artist-{random.Next(1, 1000)}",    // ParticipantStageName
-            $"Song-{Guid.NewGuid():N}",           // SongTitle
-            Math.Round(random.NextDouble() * 100, 1) // Score: 0.0-100.0 (з округленням)
-        );
+        var singers = UkrainianMusicData.Singers;
+        var groups = UkrainianMusicData.Groups;
+        var songs = UkrainianMusicData.Songs;
+        var random = Random.Shared;
+        string participantName = random.Next(2) == 0
+            ? singers[random.Next(singers.Length)].StageName
+            : groups[random.Next(groups.Length)].StageName;
+        return new Performance(participantName, songs[random.Next(songs.Length)].Title,
+            Math.Round(random.NextDouble() * 100, 1));
     }
 }
