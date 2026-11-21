@@ -55,11 +55,12 @@
   стабільний порядок елементів під час читання; копія не є глибокою копією
   самих об'єктів.
 - `CreateAsync` при повторному Id: `false`; `UpdateAsync`/`RemoveAsync`
-  при відсутньому Id: `false`; `ReadAsync` при відсутньому Id —
-  `KeyNotFoundException`;
+  при відсутньому Id повертають `false`. Якщо Id не знайдено, `ReadAsync`
+  генерує `KeyNotFoundException`;
 - пагінація через LINQ: `Skip((page - 1) * amount).Take(amount)`,
-  нумерація сторінок з 1; `page <= 0` або `amount <= 0` —
-  `ArgumentOutOfRangeException`; сторінка поза межами: порожня
+  нумерація сторінок починається з 1. Значення `page <= 0` або
+  `amount <= 0` спричиняють `ArgumentOutOfRangeException`. Якщо сторінка
+  виходить за межі колекції, повертається порожня
   колекція;
 - сервіс зберігає колекцію у файл за властивістю `FilePath`:
   `SaveAsync()` записує JSON через `File.WriteAllTextAsync`.
@@ -122,7 +123,7 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 4. **Пагінація через LINQ.** Її реалізовано в `ReadAllAsync(page, amount)`.
    Використовується вираз `Skip((page - 1) * amount).Take(amount)`:
    нумерація сторінок з 1; сторінка поза межами: порожня колекція
-   (не помилка); недійсна `page`/`amount` —
+   (це не помилка). Недійсні `page` або `amount` спричиняють
    `ArgumentOutOfRangeException`.
 5. **Збереження (SaveAsync).** Метод створює знімок колекції та серіалізує
    його у JSON. Перед записом він очікує дозвіл через `SemaphoreSlim`.
