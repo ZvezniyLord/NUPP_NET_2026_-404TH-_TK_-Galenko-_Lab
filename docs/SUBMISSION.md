@@ -1,27 +1,51 @@
-# Подання лабораторної роботи №2
+# Подання лабораторної роботи №3
 
-**Лабораторна робота №2.** Багатопотоковість. Асинхронність. IEnumerable. LINQ.
-Проєкт: MusicContest (C#/.NET 8). Студент: Галенко, група 404TH (варіант TK).
+**Тема:** робота з базами даних у .NET. Використання Entity Framework Core.  
+**Проєкт:** MusicContest, C# / .NET 8.  
+**Студент:** Галенко. **Група:** 404TH. **Варіант:** TK.
 
-## Посилання
+## Матеріали
 
-- Фінальна гілка: https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/tree/lab2
-- Pull Request (lab2 → lab1, лабораторна №1 ще не об'єднана): https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/pull/2
-- PDF-звіт: docs/Lab2_Report.pdf (у гілці lab2)
+- [Гілка lab3](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/tree/lab3)
+- [Pull Request №4: lab3 → lab2](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/pull/4)
+- [Короткий звіт із блок-схемою та посиланнями](PROJECT_REPORT.md)
+- [Повний PDF-звіт](Lab3_Report.pdf)
+- [ERD-діаграма](Lab3_ERD.png)
+- [Файл бази даних SQLite](musiccontest.db)
+- [Скріншоти структури та таблиць БД](Lab3_GUI_DatabaseStructure.png)
+- [Скріншот таблиці учасників](Lab3_GUI_ContestParticipants.png)
+- [Скріншот таблиці пісень](Lab3_GUI_Songs.png)
+- [Скріншот таблиці виступів](Lab3_GUI_Performances.png)
+- [Скріншот документів MongoDB](Lab3_MongoDB.png)
+- [Контрольні запитання до ЛР3](../LAB3_CONTROL_QUESTIONS.md)
 
-## Інструкція перевірки
+## Виконані завдання
 
-1. Клонувати репозиторій та перевірити гілку `lab2`:
-   `git clone https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab.git` , `git checkout lab2`.
-2. Зібрати: `dotnet restore` та `dotnet build MusicContest.sln` — очікуваний код завершення 0, 0 помилок.
-3. Тести: `dotnet test MusicContest.Common.Tests` — очікуваний код завершення 0; Expected: Passed 22 / Failed 0.
-4. Запуск: `dotnet run --project MusicContest.Console` — код завершення 0; у консолі видно Parallel.For (2000 із 2000 об'єктів через CRUD-сервіс), LINQ Min/Max/Average по реально створеній колекції, пагінацію, IEnumerable foreach, конкурентне SaveAsync (у JSON 2000 елементів), демо lock/SemaphoreSlim/AutoResetEvent.
-5. Журнали та звіт у папці `docs`: Lab2_build.txt, Lab2_test.txt, Lab2_output.txt, Lab2_Report.pdf.
+1. Створено проєкт `MusicContest.Infrastructure` із моделями бази даних та контекстом `MusicContestContext`.
+2. Налаштовано схему через Fluent API та реалізовано наслідування Table-per-Type (TPT).
+3. Реалізовано зв'язки один-до-одного (1:1), один-до-багатьох (1:N) і багато-до-багатьох (M:N).
+4. Створено й застосовано міграцію Entity Framework Core до SQLite.
+5. Реалізовано `IRepository<T>`, `EfRepository<T>` та асинхронний CRUD-сервіс.
+6. Оновлено консольний застосунок для роботи з реляційною базою даних.
+7. Виконано додаткове завдання з MongoDB: документна модель і репозиторій для нереляційного сховища.
 
-## Що подається в дистанційну систему
+## Перевірка
 
-- Посилання на Pull Request (PR #2, гілка `lab2`).
-- Файл `Lab2_Report.pdf` із папки `docs` фінальної гілки.
-- Відомості: прізвище студента (Галенко), група (404TH), дисципліна (.NET / НУПП).
+Збірка, автоматизовані тести, консольна демонстрація SQLite та додатковий сценарій MongoDB виконуються через GitHub Actions. Фактичні журнали та скриншоти збережено в папці `docs`.
 
-Примітка: експериментальна гілка `lab2-qwen38` не є предметом здачі; її PR (#3) залишається відкритим і не об'єднується без окремого рішення.
+Команди для самостійної перевірки:
+
+```bash
+dotnet restore MusicContest.sln
+dotnet build MusicContest.sln
+dotnet test MusicContest.sln
+dotnet run --project MusicContest.Console -- --lab3-only
+```
+
+Для додаткової демонстрації MongoDB потрібен запущений сервер MongoDB:
+
+```bash
+dotnet run --project MusicContest.Console -- --lab3-nosql
+```
+
+Демонстраційні імена учасників і назви колективів є навчальними прикладами. Репертуар сформовано з українських пісень; тривалість і тональність використовуються як демонстраційні значення.
