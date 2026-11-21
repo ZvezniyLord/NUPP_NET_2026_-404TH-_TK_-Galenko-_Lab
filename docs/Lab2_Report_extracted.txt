@@ -1,0 +1,172 @@
+                   ЛАБОРАТОРНА РОБОТА №2
+               MusicContest · Багатопотоковість, асинхронність, IEnumerable та LINQ
+
+
+  Предметна область              Український вокальний конкурс
+
+  Технології                     C#, .NET 8, Task, Parallel, LINQ, JSON, xUnit
+
+  Гілка                          lab2
+
+  Джерела результатів            Фактичні журнали dotnet build, dotnet test і dotnet run
+
+
+
+ Мета роботи
+ Реалізувати асинхронний узагальнений CRUD-сервіс із потокобезпечним сховищем, пагінацією,
+ підтримкою IEnumerable та асинхронним збереженням JSON. Продемонструвати паралельне
+ створення об'єктів, LINQ-запити й засоби синхронізації.
+
+
+ Реалізовані складові
+  Складова                      Реалізація
+
+  Асинхронний CRUD              CRUD-операції над ConcurrentDictionary виконуються синхронно; Task.Yield планує
+                                продовження. SaveAsync використовує File.WriteAllTextAsync.
+
+  Потокобезпечне сховище        ConcurrentDictionary<Guid, T> та формування знімка колекції для читання й
+                                перебирання.
+
+  Паралельне створення          Parallel.For створює 2000 об'єктів; завершення асинхронних операцій очікується
+                                через Task.WhenAll.
+
+  LINQ                          Min, Max, Average, Where, Select, Aggregate, OrderByDescending, Skip і Take.
+
+  Синхронізація                 lock, SemaphoreSlim, AutoResetEvent, Interlocked та демонстрація
+                                producer/consumer.
+
+  Збереження                    Асинхронний запис JSON із захистом від одночасного перезапису файла.
+
+  Модульні тести                xUnit-тести для CRUD, пагінації, IEnumerable, паралельного доступу та
+                                збереження.
+
+  Демонстраційні дані           Українські імена виконавців, назви колективів і пісні з набору UkrainianMusicData.
+
+
+
+ Схема виконання
+  Program.cs             Parallell               Song.CreateNew           CrudServiceAsync       LINQ / JSON
+  консольний запуск      Parallel.For            українські дані          ConcurrentDictionary   результати
+
+
+
+
+MusicContest · Лабораторна робота №2                                                                           Сторінка 1
+ Результати збірки
+   MusicContest.Common -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.C
+   MusicContest.Console -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Co
+   MusicContest.Common.Tests -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicCon
+
+  Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+  Time Elapsed 00:00:05.48
+
+
+ Результати автоматизованих тестів
+  Test run for /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common.Tests/b
+  A total of 1 test files matched the specified pattern.
+
+  Passed! - Failed:   0, Passed:   22, Skipped:   0, Total:   22, Duration: 357 ms - MusicContest.Common.Tests.dll (net8.0)
+
+
+
+
+MusicContest · Лабораторна робота №2                                                                                          Сторінка 2
+ Фактичний вивід консольного застосунку
+ Нижче наведено журнал, записаний під час запуску застосунку. Показники LINQ, паралельного
+ створення та синхронізації отримано з виконання програми.
+  === MUSIC CONTEST CRUD DEMO ===
+
+  1. Після Create:
+  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук, Україна, 21 рік, голос: сопрано, діапазон: A3-E6
+  - 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Дніпровські голоси, Україна, 24 роки, учасників: 4, жанр: народний поп
+
+  2. Read за Id:
+  Сольний виконавець: Олена Ковальчук, Україна, 21 рік, голос: сопрано, діапазон: A3-E6
+  Коротко: Олена Ковальчук (Україна)
+
+  3. Після Update:
+  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E
+  - 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Дніпровські голоси, Україна, 24 роки, учасників: 4, жанр: народний поп
+
+  4. Після Remove гурту:
+  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E
+
+  Створено об'єктів-нащадків ContestParticipant: 2
+  Пісня: Червона рута; тривалість: 3:54
+
+  5. Делегат і подія:
+  Подія ScoreChanged: Олена Ковальчук (фіналістка): 86.5 -> 92.0
+  Виступ завершено: True
+
+  6. Дані після Save та Load:
+  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E
+  JSON-файл: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Rele
+
+  =========================================
+  ЛАБОРАТОРНА РОБОТА №2
+  =========================================
+
+  1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.For + Task.WhenAll):
+  Об'єктів створено: 2000 із 2000 планових
+  Фактичний час: 17.087 ms
+
+  2. LINQ (min/max/average на створених об'єктах):
+    Count:     2000
+    Min (DurationSeconds): 120 s
+    Max (DurationSeconds): 359 s
+    Average (DurationSeconds): 238.89 s
+    Where (Duration > Average): 1018
+    Select/OrderBy (найдовша пісня): Тримай
+    Aggregate (сума тривалостей, с): 477775
+    OrderBy/Top-3 (найдовші пісні):
+      - Тримай: 359 s, ля мінор
+      - Щедрик: 359 s, мі мінор
+      - Обійми: 359 s, мі мінор
+
+  3. ПАГІНАЦІЯ (ReadAllAsync(page, amount)):
+    Page 1 (5): Україна, Тримай, Обійми, Обійми, Плакала
+    Page 2 (5): Україна, Щедрик, Обійми, Плакала, Думи
+    Page 999 (5): елементів 0 (порожня сторінка)
+
+  4. IENUMERABLE: foreach безпосередньо по сервісу (перші 5 + сума):
+    - Україна (158 s)
+    - Тримай (351 s)
+    - Обійми (356 s)
+    - Обійми (139 s)
+    - Плакала (189 s)
+    Загальна кількість відвіданих: 2000
+
+  5. SAVEASYNC (збереження колекції у JSON за FilePath):
+    Конкурентне збереження (3 одночасні SaveAsync) завершено.
+    Валідний (valid) JSON: True
+    Елементів у файлі після конкурентного Save: 2000
+    Файл: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Release
+
+  6. LOCK: 8 потоків × 10 000 increments (критична секція):
+  Expected: 80000
+  Actual: 80000
+  Match: True
+
+  7. SEMAPHORESLIM: 10 worker'ів, maxConcurrency = 3:
+  Worker'ів: 10; зазначено maxConcurrency = 3
+
+
+
+MusicContest · Лабораторна робота №2                                                                              Сторінка 3
+  ФАКТИЧНО виміряно максимум одночасних worker'ів: 3
+
+  8. AUTORESETEVENT (producer/consumer), M = 500:
+  Produced: 500
+  Consumed: 500
+  Produced == Consumed == M: True
+  Buffer empty: True
+  Run exit code: 0
+
+
+
+
+MusicContest · Лабораторна робота №2                   Сторінка 4
+
