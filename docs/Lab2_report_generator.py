@@ -1,287 +1,192 @@
-"""Генератор PDF-звіту ЛР2.
+#!/usr/bin/env python3
+"""Формує PDF-звіт ЛР2 з фактичних журналів збірки, тестування та запуску."""
+from pathlib import Path
+from html import escape
 
-Portable: використовує ТІЛЬКИ відносні шляхи — скрипт шукає
-каталог docs/ поруч із самим собою (repo/docs). Дані беруться
-виключно з реальних файлів:
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    PageBreak, Preformatted
+)
 
-  docs/Lab2_build.txt   — результат dotnet build
-  docs/Lab2_test.txt    — результат dotnet test
-  docs/Lab2_output.txt  — результат dotnet run (включно з exit code)
+ROOT = Path(__file__).resolve().parents[1]
+DOCS = ROOT / "docs"
+OUTPUT = DOCS / "Lab2_Report.pdf"
 
-Ніяких результатів НЕ є записаними вручну: усі ключові цифри дістаються
-з txt-файлів через регулярні вирази. Якщо рядка немає — маркер
-"<не знайдено>".
-"""
+def read_required(name: str) -> str:
+    path = DOCS / name
+    if not path.exists():
+        raise FileNotFoundError(f"Не знайдено журнал для звіту: {path}")
+    return path.read_text(encoding="utf-8", errors="replace")
 
-from __future__ import annotations
+def register_fonts() -> tuple[str, str]:
+    regular_candidates = [
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+        Path("C:/Windows/Fonts/arial.ttf"),
+    ]
+    bold_candidates = [
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+        Path("C:/Windows/Fonts/arialbd.ttf"),
+    ]
+    regular = next((p for p in regular_candidates if p.exists()), None)
+    bold = next((p for p in bold_candidates if p.exists()), regular)
+    if regular is None:
+        raise FileNotFoundError("Не знайдено Unicode-шрифт DejaVu Sans або Arial.")
+    pdfmetrics.registerFont(TTFont("ReportSans", str(regular)))
+    pdfmetrics.registerFont(TTFont("ReportSans-Bold", str(bold)))
+    return "ReportSans", "ReportSans-Bold"
 
-import os
-import re
-
-from fpdf import FPDF
-from fpdf.enums import XPos, YPos
-
-# Unicode-шрифти з підтримкою кирилиці (українські літери і ґ є).
-FONT_REGULAR = r"C:\Windows\Fonts\arial.ttf"
-FONT_BOLD = r"C:\Windows\Fonts\arialbd.ttf"
-
-DOCS = "docs"
-
-
-class Report:
-    """Будує PDF-звіт; усі числа — з реальних txt-логів."""
-
-    def __init__(self) -> None:
-        def load(name: str) -> list[str]:
-            with open(f"{DOCS}/{name}", "r", encoding="utf-8") as f:
-                return f.read().splitlines()
-
-        self.build_lines = load("Lab2_build.txt")
-        self.test_lines = load("Lab2_test.txt")
-        self.output_lines = load("Lab2_output.txt")
-
-    # ---------- Перевірка (helper): один рядок, що містить regex ----------
-    @staticmethod
-    def find_line(lines: list[str], pattern: str) -> str:
-        rgx = re.compile(pattern)
-        for line in lines:
-            m = rgx.search(line)
-            if m:
-                return m.group(0).strip()
-        return "<не знайдено>"
-
-    # ---------- Факти, дістаються реальним (real) шляхом з txt ----------
-    @property
-    def build_status(self) -> str:
-        return self.find_line(self.build_lines, r"Build (succeeded|FAILED)")
-
-    @property
-    def build_warnings(self) -> str:
-        return self.find_line(self.build_lines, r"(\d+) Warning\(s\)")
-
-    @property
-    def build_errors(self) -> str:
-        return self.find_line(self.build_lines, r"(\d+) Error\(s\)")
-
-    @property
-    def test_summary(self) -> str:
-        return self.find_line(
-            self.test_lines,
-            r"(Passed!|Failed!).*Total:\s*\d+.*",
-        )
-
-    @property
-    def exit_code(self) -> str:
-        line = self.find_line(self.output_lines, r"Run exit code: -?\d+")
-        return line
-
-    @property
-    def parallel_objects(self) -> str:
-        return self.find_line(self.output_lines, r"Об'єктів створено: \d+ із \d+ планових")
-
-    @property
-    def parallel_time(self) -> str:
-        return self.find_line(self.output_lines, r"Фактичний час: [\d.,]+ ms")
-
-    @property
-    def min_duration(self) -> str:
-        return self.find_line(self.output_lines, r"Min \(DurationSeconds\): \d+ s")
-
-    @property
-    def max_duration(self) -> str:
-        return self.find_line(self.output_lines, r"Max \(DurationSeconds\): \d+ s")
-
-    @property
-    def avg_duration(self) -> str:
-        return self.find_line(self.output_lines, r"Average \(DurationSeconds\): [\d.,]+ s")
-
-    @property
-    def saved_elements(self) -> str:
-        return self.find_line(
-            self.output_lines, r"Елементів у файлі після конкурентного Save: \d+"
-        )
-
-    @property
-    def lock_expected(self) -> str:
-        return self.find_line(self.output_lines, r"Expected: \d+")
-
-    @property
-    def lock_actual(self) -> str:
-        return self.find_line(self.output_lines, r"Actual:.*\d+")
-
-    @property
-    def lock_match(self) -> str:
-        return self.find_line(self.output_lines, r"Match:.*")
-
-    @property
-    def semaphore_max(self) -> str:
-        return self.find_line(
-            self.output_lines, r"ФАКТИЧНО виміряно максимум одночасних worker.?ів: \d+"
-        )
-
-    @property
-    def produced_consumed(self) -> str:
-        produced = self.find_line(self.output_lines, r"Produced:\s+\d+")
-        consumed = self.find_line(self.output_lines, r"Consumed:\s+\d+")
-        return produced + "; " + consumed
-
-    # ---------- Тексти (content) ----------
-    def build_summary(self) -> str:
-        return "\n".join(self.build_lines[-5:])
-
-    def test_summary_text(self) -> str:
-        return "\n".join(self.test_lines[-3:])
-
-    def run_output_full(self) -> str:
-        # УСІ рядки реального console run (крім рядка exit code).
-        lines = [line for line in self.output_lines if not line.startswith("Run exit code")]
-        return "\n".join(lines)
-
-    @property
-    def conclusion(self) -> str:
-        return (
-            "Усі завдання лабораторної роботи №2 реалізовані та перевірені "
-            "реальними build/test/run (dotnet). "
-            f"Build: {self.build_status}; "
-            f"{self.build_warnings} — {self.build_errors}. "
-            f"{self.test_summary}. "
-            f"{self.exit_code}. "
-            f"Parallell + CRUD service: {self.parallel_objects}; {self.parallel_time}. "
-            f"LINQ: {self.min_duration} / {self.max_duration} / {self.avg_duration}. "
-            f"SaveAsync у файл: {self.saved_elements}. "
-            f"Lock: {self.lock_expected} / {self.lock_actual} ({self.lock_match}). "
-            f"SemaphoreSlim: {self.semaphore_max}. "
-            f"Producer/Consumer: {self.produced_consumed}. "
-            "Потіки (threads), асинхронність (async/await), IEnumerable, LINQ, "
-            "Parallel та примітиви синхронізації (lock, SemaphoreSlim, "
-            "AutoResetEvent) реалізовані та підтверджені звітними файлами "
-            "docs/Lab2_build.txt, docs/Lab2_test.txt та docs/Lab2_output.txt."
-        )
-
-    def render(self) -> bytes:
-        pdf = FPDF()
-        pdf.add_font("Uni", "", FONT_REGULAR)
-        pdf.add_font("Uni", "B", FONT_BOLD)
-
-        def heading(text: str, size: int = 16) -> None:
-            pdf.set_font("Uni", "B", size)
-            pdf.multi_cell(w=190, h=size + 4, text=text)
-
-        def body(text: str, size: int = 11) -> None:
-            pdf.set_font("Uni", "", size)
-            pdf.multi_cell(w=190, h=size + 2, text=text)
-
-        def mono(lines_text: str, size: int = 8.5) -> None:
-            # mono — блок з логами (моноширинний rendering).
-            pdf.set_font("Uni", "", size)
-            pdf.multi_cell(w=190, h=4.6, text=lines_text)
-
-        theme = (
-            "Тема: Багатопотковість, асинхронність, IEnumerable, LINQ.\n"
-            "Мета: реалізувати асинхроний thread-safe generic CRUD-сервіс "
-            "(ICrudServiceAsync<T> : IEnumerable<T>, пагінація, збереження у "
-            "файл за FilePath), паралельно створити від 1000 об'єктів через "
-            "CreateNew() + клас Parallell + CRUD-сервіс, знайти LINQ-ом min/max/"
-            "average цифрових значень, зберегти колекцію у файл та продемонструвати "
-            "примітиви синхронізації. Перевірка реальними build/test/run через dotnet."
-        )
-        architecture = (
-            "Музичний конкурс (MusicContest) — предметна область, збережена з ЛР1.\n"
-            "- ICrudServiceAsync<T> : IEnumerable<T> (where T : IEntity): CreateAsync/UpdateAsync/"
-            "RemoveAsync повертають Task<bool>, ReadAsync — Task<T>, ReadAllAsync та "
-            "ReadAllAsync(page, amount) — Task<IEnumerable<T>>, SaveAsync() — Task<bool>.\n"
-            "- CrudServiceAsync<T>: внутрішня колекція ConcurrentDictionary<Guid, T> — "
-            "ВБУДОВANA thread-safe колекція .NET; операції TryAdd/TryUpdate/TryRemove "
-            "атомарні під конкурентним доступом потоків без зовнішнього lock. Зчитування "
-            "та foreach працюють зі SNAPSHOT (миттєвою копією, впорядкованою за Id) — "
-            "пагінація детермінована.\n"
-            "- SaveAsync(): File.WriteAllTextAsync у файл за FilePath; статичний "
-            "SemaphoreSlim (1 мітка) — одночасно пише лише один writer.\n"
-            "- Parallell.RunAsync: Parallel.For паралельно створює об'єкти через "
-            "Song.CreateNew() та запускає CrudServiceAsync<Song>.CreateAsync; після join point — "
-            "Task.WhenAll; час — Stopwatch, реальна кількість — з колекції сервісу.\n"
-            "- SynchronizationDemos: lock (8 потоків × 10 000 increments), SemaphoreSlim "
-            "(10 worker'ів, maxConcurrency = 3), AutoResetEvent (producer/consumer, M = 500); "
-            "лічильники — Interlocked.\n"
-            "- Program.cs: блок ЛР1 + блок ЛР2 (Parallel+CRUD, LINQ min/max/average, "
-            "пагінація, IEnumerable foreach, SaveAsync у файл, lock, SemaphoreSlim, AutoResetEvent).\n"
-            "- MusicContest.Common.Tests (xUnit): 22 тестів — CRUD-семантика bool, пагінація, "
-            "IEnumerable, thread-safe parallel create (8 × 500 = 4000), SaveAsync, concurrent "
-            "SaveAsync, Parallell.RunAsync."
-        )
-        features_md = (
-            "1. Async generic CRUD: CreateAsync/ReadAsync/ReadAllAsync/\n"
-            "   ReadAllAsync(page, amount)/UpdateAsync/RemoveAsync/SaveAsync — за інтерфейсом завдання.\n"
-            "2. Thread safety: ConcurrentDictionary<Guid, T> (вбудована thread-safe колекція .NET);\n"
-            "   snapshot для читання; файловий запис захищений SemaphoreSlim.\n"
-            "3. IEnumerable<T>: foreach безпосередньо по сервісу (enumerator над snapshot).\n"
-            "4. Пагінація: Skip/Take, сторінки з 1; поза межами — порожня колекція;\n"
-            "   page/amount <= 0 — ArgumentOutOfRangeException.\n"
-            "5. CreateNew(): статичні фабрики Song/SoloSinger/VocalGroup/Performance\n"
-            "   (Random.Shared — thread-safe генератор).\n"
-            "6. Parallell: Parallel.For створює 2000 Song; додавання через CRUD-сервіс,\n"
-            "   зшивання Task.WhenAll після join point; Stopwatch; реальна кількість з сервісу.\n"
-            "7. LINQ на цифровій властивості DurationSeconds: Min, Max, Average,\n"
-            "   Where, Select, OrderByDescending, Aggregate, Skip/Take.\n"
-            "8. SaveAsync(): колекція збережена у JSON за FilePath; 3 конкурентні\n"
-            "   SaveAsync — файл залишається валідним (усі елементи).\n"
-            "9. Примітиви синхронізації: lock (Expected/Actual/Match), SemaphoreSlim\n"
-            "   (виміряний максимум одночасних worker'ів Interlocked), AutoResetEvent\n"
-            "   (producer/consumer на ConcurrentQueue, Produced == Consumed == M).\n"
-            "10. Unit tests (xUnit): 22 тестів."
-        )
-
-        pdf.add_page()
-        heading("Лабораторна робота №2 — MusicContest (C#/.NET 8)", 16)
-        body("Студент: Галенко; група: 404TH; варіант оцінювання: TK. Репозиторій: NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab, фінальна гілка lab2.", 11)
-        pdf.ln(4)
-        heading("Тема та мета", 13)
-        body(theme, 12)
-
-        pdf.ln(2)
-        heading("Архітектура та реалізація", 13)
-        body(architecture, 11)
-
-        pdf.ln(2)
-        heading("Виконані завдання", 13)
-        body(features_md[:2000], 11)
-
-        pdf.add_page()
-        heading("Реальні результати виконання консольного застосунку", 13)
-        body(f"Run (dotnet run --project MusicContest.Console) — {self.exit_code}", 12)
-        mono(self.run_output_full())
-
-        pdf.add_page()
-        heading("Build та тести", 13)
-        body("Build (dotnet build):", 12)
-        mono(self.build_summary())
-        pdf.ln(2)
-        body("Tests (dotnet test MusicContest.Common.Tests):", 12)
-        mono(self.test_summary_text())
-        pdf.ln(2)
-        heading("Висновок:", 13)
-        body(self.conclusion, 11)
-
-        return bytes(pdf.output())
-
+def paragraph(text: str, style: ParagraphStyle) -> Paragraph:
+    return Paragraph(escape(text).replace("\n", "<br/>"), style)
 
 def main() -> None:
-    report = Report()
-    pdf_bytes = report.render()
-    with open(f"{DOCS}/Lab2_Report.pdf", "wb") as f:
-        f.write(pdf_bytes)
+    build_log = read_required("Lab2_build.txt")
+    test_log = read_required("Lab2_test.txt")
+    output_log = read_required("Lab2_output.txt")
+    regular, bold = register_fonts()
 
-    print("PDF згенеровано:", len(pdf_bytes), "bytes")
-    print("Build:", report.build_status)
-    print("Tests:", report.test_summary)
-    print("Exit code:", report.exit_code)
-    print("Parallell:", report.parallel_objects, "|", report.parallel_time)
-    print("LINQ:", report.min_duration, "/", report.max_duration, "/", report.avg_duration)
-    print("Save:", report.saved_elements)
-    print("Lock:", report.lock_expected, "/", report.lock_actual, report.lock_match)
-    print("Semaphore:", report.semaphore_max)
-    print("Producer/Consumer:", report.produced_consumed)
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name="ReportTitle", fontName=bold, fontSize=20, leading=25,
+        alignment=TA_CENTER, textColor=colors.HexColor("#17324d"), spaceAfter=4*mm
+    ))
+    styles.add(ParagraphStyle(
+        name="ReportSubtitle", fontName=regular, fontSize=10, leading=14,
+        alignment=TA_CENTER, textColor=colors.HexColor("#526477"), spaceAfter=7*mm
+    ))
+    styles.add(ParagraphStyle(
+        name="SectionUA", fontName=bold, fontSize=13, leading=17,
+        textColor=colors.HexColor("#17324d"), spaceBefore=4*mm, spaceAfter=2*mm
+    ))
+    styles.add(ParagraphStyle(
+        name="BodyUA", fontName=regular, fontSize=9.2, leading=13, spaceAfter=2*mm
+    ))
+    styles.add(ParagraphStyle(
+        name="SmallUA", fontName=regular, fontSize=7.8, leading=10
+    ))
+    styles.add(ParagraphStyle(
+        name="LogUA", fontName=regular, fontSize=7, leading=9,
+        leftIndent=2*mm, rightIndent=2*mm
+    ))
 
+    story = [
+        Spacer(1, 9*mm),
+        Paragraph("ЛАБОРАТОРНА РОБОТА №2", styles["ReportTitle"]),
+        Paragraph("MusicContest · Багатопотоковість, асинхронність, IEnumerable та LINQ",
+                  styles["ReportSubtitle"]),
+    ]
+
+    meta = [
+        [paragraph("Предметна область", styles["SmallUA"]),
+         paragraph("Український вокальний конкурс", styles["SmallUA"])],
+        [paragraph("Технології", styles["SmallUA"]),
+         paragraph("C#, .NET 8, Task, Parallel, LINQ, JSON, xUnit", styles["SmallUA"])],
+        [paragraph("Гілка", styles["SmallUA"]), paragraph("lab2", styles["SmallUA"])],
+        [paragraph("Джерела результатів", styles["SmallUA"]),
+         paragraph("Фактичні журнали dotnet build, dotnet test і dotnet run", styles["SmallUA"])],
+    ]
+    meta_table = Table(meta, colWidths=[45*mm, 125*mm])
+    meta_table.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#eaf0f5")),
+        ("GRID",(0,0),(-1,-1),0.4,colors.HexColor("#cbd5df")),
+        ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+        ("LEFTPADDING",(0,0),(-1,-1),7),
+        ("RIGHTPADDING",(0,0),(-1,-1),7),
+        ("TOPPADDING",(0,0),(-1,-1),6),
+        ("BOTTOMPADDING",(0,0),(-1,-1),6),
+    ]))
+    story += [
+        meta_table,
+        Paragraph("Мета роботи", styles["SectionUA"]),
+        Paragraph(
+            "Реалізувати асинхронний узагальнений CRUD-сервіс із потокобезпечним "
+            "сховищем, пагінацією, підтримкою IEnumerable та асинхронним збереженням JSON. "
+            "Продемонструвати паралельне створення об'єктів, LINQ-запити й засоби синхронізації.",
+            styles["BodyUA"]
+        ),
+        Paragraph("Реалізовані складові", styles["SectionUA"])
+    ]
+
+    features = [
+        ("Асинхронний CRUD", "ICrudServiceAsync<T>, CreateAsync, ReadAsync, ReadAllAsync, UpdateAsync, RemoveAsync, SaveAsync."),
+        ("Потокобезпечне сховище", "ConcurrentDictionary<Guid, T> та формування знімка колекції для читання й перебирання."),
+        ("Паралельне створення", "Parallel.For створює 2000 об'єктів; завершення асинхронних операцій очікується через Task.WhenAll."),
+        ("LINQ", "Min, Max, Average, Where, Select, Aggregate, OrderByDescending, Skip і Take."),
+        ("Синхронізація", "lock, SemaphoreSlim, AutoResetEvent, Interlocked та демонстрація producer/consumer."),
+        ("Збереження", "Асинхронний запис JSON із захистом від одночасного перезапису файла."),
+        ("Модульні тести", "xUnit-тести для CRUD, пагінації, IEnumerable, паралельного доступу та збереження."),
+        ("Демонстраційні дані", "Українські імена виконавців, назви колективів і пісні з набору UkrainianMusicData."),
+    ]
+    rows = [[paragraph("Складова", styles["SmallUA"]),
+             paragraph("Реалізація", styles["SmallUA"])]]
+    rows += [[paragraph(a, styles["SmallUA"]), paragraph(b, styles["SmallUA"])] for a,b in features]
+    ft = Table(rows, colWidths=[43*mm, 127*mm], repeatRows=1)
+    ft.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#eaf0f5")),
+        ("GRID",(0,0),(-1,-1),0.4,colors.HexColor("#cbd5df")),
+        ("VALIGN",(0,0),(-1,-1),"TOP"),
+        ("LEFTPADDING",(0,0),(-1,-1),6),
+        ("RIGHTPADDING",(0,0),(-1,-1),6),
+        ("TOPPADDING",(0,0),(-1,-1),5),
+        ("BOTTOMPADDING",(0,0),(-1,-1),5),
+    ]))
+    story += [ft, Paragraph("Схема виконання", styles["SectionUA"])]
+
+    flow = [[
+        paragraph("Program.cs<br/>консольний запуск", styles["SmallUA"]),
+        paragraph("Parallell<br/>Parallel.For", styles["SmallUA"]),
+        paragraph("Song.CreateNew<br/>українські дані", styles["SmallUA"]),
+        paragraph("CrudServiceAsync<br/>ConcurrentDictionary", styles["SmallUA"]),
+        paragraph("LINQ / JSON<br/>результати", styles["SmallUA"]),
+    ]]
+    flow_table = Table(flow, colWidths=[34*mm]*5)
+    flow_table.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),colors.HexColor("#f3f6f9")),
+        ("BOX",(0,0),(-1,-1),0.5,colors.HexColor("#aab8c5")),
+        ("INNERGRID",(0,0),(-1,-1),0.5,colors.HexColor("#aab8c5")),
+        ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+        ("TOPPADDING",(0,0),(-1,-1),8),
+        ("BOTTOMPADDING",(0,0),(-1,-1),8),
+    ]))
+    story += [
+        flow_table,
+        PageBreak(),
+        Paragraph("Результати збірки", styles["SectionUA"]),
+        Preformatted("\n".join(build_log.splitlines()[-14:]), styles["LogUA"]),
+        Paragraph("Результати автоматизованих тестів", styles["SectionUA"]),
+        Preformatted("\n".join(test_log.splitlines()[-18:]), styles["LogUA"]),
+        PageBreak(),
+        Paragraph("Фактичний вивід консольного застосунку", styles["SectionUA"]),
+        Paragraph(
+            "Нижче наведено журнал, записаний під час запуску застосунку. "
+            "Показники LINQ, паралельного створення та синхронізації отримано з виконання програми.",
+            styles["BodyUA"]
+        ),
+        Preformatted(output_log, styles["LogUA"]),
+    ]
+
+    def footer(canvas, doc):
+        canvas.saveState()
+        canvas.setFont(regular, 8)
+        canvas.setFillColor(colors.HexColor("#667788"))
+        canvas.drawString(18*mm, 10*mm, "MusicContest · Лабораторна робота №2")
+        canvas.drawRightString(A4[0]-18*mm, 10*mm, f"Сторінка {doc.page}")
+        canvas.restoreState()
+
+    doc = SimpleDocTemplate(
+        str(OUTPUT), pagesize=A4, rightMargin=18*mm, leftMargin=18*mm,
+        topMargin=16*mm, bottomMargin=18*mm,
+        title="Лабораторна робота №2 — MusicContest", author="MusicContest"
+    )
+    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    print(f"Створено {OUTPUT} ({OUTPUT.stat().st_size} байтів)")
 
 if __name__ == "__main__":
     main()
