@@ -114,7 +114,7 @@ def main() -> None:
     ]
 
     features = [
-        ("Асинхронний CRUD", "ICrudServiceAsync<T>, CreateAsync, ReadAsync, ReadAllAsync, UpdateAsync, RemoveAsync, SaveAsync."),
+        ("Асинхронний CRUD", "CRUD-операції над ConcurrentDictionary виконуються синхронно; Task.Yield планує продовження. SaveAsync використовує File.WriteAllTextAsync."),
         ("Потокобезпечне сховище", "ConcurrentDictionary<Guid, T> та формування знімка колекції для читання й перебирання."),
         ("Паралельне створення", "Parallel.For створює 2000 об'єктів; завершення асинхронних операцій очікується через Task.WhenAll."),
         ("LINQ", "Min, Max, Average, Where, Select, Aggregate, OrderByDescending, Skip і Take."),
