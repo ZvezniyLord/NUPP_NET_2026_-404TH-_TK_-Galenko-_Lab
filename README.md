@@ -204,3 +204,37 @@ dotnet run --project MusicContest.Console
 
 Готова лабораторна робота №2 подається через Pull Request із гілки `lab2`:
 у `master`, або у `lab1`, якщо PR із `lab1` ще не закритий. Фактично відкритий Pull Request #2 `lab2 → lab1` (PR лабораторної №1 ще відкритий): https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/pull/2. Експериментальна гілка `lab2-qwen38` для здачі не використовується.
+
+
+## ЛАБОРАТОРНА РОБОТА №3: Entity Framework Core + SQLite
+
+- Гілка `lab3` продовжує `lab2`, попередні демонстрації збережено.
+- `MusicContest.Infrastructure/Models`: моделі з `DatabaseId int` (PK) та `Id Guid` (контракт CRUD).
+- `MusicContestContext`: Fluent API, **TPT** (сольний виконавець / гурт), зв'язки **1:1** (ParticipantProfile), **1:N** (Performances) та **M:N** (ParticipantSongs).
+- `IRepository<T>` — контракт у `MusicContest.Common`, `EfRepository<T>` — реалізація в Infrastructure.
+- `RepositoryCrudServiceAsync<T>` — generic CRUD на базі репозиторію, із `SaveAsync`, читанням за Guid та пагінацією.
+- Міграція EF Core: `MusicContest.Infrastructure/Migrations/20261121130000_InitialCreate.cs`.
+- SQLite-файл `docs/musiccontest.db` створюється виконанням програми та комітиться до Git разом зі звітом.
+
+### Запуск лабораторної №3
+
+```bash
+dotnet restore MusicContest.sln
+dotnet build MusicContest.sln
+dotnet test MusicContest.sln
+dotnet run --project MusicContest.Console -- --lab3-only
+```
+
+`MusicContestContext` виконує `Database.MigrateAsync()` перед роботою, отже
+міграція застосовується автоматично. Дані зберігаються в
+`docs/musiccontest.db`, не видаляються між запусками. Демонстраційне наповнення
+виконується одноразово, повторний запуск не дублює записи.
+
+PDF-звіт та візуалізації з **реального вмісту файлу SQLite** генерує
+`python scripts/generate_lab3_report.py`. Файли автоматично оновлюються
+GitHub Actions при push до `lab3`. Відповіді на запитання — `LAB3_CONTROL_QUESTIONS.md`.
+
+**Важливо:** зображення таблиць у звіті — візуалізації результатів
+реальних SQL-запитів до SQLite, а не скріншоти програми DB Browser.
+За буквального трактування вимоги викладача додатково зробіть знімок
+вікна DB Browser for SQLite з відкритим `docs/musiccontest.db`.
