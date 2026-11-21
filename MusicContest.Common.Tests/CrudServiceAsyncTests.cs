@@ -178,7 +178,7 @@ public class CrudServiceAsyncTests
         return service;
     }
 
-    // Тест 10: пагінація — page=2, amount=20 у колекції з 50 елементів
+    // Тест 10 перевіряє другу сторінку з 20 елементів у колекції з 50 записів.
     // повертає елементи з позицій 21-40 того самого порядку, що ReadAllAsync.
     [Fact]
     public async Task ReadAllAsync_Pagination_ReturnsCorrectSlice()
@@ -191,11 +191,11 @@ public class CrudServiceAsyncTests
         // Детермінований порядок: обидва зчитування впорядковані за Id.
         List<Song> ordered = (await service.ReadAllAsync()).ToList();
 
-        Assert.Same(ordered[20], page[0]);   // 21-й елемент — перший на сторінці 2
-        Assert.Same(ordered[39], page[19]);  // 40-й елемент — останній на сторінці 2
+        Assert.Same(ordered[20], page[0]);   // 21-й елемент є першим на другій сторінці.
+        Assert.Same(ordered[39], page[19]);  // 40-й елемент є останнім на другій сторінці.
 
         List<Song> firstPage = (await service.ReadAllAsync(page: 1, amount: 20)).ToList();
-        Assert.NotSame(ordered[0], page[0]); // сторінка 1 — інша частина колекції
+        Assert.NotSame(ordered[0], page[0]); // перша сторінка містить іншу частину колекції.
     }
 
     // Тест 11: сторінка за межами колекції → ПОРОЖНЯ колекція (не помилка).
@@ -301,7 +301,7 @@ public class CrudServiceAsyncTests
 
     private static string GetTempJsonFile()
     {
-        // Унікальний тимчасовий файл: кожен тест — зі своїм файлом.
+        // Кожен тест використовує окремий тимчасовий файл.
         return Path.Combine(
             Path.GetTempPath(),
             $"musiccontest_test_{Guid.NewGuid():N}.json");
@@ -315,7 +315,7 @@ public class CrudServiceAsyncTests
         }
         catch
         {
-            // Файлу не було — нічого чистити.
+            // Файл не створювався, тому очищення не потрібне.
         }
     }
 
@@ -361,7 +361,7 @@ public class CrudServiceAsyncTests
             () => service.SaveAsync());
     }
 
-    // Тест 18: конкурентні SaveAsync на ОДИН файл — фінальний JSON валідний
+    // Тест 18 перевіряє конкурентні виклики SaveAsync для одного файла. Фінальний JSON має залишатися валідним.
     // і містить рівно стільки елементів, скільки у сервісі (не "подвійно").
     [Fact]
     public async Task ConcurrentSaveAsync_FinalFileIsValid()
