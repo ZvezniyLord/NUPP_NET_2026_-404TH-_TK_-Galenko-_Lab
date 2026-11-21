@@ -50,8 +50,8 @@ public class VocalGroup : ContestParticipant
 
     // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
     // Фабрика — метод, який повертає готовий об'єкт.
-    // Random.Shared — спільна thread-safe копія Random:
-    // метод можна викликати з безлічі потоків одночасно.
+    // Random.Shared є спільним потокобезпечним генератором випадкових чисел.
+    // Його можна викликати з кількох потоків одночасно.
     public static VocalGroup CreateNew()
     {
         var seeds = UkrainianMusicData.Groups;
