@@ -170,7 +170,7 @@ def main() -> None:
 
     doc = SimpleDocTemplate(
         str(OUTPUT), pagesize=A4, rightMargin=18*mm, leftMargin=18*mm,
-        topMargin=16*mm, bottomMargin=18*mm, title="Лабораторна робота №1 — MusicContest",
+        topMargin=16*mm, bottomMargin=18*mm, title="Лабораторна робота №1: MusicContest",
         author="MusicContest"
     )
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
