@@ -6,7 +6,9 @@
 
 - `MusicContest.Common` — моделі, CRUD-сервіс, метод розширення.
 - `MusicContest.Console` — демонстрація роботи CRUD, статичних конструкцій, делегата, події та серіалізації.
-- `docs/Lab1_Report.pdf` — PDF із результатом роботи консольного застосунку.
+- `docs/Lab1_Report.pdf` — PDF-звіт із фактичним виводом консольного застосунку.
+- `docs/Lab1_build.txt` і `docs/Lab1_output.txt` — журнали збірки та запуску, з яких формується PDF-звіт.
+- `scripts/generate_lab1_report.py` — відтворюваний генератор звіту.
 
 ## Класи моделі
 
@@ -30,6 +32,14 @@
 dotnet restore
 dotnet run --project MusicContest.Console
 ```
+
+## Звіт і перевірка
+
+PDF формується автоматично з фактичних журналів збірки та запуску. У звіті наведено мету, реалізовані можливості, результати `dotnet build` і консольний вивід.
+
+- [PDF-звіт](docs/Lab1_Report.pdf)
+- [Журнал збірки](docs/Lab1_build.txt)
+- [Результат запуску](docs/Lab1_output.txt)
 
 ## Git / GitHub
 
