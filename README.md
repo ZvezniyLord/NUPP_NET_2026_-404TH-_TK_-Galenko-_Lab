@@ -347,7 +347,7 @@ var page2 = songs
 
 ```mermaid
 flowchart TB
-    BASE["ContestParticipants<br/>DatabaseId=1 | Олена Ковальчук | Україна"]
+    BASE["ContestParticipants<br/>1 = Олена Ковальчук<br/>2 = Дніпровські голоси"]
     SOLO["SoloSingers<br/>DatabaseId=1 | сопрано | досвід=8"]
     GROUP["VocalGroups<br/>DatabaseId=2 | фолк | учасників=5"]
     BASE -->|"той самий PK=FK"| SOLO
