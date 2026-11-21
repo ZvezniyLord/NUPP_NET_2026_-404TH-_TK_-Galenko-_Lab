@@ -8,6 +8,12 @@ using MusicContest.Common.Services;
 Console.OutputEncoding = Encoding.UTF8;
 
 // Для CI: тільки EF Core демонстрація, без повторення ЛР1 і ЛР2.
+if (args.Contains("--lab3-nosql"))
+{
+    await MusicContest.ConsoleApp.Lab3NoSqlDemo.RunAsync();
+    return;
+}
+
 if (args.Contains("--lab3-only"))
 {
     await MusicContest.ConsoleApp.Lab3Demo.RunAsync();
