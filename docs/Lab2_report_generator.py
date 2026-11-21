@@ -183,7 +183,7 @@ def main() -> None:
     doc = SimpleDocTemplate(
         str(OUTPUT), pagesize=A4, rightMargin=18*mm, leftMargin=18*mm,
         topMargin=16*mm, bottomMargin=18*mm,
-        title="Лабораторна робота №2 — MusicContest", author="MusicContest"
+        title="Лабораторна робота №2: MusicContest", author="MusicContest"
     )
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
     print(f"Створено {OUTPUT} ({OUTPUT.stat().st_size} байтів)")
