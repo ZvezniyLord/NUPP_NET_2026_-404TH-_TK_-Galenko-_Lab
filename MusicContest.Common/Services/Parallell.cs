@@ -57,8 +57,11 @@ public static class Parallell
 
         stopwatch.Stop();
 
-        // Підраховуємо успішні додавання. Фабричний метод створює новий Guid Id.
-        int created = addedResults.Count(added => added);
+        // Перевіряємо результати додавання перед підрахунком елементів.
+        if (addedResults.Any(added => !added))
+        {
+            throw new InvalidOperationException("Не всі об'єкти вдалося додати до CRUD-сервісу.");
+        }
 
         // Окремо читаємо кількість елементів із самого сервісу.
         int actualCount = (await service.ReadAllAsync()).Count();
