@@ -12,13 +12,13 @@ namespace MusicContest.Common.Models;
 // abstract class = абстрактний клас.
 // ContestParticipant = учасник конкурсу.
 // Це спільна база для різних типів учасників.
-// Створити new ContestParticipant() напряму не можна — створюємо конкретного нащадка.
+// Екземпляр ContestParticipant не можна створити безпосередньо. Потрібно використати конкретний клас-нащадок.
 public abstract class ContestParticipant : IEntity
 {
     // СТАТИЧНЕ ПОЛЕ.
-    // Field = поле. На відміну від властивості з get/set, це безпосередня змінна класу.
-    // static означає: існує лише одна спільна копія _createdCount
-    // для всіх об'єктів SoloSinger і VocalGroup.
+    // Field означає поле класу. На відміну від властивості з get/set, це безпосередня змінна.
+    // static означає, що _createdCount має одну спільну копію
+    // для всіх екземплярів SoloSinger і VocalGroup.
     // private захищає лічильник від довільної зміни з Program.cs.
     private static int _createdCount;
 
