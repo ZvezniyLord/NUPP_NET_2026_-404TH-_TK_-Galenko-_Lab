@@ -24,8 +24,10 @@ public sealed class MongoRepository<T>(IMongoCollection<T> collection) : IReposi
             throw new KeyNotFoundException("MongoDB: документа для оновлення немає.");
     }
 
-    public async Task Delete(T entity) =>
+    public async Task Delete(T entity)
+    {
         await collection.DeleteOneAsync(x => x.Id == entity.Id);
+    }
 
     // MongoDB Insert/Replace/Delete виконуються негайно, окремого SaveChanges немає.
     public Task<int> SaveChangesAsync() => Task.FromResult(0);
