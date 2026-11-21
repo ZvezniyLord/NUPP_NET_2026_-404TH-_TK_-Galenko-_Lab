@@ -1,27 +1,39 @@
 # Подання лабораторної роботи №2
 
-**Лабораторна робота №2.** Багатопотоковість. Асинхронність. IEnumerable. LINQ.
-Проєкт: MusicContest (C#/.NET 8). Студент: Галенко, група 404TH (варіант TK).
+**Тема:** багатопотоковість, асинхронність, IEnumerable та LINQ.  
+**Проєкт:** MusicContest, C# / .NET 8.  
+**Студент:** Галенко. **Група:** 404TH. **Варіант:** TK.
 
-## Посилання
+## Матеріали
 
-- Фінальна гілка: https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/tree/lab2
-- Pull Request (lab2 → lab1, лабораторна №1 ще не об'єднана): https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/pull/2
-- PDF-звіт: docs/Lab2_Report.pdf (у гілці lab2)
+- [Гілка lab2](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/tree/lab2)
+- [Pull Request №2: lab2 → lab1](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/pull/2)
+- [PDF-звіт лабораторної №2](Lab2_Report.pdf)
+- [Журнал збірки](Lab2_build.txt)
+- [Журнал тестування](Lab2_test.txt)
+- [Журнал роботи консольного застосунку](Lab2_output.txt)
+- [Відповіді на контрольні запитання](../LAB2_CONTROL_QUESTIONS.md)
 
-## Інструкція перевірки
+## Виконані завдання
 
-1. Клонувати репозиторій та перевірити гілку `lab2`:
-   `git clone https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab.git` , `git checkout lab2`.
-2. Зібрати: `dotnet restore` та `dotnet build MusicContest.sln` — очікуваний код завершення 0, 0 помилок.
-3. Тести: `dotnet test MusicContest.Common.Tests` — очікуваний код завершення 0; Expected: Passed 22 / Failed 0.
-4. Запуск: `dotnet run --project MusicContest.Console` — код завершення 0; у консолі видно Parallel.For (2000 із 2000 об'єктів через CRUD-сервіс), LINQ Min/Max/Average по реально створеній колекції, пагінацію, IEnumerable foreach, конкурентне SaveAsync (у JSON 2000 елементів), демо lock/SemaphoreSlim/AutoResetEvent.
-5. Журнали та звіт у папці `docs`: Lab2_build.txt, Lab2_test.txt, Lab2_output.txt, Lab2_Report.pdf.
+1. Реалізовано асинхронний узагальнений CRUD-сервіс із підтримкою `IEnumerable<T>`.
+2. Використано `ConcurrentDictionary<Guid, T>` та знімок колекції для безпечного читання.
+3. Реалізовано пагінацію засобами LINQ і асинхронне збереження JSON.
+4. Продемонстровано паралельне створення 2000 об'єктів через `Parallel.For` та `Task.WhenAll`.
+5. Реалізовано демонстрації `lock`, `SemaphoreSlim`, `AutoResetEvent`, `Interlocked` і producer/consumer.
+6. Додано модульні тести xUnit та спільний набір українських демонстраційних даних.
 
-## Що подається в дистанційну систему
+## Перевірка
 
-- Посилання на Pull Request (PR #2, гілка `lab2`).
-- Файл `Lab2_Report.pdf` із папки `docs` фінальної гілки.
-- Відомості: прізвище студента (Галенко), група (404TH), дисципліна (.NET / НУПП).
+Усі результати збірки, тестування та запуску записуються автоматично до журналів у папці `docs`. PDF формується скриптом `docs/Lab2_report_generator.py` без ручного введення показників.
 
-Примітка: експериментальна гілка `lab2-qwen38` не є предметом здачі; її PR (#3) залишається відкритим і не об'єднується без окремого рішення.
+Команди для самостійної перевірки:
+
+```bash
+dotnet restore MusicContest.sln
+dotnet build MusicContest.sln
+dotnet test MusicContest.Common.Tests/MusicContest.Common.Tests.csproj
+dotnet run --project MusicContest.Console
+```
+
+Експериментальна гілка `lab2-qwen38` не входить до складу подання лабораторної роботи №2.
