@@ -8,5 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\MusicContest.Common\MusicContest.Common.csproj" />
     <ProjectReference Include="..\MusicContest.Infrastructure\MusicContest.Infrastructure.csproj" />
+    <ProjectReference Include="..\MusicContest.Nosql\MusicContest.Nosql.csproj" />
   </ItemGroup>
 </Project>
