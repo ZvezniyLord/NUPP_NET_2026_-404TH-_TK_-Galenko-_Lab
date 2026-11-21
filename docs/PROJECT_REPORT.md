@@ -3,7 +3,7 @@
 **Тема:** багатопотоковість, асинхронність, IEnumerable та LINQ.  
 **Предметна область:** український вокальний конкурс.
 
-[Повний PDF-звіт](Lab2_Report.pdf) · [Результат запуску](Lab2_output.txt) · [Контрольні запитання](../LAB2_CONTROL_QUESTIONS.md) · [Тести](Lab2_test.txt)
+[Повний PDF-звіт](Lab2_Report.pdf) · [Прев’ю першої сторінки](Lab2_Report_preview.png) · [Результат запуску](Lab2_output.txt) · [Контрольні запитання](../LAB2_CONTROL_QUESTIONS.md) · [Тести](Lab2_test.txt)
 
 ## Результат
 
