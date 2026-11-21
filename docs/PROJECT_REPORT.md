@@ -19,7 +19,7 @@
 
 ## Архітектура рішення
 
-\`\`\`mermaid
+```mermaid
 flowchart LR
     A["Консольний застосунок<br/>MusicContest.Console"] --> B["Асинхронний CRUD<br/>RepositoryCrudServiceAsync"]
     B --> C["IRepository‹T›"]
@@ -28,18 +28,18 @@ flowchart LR
     E --> F[("SQLite")]
     C --> G["Додаткове завдання<br/>MongoRepository‹T›"]
     G --> H[("MongoDB")]
-\`\`\`
+```
 
 ## Реалізовано
 
 | Складова | Виконання |
 |:--|:--|
-| **Моделі та наслідування** | Окремий \`MusicContest.Infrastructure\`, стратегія **Table-per-Type (TPT)** |
+| **Моделі та наслідування** | Окремий `MusicContest.Infrastructure`, стратегія **Table-per-Type (TPT)** |
 | **Реляційні зв'язки** | **1:1** — учасник/профіль; **1:N** — учасник/виступи; **M:N** — учасники/пісні |
-| **Entity Framework Core** | \`MusicContestContext\`, конфігурація через Fluent API, міграція \`InitialCreate\` |
-| **Repository Pattern** | Універсальний \`IRepository<T>\`, \`EfRepository<T>\`, асинхронні операції CRUD |
+| **Entity Framework Core** | `MusicContestContext`, конфігурація через Fluent API, міграція `InitialCreate` |
+| **Repository Pattern** | Універсальний `IRepository<T>`, `EfRepository<T>`, асинхронні операції CRUD |
 | **Демонстрація** | Консольний застосунок, запис/читання з SQLite, пагінація, тестування |
-| **Додаткове завдання** | \`MusicContest.Nosql\`, репозиторій MongoDB, вкладені документи |
+| **Додаткове завдання** | `MusicContest.Nosql`, репозиторій MongoDB, вкладені документи |
 
 ## ERD — відносини між таблицями
 
@@ -64,14 +64,14 @@ flowchart LR
 
 ### Запуск для перевірки
 
-\`\`\`bash
+```bash
 dotnet restore MusicContest.sln
 dotnet build MusicContest.sln
 dotnet test MusicContest.sln
 dotnet run --project MusicContest.Console -- --lab3-only
-\`\`\`
+```
 
-Додаткова MongoDB-демонстрація: \`dotnet run --project MusicContest.Console -- --lab3-nosql\` (потрібна запущена MongoDB).
+Додаткова MongoDB-демонстрація: `dotnet run --project MusicContest.Console -- --lab3-nosql` (потрібна запущена MongoDB).
 
 Докладний опис класів, термінів, зв'язків, TPT і механізмів ЛР1–ЛР3: **[навчально-науковий довідник README.md](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/README.md)**.
 
