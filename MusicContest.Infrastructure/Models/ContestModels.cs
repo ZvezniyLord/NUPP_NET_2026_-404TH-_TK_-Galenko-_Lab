@@ -3,7 +3,7 @@ using MusicContest.Common.Models;
 namespace MusicContest.Infrastructure.Models;
 
 // EF-моделі відокремлені від доменних класів ЛР1.
-// DatabaseId використовується для FK/PK, Guid Id — для контракту CRUD ЛР2.
+// DatabaseId використовується як PK або FK. Guid Id зберігає сумісність із CRUD-контрактом ЛР2.
 public abstract class ContestParticipantModel : IEntity
 {
     public int DatabaseId { get; set; }
