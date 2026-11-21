@@ -1,4 +1,4 @@
 Test run for /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common.Tests/bin/Release/net8.0/MusicContest.Common.Tests.dll (.NETCoreApp,Version=v8.0)
 A total of 1 test files matched the specified pattern.
 
-Passed!  - Failed:     0, Passed:    22, Skipped:     0, Total:    22, Duration: 265 ms - MusicContest.Common.Tests.dll (net8.0)
+Passed!  - Failed:     0, Passed:    22, Skipped:     0, Total:    22, Duration: 178 ms - MusicContest.Common.Tests.dll (net8.0)
