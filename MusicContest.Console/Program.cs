@@ -123,7 +123,7 @@ Console.WriteLine("6. Дані після Save та Load:");
 PrintParticipants(loadedService.ReadAll());
 Console.WriteLine($"JSON-файл: {filePath}");
 
-// Окремий режим демонстрації ЛР1 — без блоків наступних лабораторних.
+// Окремий режим демонстрації ЛР1 не запускає блоки наступних лабораторних.
 if (args.Contains("--lab1-only")) return;
 
 // ============================================================
