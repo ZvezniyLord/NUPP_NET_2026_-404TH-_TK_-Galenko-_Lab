@@ -9,6 +9,7 @@
 - `MusicContest.Common` — моделі, CRUD-сервіс, метод розширення.
 - `MusicContest.Console` — демонстрація роботи CRUD, статичних конструкцій, делегата, події та серіалізації.
 - `docs/Lab1_Report.pdf` — PDF-звіт із фактичним виводом консольного застосунку.
+- `docs/SUBMISSION.md` — короткий опис виконання та матеріали для подання.
 - `docs/Lab1_build.txt` і `docs/Lab1_output.txt` — журнали збірки та запуску, з яких формується PDF-звіт.
 - `scripts/generate_lab1_report.py` — відтворюваний генератор звіту.
 
