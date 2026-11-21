@@ -1,0 +1,64 @@
+name: Lab2 build, tests and report
+on:
+  push:
+    branches: [lab2]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Отримати код
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Налаштувати .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Встановити засоби формування PDF
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-dejavu-core
+          python -m pip install --quiet reportlab
+
+      - name: Відновити залежності
+        run: dotnet restore MusicContest.sln
+
+      - name: Зібрати рішення
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet build MusicContest.sln --no-restore -c Release 2>&1 | tee docs/Lab2_build.txt
+
+      - name: Виконати автоматизовані тести
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet test MusicContest.Common.Tests/MusicContest.Common.Tests.csproj --no-build -c Release 2>&1 | tee docs/Lab2_test.txt
+
+      - name: Запустити консольний застосунок
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet run --project MusicContest.Console -c Release --no-build 2>&1 | tee docs/Lab2_output.txt
+          echo "Run exit code: 0" >> docs/Lab2_output.txt
+
+      - name: Сформувати PDF-звіт із фактичних журналів
+        run: python docs/Lab2_report_generator.py
+
+      - name: Зберегти звіт і журнали в гілці lab2
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/Lab2_Report.pdf docs/Lab2_build.txt docs/Lab2_test.txt docs/Lab2_output.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(lab2): regenerate report from verified build, tests and console output [skip ci]"
+            git push origin HEAD:lab2
+          fi
