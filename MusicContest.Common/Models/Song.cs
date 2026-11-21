@@ -1,3 +1,5 @@
+using MusicContest.Common.Data;
+
 namespace MusicContest.Common.Models;
 
 // Song = пісня.
@@ -55,14 +57,10 @@ public class Song : IEntity
     // використовують паралельні потоки.
     public static Song CreateNew()
     {
-        // Random.Shared: безпечний для потоку instance (копія) Random.
-        Random random = Random.Shared;
-
-        return new Song(
-            $"Song-{Guid.NewGuid():N}",             // унікальна назва
-            $"Artist-{random.Next(1, 1000)}",        // оригінальний виконавець
-            random.Next(120, 360),                   // тривалість: 2-6 хвилин
-            new[] { "C major", "F major", "G major", "A minor", "D minor" }
-                [random.Next(0, 5)]);                // тональність
+        var seeds = UkrainianMusicData.Songs;
+        var selected = seeds[Random.Shared.Next(seeds.Length)];
+        // Тривалість генерується окремо, щоб продемонструвати агрегати LINQ.
+        return new Song(selected.Title, selected.OriginalArtist,
+            Random.Shared.Next(120, 360), selected.Key);
     }
 }
