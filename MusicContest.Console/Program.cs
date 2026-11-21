@@ -7,6 +7,19 @@ using MusicContest.Common.Services;
 // UTF-8 потрібен, щоб українські символи коректно відображалися в консолі.
 Console.OutputEncoding = Encoding.UTF8;
 
+// Для CI: тільки EF Core демонстрація, без повторення ЛР1 і ЛР2.
+if (args.Contains("--lab3-nosql"))
+{
+    await MusicContest.ConsoleApp.Lab3NoSqlDemo.RunAsync();
+    return;
+}
+
+if (args.Contains("--lab3-only"))
+{
+    await MusicContest.ConsoleApp.Lab3Demo.RunAsync();
+    return;
+}
+
 Console.WriteLine("=== MUSIC CONTEST CRUD DEMO ===");
 Console.WriteLine();
 
@@ -19,7 +32,7 @@ CrudService<ContestParticipant> participantService = new();
 
 // Створюємо об'єкт SoloSinger.
 SoloSinger singer = new(
-    "Astra",       // stageName = сценічне ім'я
+    "Олена Ковальчук",       // stageName = сценічне ім'я
     "Україна",     // country = країна
     21,            // age = вік
     "сопрано",     // voiceType = тип голосу
@@ -32,11 +45,11 @@ SoloSinger singer = new(
 
 // Другий тип нащадка — VocalGroup.
 VocalGroup group = new(
-    "Northern Lights",
+    "Дніпровські голоси",
     "Україна",
     24,
     4,             // memberCount = кількість учасників
-    "pop / soul",  // genre = жанр
+    "народний поп",  // genre = жанр
     true)          // hasBackingVocals = є бек-вокал
 {
     Id = Guid.Parse("00000000-0000-0000-0000-000000000002")
@@ -59,7 +72,7 @@ Console.WriteLine($"Коротко: {found.ToShortInfo()}");
 // UPDATE = оновлення.
 Console.WriteLine();
 Console.WriteLine("3. Після Update:");
-singer.StageName = "Astra Nova";
+singer.StageName = "Олена Ковальчук (фіналістка)";
 participantService.Update(singer);
 PrintParticipants(participantService.ReadAll());
 
@@ -73,7 +86,7 @@ PrintParticipants(participantService.ReadAll());
 Console.WriteLine();
 Console.WriteLine($"Створено об'єктів-нащадків ContestParticipant: {ContestParticipant.GetCreatedCount()}");
 
-Song song = Song.FromMinutes("Gravity", "Sara Bareilles", 3.9, "F major");
+Song song = Song.FromMinutes("Червона рута", "Володимир Івасюк", 3.9, "F major");
 Console.WriteLine($"Пісня: {song.Title}; тривалість: {song.GetFormattedDuration()}");
 
 // Створюємо об'єкт виступу.
@@ -109,6 +122,9 @@ Console.WriteLine();
 Console.WriteLine("6. Дані після Save та Load:");
 PrintParticipants(loadedService.ReadAll());
 Console.WriteLine($"JSON-файл: {filePath}");
+
+// Окремий режим демонстрації ЛР1 — без блоків наступних лабораторних.
+if (args.Contains("--lab1-only")) return;
 
 // ============================================================
 // ЛАБОРАТОРНА РОБОТА №2
@@ -298,3 +314,9 @@ static void PrintParticipants(IEnumerable<ContestParticipant> participants)
         Console.WriteLine($"- {participant.Id} | {participant.GetDescription()}");
     }
 }
+
+// Звіт ЛР2 не повинен запускати БД із ЛР3.
+if (args.Contains("--lab2-only")) return;
+
+// ЛР3: робота з реляційною SQLite через EF Core + Repository.
+await MusicContest.ConsoleApp.Lab3Demo.RunAsync();

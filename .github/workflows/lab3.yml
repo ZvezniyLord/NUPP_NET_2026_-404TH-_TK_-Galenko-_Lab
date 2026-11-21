@@ -1,0 +1,111 @@
+name: Lab3 EF Core SQLite verification
+on:
+  push:
+    branches: [lab3]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-report:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Python report dependencies
+        run: python -m pip install --quiet reportlab pillow pymongo
+
+      - name: Restore
+        run: dotnet restore MusicContest.sln
+
+      - name: Build
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet build MusicContest.sln --no-restore -c Release 2>&1 | tee docs/Lab3_build.txt
+
+      - name: Test
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet test MusicContest.sln --no-build -c Release 2>&1 | tee docs/Lab3_test.txt
+
+      - name: Run Lab1 with Ukrainian examples
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet run --project MusicContest.Console -c Release --no-build -- --lab1-only 2>&1 | tee docs/Lab1_output.txt
+
+      - name: Run Lab2 with Ukrainian repertoire
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet run --project MusicContest.Console -c Release --no-build -- --lab2-only 2>&1 | tee docs/Lab2_output.txt
+
+      - name: Recreate SQLite sample database with Ukrainian-only seeds
+        run: rm -f docs/musiccontest.db docs/musiccontest.db-shm docs/musiccontest.db-wal
+
+      - name: Run EF migration and database CRUD demonstration
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet run --project MusicContest.Console -c Release --no-build -- --lab3-only 2>&1 | tee docs/Lab3_output.txt
+
+      - name: Run optional MongoDB repository demonstration
+        shell: bash
+        run: |
+          set -o pipefail
+          python - <<'PY'
+          from pymongo import MongoClient
+          import time
+          for attempt in range(30):
+              try:
+                  MongoClient("mongodb://127.0.0.1:27017", serverSelectionTimeoutMS=2000).admin.command("ping")
+                  print("MongoDB ready")
+                  break
+              except Exception:
+                  time.sleep(2)
+          else:
+              raise RuntimeError("MongoDB service did not start")
+          PY
+          dotnet run --project MusicContest.Console -c Release --no-build -- --lab3-nosql 2>&1 | tee docs/Lab3_mongodb_output.txt
+          python scripts/generate_lab3_mongo_screenshot.py
+
+      - name: Capture actual DB Browser screenshots
+        shell: bash
+        run: |
+          rm -f docs/Lab3_GUI_*.png
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq sqlitebrowser xvfb scrot xdotool
+          xvfb-run -a -s "-screen 0 1600x900x24" bash scripts/capture_db_browser.sh
+
+      - name: Generate Lab1 and Lab2 PDF reports from actual outputs
+        run: python scripts/generate_lab12_reports.py
+
+      - name: Generate genuine SQLite table views and PDF
+        run: python scripts/generate_lab3_report.py
+
+      - name: Publish generated SQLite, console logs and report
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A docs/
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(lab3): verified SQLite database and PDF report [skip ci]"
+            git push origin HEAD:lab3
+          fi

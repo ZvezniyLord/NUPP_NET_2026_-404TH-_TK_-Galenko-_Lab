@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MusicContest.Common\MusicContest.Common.csproj" />
+    <ProjectReference Include="..\MusicContest.Infrastructure\MusicContest.Infrastructure.csproj" />
   </ItemGroup>
 </Project>
