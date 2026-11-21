@@ -159,9 +159,9 @@ def main() -> None:
         flow_table,
         PageBreak(),
         Paragraph("Результати збірки", styles["SectionUA"]),
-        Preformatted("\n".join(build_log.splitlines()[-14:]), styles["LogUA"]),
+        Preformatted("\n".join(build_log.splitlines()[-14:]), styles["LogUA"], maxLineLength=88, newLineChars="    "),
         Paragraph("Результати автоматизованих тестів", styles["SectionUA"]),
-        Preformatted("\n".join(test_log.splitlines()[-18:]), styles["LogUA"]),
+        Preformatted("\n".join(test_log.splitlines()[-18:]), styles["LogUA"], maxLineLength=88, newLineChars="    "),
         PageBreak(),
         Paragraph("Фактичний вивід консольного застосунку", styles["SectionUA"]),
         Paragraph(
@@ -169,7 +169,7 @@ def main() -> None:
             "Показники LINQ, паралельного створення та синхронізації отримано з виконання програми.",
             styles["BodyUA"]
         ),
-        Preformatted(output_log, styles["LogUA"]),
+        Preformatted(output_log, styles["LogUA"], maxLineLength=88, newLineChars="    "),
     ]
 
     def footer(canvas, doc):
