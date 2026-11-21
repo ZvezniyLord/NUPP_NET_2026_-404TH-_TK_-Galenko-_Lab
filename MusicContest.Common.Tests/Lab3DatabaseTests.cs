@@ -81,16 +81,16 @@ public class Lab3DatabaseTests
         {
             var repository = new EfRepository<SongModel>(db);
             var service = new RepositoryCrudServiceAsync<SongModel>(repository);
-            var song = new SongModel { Title = "Test", DurationSeconds = 210, Key = "C" };
+            var song = new SongModel { Title = "Червона рута", DurationSeconds = 210, Key = "C" };
 
             Assert.True(await service.CreateAsync(song));
             Assert.False(await service.CreateAsync(song));
-            Assert.Equal("Test", (await service.ReadAsync(song.Id)).Title);
+            Assert.Equal("Червона рута", (await service.ReadAsync(song.Id)).Title);
             Assert.Equal(song.Id, (await repository.GetByIdAsync(song.DatabaseId)).Id);
 
-            song.Title = "Updated";
+            song.Title = "Обійми";
             Assert.True(await service.UpdateAsync(song));
-            Assert.Equal("Updated", (await service.ReadAsync(song.Id)).Title);
+            Assert.Equal("Обійми", (await service.ReadAsync(song.Id)).Title);
             Assert.True(await service.RemoveAsync(song));
             Assert.Empty(await service.ReadAllAsync());
             Assert.False(await service.RemoveAsync(song));
@@ -106,15 +106,15 @@ public class Lab3DatabaseTests
         {
             var singer = new SoloSingerModel
             {
-                StageName = "Singer", Country = "UA", Age = 22,
+                StageName = "Марія Шевченко", Country = "Україна", Age = 22,
                 VoiceType = "alto", VocalRange = "G3-D5",
                 Profile = new ParticipantProfileModel { Biography = "Bio" }
             };
             var group = new VocalGroupModel
             {
-                StageName = "Group", Country = "UA", Age = 20, Genre = "pop", MemberCount = 4
+                StageName = "Карпатська ватра", Country = "Україна", Age = 20, Genre = "фолк", MemberCount = 4
             };
-            var song = new SongModel { Title = "Example", Key = "G", DurationSeconds = 200 };
+            var song = new SongModel { Title = "Щедрик", Key = "соль мажор", DurationSeconds = 200 };
             db.Participants.AddRange(singer, group);
             db.Songs.Add(song);
             await db.SaveChangesAsync();
@@ -154,12 +154,12 @@ public class Lab3DatabaseTests
             await service.CreateAsync(new SongModel
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Title = "First"
+                Title = "Червона рута"
             });
             await service.CreateAsync(new SongModel
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                Title = "Second"
+                Title = "Обійми"
             });
             Assert.Single(await service.ReadAllAsync(2, 1));
             Assert.Empty(await service.ReadAllAsync(3, 1));
