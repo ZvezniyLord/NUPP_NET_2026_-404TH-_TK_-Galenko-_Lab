@@ -106,7 +106,7 @@ public class CrudServiceAsyncTests
         await service.CreateAsync(original);
 
         // Нова версія: той самий Id, інші дані.
-        VocalGroup updatedVersion = new VocalGroup("Updated Name", "Updated Country", 30, 5, "Jazz", true)
+        VocalGroup updatedVersion = new VocalGroup("Оновлені Дніпровські голоси", "Україна", 30, 5, "фолк", true)
         {
             Id = original.Id
         };
@@ -117,7 +117,7 @@ public class CrudServiceAsyncTests
 
         VocalGroup readBack = await service.ReadAsync(original.Id);
         Assert.Same(updatedVersion, readBack);
-        Assert.Equal("Updated Name", readBack.StageName);
+        Assert.Equal("Оновлені Дніпровські голоси", readBack.StageName);
     }
 
     // Тест 7: UpdateAsync на неіснуючий Id → false (не створює елемент).
