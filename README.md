@@ -41,22 +41,30 @@
 
 ### Async CRUD
 
-`CrudServiceAsync<T>` (`Services/CrudServiceAsync.cs`,
-`Services/ICrudServiceAsync.cs`):
+`CrudServiceAsync<T>` реалізує контракт із `Services/ICrudServiceAsync.cs`.
+Код сервісу міститься в `Services/CrudServiceAsync.cs`.
 
-- асинхронні методи за інтерфейсом завдання: `CreateAsync`/`UpdateAsync`/
-  `RemoveAsync` повертають `Task<bool>`, `ReadAsync`: `Task<T>`,
-  `ReadAllAsync` та `ReadAllAsync(page, amount)`: `Task<IEnumerable<T>>`,
-  `SaveAsync()`: `Task<bool>`;
-- внутрішня колекція: `ConcurrentDictionary<Guid, T>` є вбудованою потокобезпечною колекцією .NET (`System.Collections.Concurrent`). Її операції
-  `TryAdd`/`TryUpdate`/`TryRemove` атомарні під конкурентним доступом;
+У методах CRUD операції над `ConcurrentDictionary` виконуються синхронно,
+після чого `Task.Yield()` планує асинхронне продовження. Це демонструє
+асинхронний контракт, але не є асинхронним доступом до сховища. Реальне
+асинхронне файлове введення-виведення реалізовано в `SaveAsync` через
+`File.WriteAllTextAsync`.
+
+`CrudServiceAsync<T>`:
+
+- `CreateAsync`, `UpdateAsync` і `RemoveAsync` повертають `Task<bool>`;
+  `ReadAsync` повертає `Task<T>`, методи `ReadAllAsync` повертають
+  `Task<IEnumerable<T>>`, а `SaveAsync` має тип `Task<bool>`;
+- дані зберігаються в `ConcurrentDictionary<Guid, T>` із простору імен
+  `System.Collections.Concurrent`. Операції `TryAdd`, `TryUpdate` і
+  `TryRemove` безпечні за конкурентного доступу;
 - методи читання та ітерація повертають **snapshot** (копію послідовності,
   впорядковану за Id), а не саму внутрішню колекцію. Це забезпечує
   стабільний порядок елементів під час читання; копія не є глибокою копією
   самих об'єктів.
-- `CreateAsync` при повторному Id: `false`; `UpdateAsync`/`RemoveAsync`
-  при відсутньому Id повертають `false`. Якщо Id не знайдено, `ReadAsync`
-  генерує `KeyNotFoundException`;
+- `CreateAsync` повертає `false`, якщо Id уже існує. `UpdateAsync` і
+  `RemoveAsync` повертають `false`, коли запису немає. `ReadAsync` у разі
+  відсутнього Id генерує `KeyNotFoundException`;
 - пагінація через LINQ: `Skip((page - 1) * amount).Take(amount)`,
   нумерація сторінок починається з 1. Значення `page <= 0` або
   `amount <= 0` спричиняють `ArgumentOutOfRangeException`. Якщо сторінка
@@ -76,9 +84,10 @@
 
 ### IEnumerable<T>
 
-`ICrudServiceAsync<T> : IEnumerable<T>`. `GetEnumerator` працює зі
-snapshot, тому `foreach (var item in service)` безпечний серед
-одноразових `CreateAsync`/`UpdateAsync`/`RemoveAsync`.
+`ICrudServiceAsync<T>` реалізує `IEnumerable<T>`. `GetEnumerator()`
+перебирає сформований snapshot, тому зміни самого словника не порушують
+перебір. Snapshot є поверхневою копією: для посилальних типів властивості
+об'єктів можуть змінюватися під час такого перебору.
 
 ### LINQ
 
@@ -132,11 +141,9 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 6. **IEnumerable<T>.** Інтерфейс `ICrudServiceAsync<T> : IEnumerable<T>`
    та метод `GetEnumerator()` у реалізації. Саме тому в `Program.cs`
    можна написати звичайний `foreach (var item in service)`:
-   foreach іде по snapshot, а не безпосередньо по внутрішньому словнику сервісу.
+   `foreach` перебирає snapshot, а не сам внутрішній словник сервісу.
 7. **Parallel.** Реалізація міститься у `Services/Parallell.cs`. `Parallel.For(0, count, ...)`: тіло паралельно створює об'єкти та запускає їх додавання у CRUD-сервіс:
-   кожний `Song.CreateNew()` + запуск `CreateAsync` виконується різними потоками пулу без блокування; після завершення `Parallel.For` метод очікує всі завдання через `Task.WhenAll`;
-   `ConcurrentDictionary` у сервісі thread-safe сам; реальну кількість зчитують з сервісу, час вимірює
-   `Stopwatch`.
+   `Song.CreateNew()` і виклик `CreateAsync` відбуваються в ітераціях `Parallel.For`. Після завершення циклу `Task.WhenAll` очікує всі створені завдання. `ConcurrentDictionary` підтримує конкурентні операції. Кількість елементів перевіряється за даними сервісу, час вимірює `Stopwatch`.
 8. **Демонстрація `lock` і стану гонитви потоків.** Код міститься у `Services/SynchronizationDemos.cs`.
    Операція `counter++` складається з трьох кроків: читання, зміни та запису.
    Без синхронізації два потоки можуть прочитати однакове значення, тому
@@ -164,7 +171,7 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 
 #### Українські демонстраційні дані
 
-Фабричні методи `SoloSinger.CreateNew()`, `VocalGroup.CreateNew()`, `Song.CreateNew()` і `Performance.CreateNew()` використовують спільний набір `UkrainianMusicData`. Учасники та колективи мають українські назви, країна для учасників: Україна, а репертуар складається з українських пісень. Тривалість генерується окремо для демонстрації статистичних операцій LINQ.
+Фабричні методи `SoloSinger.CreateNew()`, `VocalGroup.CreateNew()`, `Song.CreateNew()` і `Performance.CreateNew()` використовують спільний набір `UkrainianMusicData`. Учасники й колективи мають українські назви. Країну учасників у прикладах задано як Україна, а репертуар складається з українських пісень. Тривалість генерується окремо для демонстрації статистичних операцій LINQ.
 
 ### Тести
 
