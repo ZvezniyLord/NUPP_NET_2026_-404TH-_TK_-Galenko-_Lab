@@ -5,32 +5,27 @@ using MusicContest.Common.Models;
 
 namespace MusicContest.Common.Services;
 
-// АСІНХРОННИЙ (async) generic CRUD-сервіс (ЛР2).
+// Асинхронний CRUD-сервіс ЛР2 працює з узагальненим типом T.
+// Обмеження IEntity вимагає, щоб модель мала Guid Id.
 //
-// T — generic (універсальний) тип, обмежений "where T : IEntity":
-// сервіс працює з будь-якою моделлю, що має унікальний Guid Id.
+// Елементи зберігаються в ConcurrentDictionary<Guid, T>.
+// Колекція підтримує потокобезпечні операції додавання, оновлення
+// та видалення. Для цих операцій окремий lock не потрібен.
 //
-// THREAD-SAFE (потокобезпечна) КОЛЕКЦІЯ:
-// внутрішня колекція — ConcurrentDictionary<Guid, T> — вбудована thread-safe
-// колекція .NET (System.Collections.Concurrent). Її методи Add/Update/Remove
-// атомарні під конкурентним доступом багатьох потоків: без lock і без втрат
-// даних. Тому CRUD-операції не потребують критичних секцій (critical section):
-// TryAdd/TryUpdate/TryRemove виконуються одночасно різними потоками безпечно.
+// Методи CRUD повертають Task, але операції над словником виконуються
+// синхронно. Task.Yield() планує асинхронне продовження методу.
+// Реальне асинхронне файлове введення-виведення виконує SaveAsync.
+
 public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
 {
-    // ConcurrentDictionary — вбудована потокобезпечна колекція .NET:
-    // ключ (Guid Id сутності) → елемент. Містить власні внутрішні блокування,
-    // тому багато потоків можуть одночасно Add/Remove без зовнішнього lock.
+    // Ключем словника є Guid Id сутності, значенням є сам об'єкт.
     private readonly ConcurrentDictionary<Guid, T> _items = new();
 
     // Шлях файлу, у який сервіс зберігає колекцію (SaveAsync()).
     public string? FilePath { get; set; }
 
-    // СПІЛЬНИЙ (static) SemaphoreSlim на рівні 1: під час запису JSON-файлу
-    // одночасно пише лише ОДИН writer. SemaphoreSlim — "лічильниковий"
-    // семафор: WaitAsync/Release забирають та повертають мітки (дозволи).
-    // На відміну від lock, він підтримує await: потік чекає АСІНХРОННО,
-    // а не блокує потік пулу (thread pool).
+    // Спільний семафор обмежує запис JSON-файла однією операцією.
+    // WaitAsync очікує дозвіл асинхронно, а Release повертає його.
     private static readonly SemaphoreSlim _jsonWriteGate = new(1, 1);
 
     // Спільні параметри серіалізації JSON (відформатований, читабельний).
@@ -44,29 +39,28 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         FilePath = filePath;
     }
 
-    // SNAPSHOT (миттєва копія колекції) у ДЕТЕРМІНОВАНому порядку за Id.
-    // Enumerating ConcurrentDictionary безпечний для потоків, але його порядок
-    // не гарантований, тому зчитування впорядковуємо за Id: пагінація та
-    // foreach дають стабільний, повторюваний результат між викликами.
+    // Створює поверхневу копію послідовності та впорядковує її за Id.
+    // Порядок елементів ConcurrentDictionary не гарантований, тому
+    // сортування робить результати читання й пагінації передбачуваними.
+    // Самі об'єкти не клонуються: посилання на елементи залишаються спільними.
     private List<T> BuildSnapshot()
     {
         return _items.Values.OrderBy(x => x.Id).ToList();
     }
 
-    // CREATE = створити / додати. TryAdd атомарний: якщо такий Id уже є —
-    // false (duplicate неможливий навіть при одночасних викликах з потоків).
+    // Додає елемент. TryAdd повертає false, якщо такий Id уже існує.
     public async Task<bool> CreateAsync(T element)
     {
         bool added = _items.TryAdd(element.Id, element);
 
-        // await Task.Yield() — метод справжній async: потік пулу віддає
-        // контроль і продовжує виконання з іншого потоку пулу.
+        // Task.Yield() планує продовження асинхронно. Операція TryAdd
+        // вище вже виконана синхронно; введення-виведення тут немає.
         await Task.Yield();
 
         return added;
     }
 
-    // READ = читати: один елемент за його Id.
+    // Читає один елемент за його Id.
     public async Task<T> ReadAsync(Guid id)
     {
         bool found = _items.TryGetValue(id, out T? item);
@@ -81,7 +75,7 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         return item;
     }
 
-    // READ ALL = всі елементи (snapshot: копія, а не внутрішня колекція).
+    // Повертає поверхневу копію послідовності, а не сам словник.
     public async Task<IEnumerable<T>> ReadAllAsync()
     {
         List<T> snapshot = BuildSnapshot();
@@ -89,12 +83,10 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         return snapshot;
     }
 
-    // READ ALL (варіант з пагінацією) через LINQ.
-    // LINQ (Language Integrated Query) — вбудований у мову C# механізм
-    // роботи з колекціями: Skip/Take/Where/Order...
+    // Формує сторінку зі snapshot за допомогою LINQ.
     public async Task<IEnumerable<T>> ReadAllAsync(int page, int amount)
     {
-        // Валідація (перевірка коректності значень). Нумерація сторінок з 1.
+        // Перевіряє параметри пагінації. Нумерація сторінок починається з 1.
         if (page <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(page), page, "Сторінка має бути >= 1.");
@@ -108,8 +100,8 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         List<T> snapshot = BuildSnapshot();
         await Task.Yield();
 
-        // Skip(n) — пропустити n перших елементів; Take(n) — взяти n наступних.
-        // Сторінка page з amount елементами починається з індексу (page - 1) * amount.
+        // Skip пропускає попередні елементи, а Take обмежує розмір сторінки.
+        // Індекс першого елемента сторінки: (page - 1) * amount.
         List<T> pageItems = snapshot
             .Skip((page - 1) * amount)
             .Take(amount)
@@ -118,16 +110,15 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         return pageItems;
     }
 
-    // UPDATE = оновити. TryUpdate замінює значення лише якщо ключ існує
-    // (порівнює зі старим значенням); false — елемента з таким Id немає,
-    // і новий елемент НЕ створюється помилково.
+    // Оновлює наявний елемент. TryUpdate порівнює поточне значення
+    // зі збереженим і не створює новий запис, якщо ключа немає.
     public async Task<bool> UpdateAsync(T element)
     {
         bool replaced = false;
 
         if (_items.TryGetValue(element.Id, out T? existing))
         {
-            // Атомарна заміна "старий → новий" під конкурентним доступом.
+            // TryUpdate виконує умовну заміну значення для наявного ключа.
             replaced = _items.TryUpdate(element.Id, element, existing);
         }
 
@@ -136,7 +127,7 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         return replaced;
     }
 
-    // REMOVE = видалити. TryRemove атомарний: false — елемента з таким Id немає.
+    // Видаляє елемент за Id. TryRemove повертає false, якщо запису немає.
     public async Task<bool> RemoveAsync(T element)
     {
         bool removed = _items.TryRemove(element.Id, out _);
@@ -146,7 +137,7 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         return removed;
     }
 
-    // SAVE = зберегти (асинхронно) колекцію у JSON-файл за FilePath.
+    // Зберігає колекцію у JSON-файл за шляхом FilePath.
     public async Task<bool> SaveAsync()
     {
         if (string.IsNullOrWhiteSpace(FilePath))
@@ -156,50 +147,45 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
 
         string filePath = FilePath!;
 
-        // Спочатку — папка (створити, якщо немає).
+        // За потреби створює каталог для файла.
         string? directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrWhiteSpace(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
-        // 1) Snapshot: стабільний стан колекції на момент виклику.
+        // Спочатку створює поверхневу копію поточної послідовності.
         List<T> snapshot = BuildSnapshot();
 
-        // 2) JSON-серіалізація — поза семафором: семафор захищає саме
-        // ФАЙЛОВИЙ запис, а не серіалізацію.
+        // Серіалізує копію до JSON до отримання дозволу на запис.
+        // Семафор захищає файлову операцію, а не процес серіалізації.
         string json = JsonSerializer.Serialize(snapshot, _jsonOptions);
 
-        // 3) WaitAsync — "зайняти" одну єдину мітку. Якщо інший writer уже
-        // пише файл, потік асинхронно чекає (await не блокує потік пулу).
+        // Очікує дозвіл на запис. Якщо файл уже записує інший виклик,
+        // поточний метод очікує асинхронно.
         await _jsonWriteGate.WaitAsync();
 
         try
         {
-            // File.WriteAllTextAsync — справжній async запис: файловий IO
-            // не блокує потік, що викликав метод на весь час запису.
+            // File.WriteAllTextAsync виконує асинхронний запис файла.
             await File.WriteAllTextAsync(filePath, json);
             return true;
         }
         finally
         {
-            // RELEASE = повернути мітку: "місце вільне, можна писати знову".
+            // Повертає дозвіл, навіть якщо запис завершився помилкою.
             _jsonWriteGate.Release();
         }
     }
 
-    // IENUMERABLE<T>: пряма ітерація foreach (var item in service).
-    // GetEnumerator повертає IEnumerator над SNAPSHOT (миттєвою копією):
-    // foreach бачить незмінну впорядковану копію, тому одночасні
-    // CreateAsync/UpdateAsync/RemoveAsync не ламають ітерацію.
+    // GetEnumerator перебирає snapshot. Зміни словника не змінюють
+    // уже сформовану послідовність, але самі об'єкти не клонуються.
     public IEnumerator<T> GetEnumerator()
     {
         List<T> snapshot = BuildSnapshot();
         return snapshot.GetEnumerator();
     }
 
-    // IEnumerator (не generic) — обов'язкова частина IEnumerable<T>
-    // (IEnumerable<T> успадковує IEnumerable, тож не-generic метод теж
-    // треба реалізувати).
+    // IEnumerable<T> успадковує IEnumerable, тому реалізовано обидва методи.
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
