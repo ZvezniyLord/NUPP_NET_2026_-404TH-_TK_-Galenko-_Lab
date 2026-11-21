@@ -14,7 +14,7 @@ public class SoloSinger : ContestParticipant
     public int YearsOfExperience { get; set; }
 
     // Конструктор без параметрів.
-    // Він також зручний для десеріалізації — відновлення об'єкта з JSON.
+    // Цей конструктор також використовують під час десеріалізації об'єкта з JSON.
     public SoloSinger()
     {
     }
@@ -28,7 +28,7 @@ public class SoloSinger : ContestParticipant
         string vocalRange,
         int yearsOfExperience)
         // base(...) викликає конструктор базового класу ContestParticipant.
-        // Спільні дані ініціалізуються там, а специфічні — нижче.
+        // Базовий конструктор ініціалізує спільні властивості. Нижче задаються поля похідного типу.
         : base(stageName, country, age)
     {
         VoiceType = voiceType;
@@ -52,7 +52,7 @@ public class SoloSinger : ContestParticipant
     }
 
     // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
-    // Фабрика (factory) — метод, який повертає готовий об'єкт.
+    // Фабричний метод повертає готовий об'єкт.
     // Через Random.Shared (спільна thread-safe копія Random)
     // кожен виклик повертає РІЗНІ значення — безпечно для паралельного
     // (parallel) створення сотень і тисяч об'єктів у потоках.
