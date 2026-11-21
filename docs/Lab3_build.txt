@@ -1,11 +1,11 @@
   MusicContest.Common -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common/bin/Release/net8.0/MusicContest.Common.dll
   MusicContest.Nosql -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Nosql/bin/Release/net8.0/MusicContest.Nosql.dll
   MusicContest.Infrastructure -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Infrastructure/bin/Release/net8.0/MusicContest.Infrastructure.dll
-  MusicContest.Common.Tests -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common.Tests/bin/Release/net8.0/MusicContest.Common.Tests.dll
   MusicContest.Console -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Release/net8.0/MusicContest.Console.dll
+  MusicContest.Common.Tests -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common.Tests/bin/Release/net8.0/MusicContest.Common.Tests.dll
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:08.16
+Time Elapsed 00:00:09.32
