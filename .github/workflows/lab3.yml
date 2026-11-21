@@ -48,6 +48,21 @@ jobs:
           set -o pipefail
           dotnet test MusicContest.sln --no-build -c Release 2>&1 | tee docs/Lab3_test.txt
 
+      - name: Run Lab1 with Ukrainian examples
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet run --project MusicContest.Console -c Release --no-build -- --lab1-only 2>&1 | tee docs/Lab1_output.txt
+
+      - name: Run Lab2 with Ukrainian repertoire
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet run --project MusicContest.Console -c Release --no-build -- --lab2-only 2>&1 | tee docs/Lab2_output.txt
+
+      - name: Recreate SQLite sample database with Ukrainian-only seeds
+        run: rm -f docs/musiccontest.db docs/musiccontest.db-shm docs/musiccontest.db-wal
+
       - name: Run EF migration and database CRUD demonstration
         shell: bash
         run: |
@@ -82,6 +97,9 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq sqlitebrowser xvfb scrot xdotool
           xvfb-run -a -s "-screen 0 1600x900x24" bash scripts/capture_db_browser.sh
 
+      - name: Generate Lab1 and Lab2 PDF reports from actual outputs
+        run: python scripts/generate_lab12_reports.py
+
       - name: Generate genuine SQLite table views and PDF
         run: python scripts/generate_lab3_report.py
 
@@ -90,7 +108,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/musiccontest.db docs/Lab3_build.txt docs/Lab3_test.txt docs/Lab3_output.txt docs/Lab3_mongodb_output.txt docs/Lab3_*.png docs/Lab3_Report.pdf
+          git add docs/Lab1_Report.pdf docs/Lab2_Report.pdf docs/Lab1_output.txt docs/Lab2_output.txt docs/musiccontest.db docs/Lab3_build.txt docs/Lab3_test.txt docs/Lab3_output.txt docs/Lab3_mongodb_output.txt docs/Lab3_*.png docs/Lab3_Report.pdf
           if ! git diff --cached --quiet; then
             git commit -m "docs(lab3): verified SQLite database and PDF report [skip ci]"
             git push origin HEAD:lab3
