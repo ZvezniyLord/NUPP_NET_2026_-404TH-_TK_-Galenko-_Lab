@@ -53,46 +53,60 @@
 
 MusicContest · Лабораторна робота №2                                                                           Сторінка 1
  Результати збірки
-   MusicContest.Common -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.C
-   MusicContest.Console -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Co
-   MusicContest.Common.Tests -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicCon
+   MusicContest.Common -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/
+    NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common/bin/Release/net8.0/
+    MusicContest.Common.dll
+   MusicContest.Console -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/
+    NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Release/net8.0/
+    MusicContest.Console.dll
+   MusicContest.Common.Tests -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/
+    NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common.Tests/bin/Release/net8.0/
+    MusicContest.Common.Tests.dll
 
   Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-  Time Elapsed 00:00:05.48
+  Time Elapsed 00:00:03.93
 
 
  Результати автоматизованих тестів
-  Test run for /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Common.Tests/b
+  Test run for /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-
+     404TH-_TK_-Galenko-_Lab/MusicContest.Common.Tests/bin/Release/net8.0/MusicContest.
+     Common.Tests.dll (.NETCoreApp,Version=v8.0)
   A total of 1 test files matched the specified pattern.
 
-  Passed! - Failed:   0, Passed:   22, Skipped:   0, Total:   22, Duration: 357 ms - MusicContest.Common.Tests.dll (net8.0)
+  Passed! - Failed:  0, Passed: 22, Skipped:   0, Total:   22, Duration: 272 ms
+    - MusicContest.Common.Tests.dll (net8.0)
 
 
 
 
-MusicContest · Лабораторна робота №2                                                                                          Сторінка 2
+MusicContest · Лабораторна робота №2                                                        Сторінка 2
  Фактичний вивід консольного застосунку
  Нижче наведено журнал, записаний під час запуску застосунку. Показники LINQ, паралельного
  створення та синхронізації отримано з виконання програми.
   === MUSIC CONTEST CRUD DEMO ===
 
   1. Після Create:
-  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук, Україна, 21 рік, голос: сопрано, діапазон: A3-E6
-  - 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Дніпровські голоси, Україна, 24 роки, учасників: 4, жанр: народний поп
+  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук, Україна,
+     21 рік, голос: сопрано, діапазон: A3-E6
+  - 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Дніпровські голоси, Україна,
+     24 роки, учасників: 4, жанр: народний поп
 
   2. Read за Id:
   Сольний виконавець: Олена Ковальчук, Україна, 21 рік, голос: сопрано, діапазон: A3-E6
   Коротко: Олена Ковальчук (Україна)
 
   3. Після Update:
-  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E
-  - 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Дніпровські голоси, Україна, 24 роки, учасників: 4, жанр: народний поп
+  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (
+     фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E6
+  - 00000000-0000-0000-0000-000000000002 | Вокальний гурт: Дніпровські голоси, Україна,
+     24 роки, учасників: 4, жанр: народний поп
 
   4. Після Remove гурту:
-  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E
+  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (
+     фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E6
 
   Створено об'єктів-нащадків ContestParticipant: 2
   Пісня: Червона рута; тривалість: 3:54
@@ -102,8 +116,11 @@ MusicContest · Лабораторна робота №2                        
   Виступ завершено: True
 
   6. Дані після Save та Load:
-  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E
-  JSON-файл: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Rele
+  - 00000000-0000-0000-0000-000000000001 | Сольний виконавець: Олена Ковальчук (
+     фіналістка), Україна, 21 рік, голос: сопрано, діапазон: A3-E6
+  JSON-файл: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-
+     404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Release/net8.0/Data/participants.
+     json
 
   =========================================
   ЛАБОРАТОРНА РОБОТА №2
@@ -111,39 +128,44 @@ MusicContest · Лабораторна робота №2                        
 
   1. PARALLEL CREATION через CRUD service + CreateNew (Parallel.For + Task.WhenAll):
   Об'єктів створено: 2000 із 2000 планових
-  Фактичний час: 17.087 ms
+  Фактичний час: 19.731 ms
 
   2. LINQ (min/max/average на створених об'єктах):
     Count:     2000
     Min (DurationSeconds): 120 s
     Max (DurationSeconds): 359 s
-    Average (DurationSeconds): 238.89 s
-    Where (Duration > Average): 1018
-    Select/OrderBy (найдовша пісня): Тримай
-    Aggregate (сума тривалостей, с): 477775
+    Average (DurationSeconds): 241.59 s
+    Where (Duration > Average): 1017
+    Select/OrderBy (найдовша пісня): Щедрик
+    Aggregate (сума тривалостей, с): 483170
     OrderBy/Top-3 (найдовші пісні):
-      - Тримай: 359 s, ля мінор
       - Щедрик: 359 s, мі мінор
-      - Обійми: 359 s, мі мінор
+      - Думи: 359 s, ре мінор
+      - Несе Галя воду: 359 s, соль мажор
 
   3. ПАГІНАЦІЯ (ReadAllAsync(page, amount)):
-    Page 1 (5): Україна, Тримай, Обійми, Обійми, Плакала
-    Page 2 (5): Україна, Щедрик, Обійми, Плакала, Думи
+    Page 1 (5): Плакала, Несе Галя воду, Плакала, Плакала, Щедрик
+    Page 2 (5): Тримай, Несе Галя воду, Україна, Червона рута, Несе Галя воду
     Page 999 (5): елементів 0 (порожня сторінка)
 
   4. IENUMERABLE: foreach безпосередньо по сервісу (перші 5 + сума):
-    - Україна (158 s)
-    - Тримай (351 s)
-    - Обійми (356 s)
-    - Обійми (139 s)
-    - Плакала (189 s)
+    - Плакала (179 s)
+    - Несе Галя воду (181 s)
+    - Плакала (246 s)
+    - Плакала (176 s)
+    - Щедрик (162 s)
     Загальна кількість відвіданих: 2000
 
   5. SAVEASYNC (збереження колекції у JSON за FilePath):
     Конкурентне збереження (3 одночасні SaveAsync) завершено.
     Валідний (valid) JSON: True
     Елементів у файлі після конкурентного Save: 2000
-    Файл: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/MusicContest.Console/bin/Release
+    Файл: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-
+
+
+
+MusicContest · Лабораторна робота №2                                                       Сторінка 3
+    _TK_-Galenko-_Lab/MusicContest.Console/bin/Release/net8.0/Data/lab2_songs.json
 
   6. LOCK: 8 потоків × 10 000 increments (критична секція):
   Expected: 80000
@@ -152,11 +174,7 @@ MusicContest · Лабораторна робота №2                        
 
   7. SEMAPHORESLIM: 10 worker'ів, maxConcurrency = 3:
   Worker'ів: 10; зазначено maxConcurrency = 3
-
-
-
-MusicContest · Лабораторна робота №2                                                                              Сторінка 3
-  ФАКТИЧНО виміряно максимум одночасних worker'ів: 3
+  ФАКТИЧНО виміряно максимум одночасних worker'ів: 3
 
   8. AUTORESETEVENT (producer/consumer), M = 500:
   Produced: 500
@@ -168,5 +186,5 @@ MusicContest · Лабораторна робота №2                        
 
 
 
-MusicContest · Лабораторна робота №2                   Сторінка 4
+MusicContest · Лабораторна робота №2                                                 Сторінка 4
 
