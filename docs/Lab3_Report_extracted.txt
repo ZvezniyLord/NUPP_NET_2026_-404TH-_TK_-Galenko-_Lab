@@ -1,0 +1,214 @@
+ЛАБОРАТОРНА РОБОТА №3
+Робота з БД в .NET. Entity Framework Core
+
+Предметна область: MusicContest (вокальний конкурс)
+
+Реалізація: .NET 8, C#, EF Core, SQLite, Repository Pattern
+
+
+
+Ключові можливості
+  1:1 Учасник має один профіль (унікальний зовнішній ключ).
+
+  1:N Учасник має багато виступів; пісня може бути у багатьох виступах.
+
+  M:N Учасники пов'язані з піснями через ParticipantSongs.
+
+  TPT ContestParticipants + SoloSingers / VocalGroups.
+
+  CRUD Generic RepositoryCrudServiceAsync<T> через IRepository<T>.
+
+  Міграція EF Core: 20261121130000_InitialCreate.
+
+
+
+Фактична база даних
+
+  ContestParticipants: 6 записів
+
+  ParticipantProfiles: 6 записів
+
+  ParticipantSongs: 12 записів
+
+  Performances: 12 записів
+
+  SoloSingers: 4 записів
+
+  Songs: 8 записів
+
+  VocalGroups: 2 записів
+
+  __EFMigrationsHistory: 1 записів
+
+
+
+
+Лабораторна №3 | MusicContest | с. 1
+1. Схема БД та таблиці
+
+
+
+
+Результати реального запиту sqlite_master, не макет БД.
+
+
+
+
+Лабораторна №3 | MusicContest | с. 2
+2. Дані з таблиць SQLite
+
+Songs
+
+
+
+
+Performances
+
+
+
+
+ParticipantSongs
+
+
+
+
+Лабораторна №3 | MusicContest | с. 3
+3. ERD-діаграма
+
+
+
+
+ERD побудована з фактичної схеми та зв'язків SQLite.
+
+
+
+
+Лабораторна №3 | MusicContest | с. 4
+4. Результат виконання консольного застосунку
+
+
+=========================================
+ЛАБОРАТОРНА РОБОТА №3: EF Core + SQLite
+=========================================
+Додано українських виконавців, гурти, пісні, профілі та виступи.
+CREATE: True
+READ: Пробна українська пісня, DatabaseId=9
+UPDATE: True
+DELETE: True
+SAVE: True
+Перша сторінка, по 3 українські пісні:
+  Пісня #6: Думи; виконавець: Артем Пивоваров і Надя Дорофєєва
+  Пісня #1: Червона рута; виконавець: Володимир Івасюк
+  Пісня #2: Обійми; виконавець: Океан Ельзи
+Учасник #1: Олена Ковальчук; країна=Україна; профіль=True; пісень M:N=2;
+виступів 1:N=2
+Учасник #2: Андрій Бондаренко; країна=Україна; профіль=True; пісень M:N=2;
+виступів 1:N=2
+Учасник #3: Марія Шевченко; країна=Україна; профіль=True; пісень M:N=2;
+виступів 1:N=2
+Учасник #4: Тарас Мельник; країна=Україна; профіль=True; пісень M:N=2;
+виступів 1:N=2
+Учасник #5: Дніпровські голоси; країна=Україна; профіль=True; пісень M:N=2;
+ виступів 1:N=2
+Учасник #6: Карпатська ватра; країна=Україна; профіль=True; пісень M:N=2;
+виступів 1:N=2
+ContestParticipants: 6
+TPT SoloSingers: 4
+TPT VocalGroups: 2
+Songs: 8
+ParticipantProfiles: 6
+Performances: 12
+ParticipantSongs: 12
+SQLite: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/docs/musiccontest.db
+
+
+
+
+Лабораторна №3 | MusicContest | с. 5
+5. Перевірка проєкту
+dotnet build
+ MusicContest.Common -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/MusicContest.Common/bin/Release/net8.0/MusicContest.Common.dll
+ MusicContest.Nosql -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/MusicContest.Nosql/bin/Release/net8.0/MusicContest.Nosql.dll
+ MusicContest.Infrastructure -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/MusicContest.Infrastructure/bin/Release/net8.0/MusicContest.Infrastructure.dll
+ MusicContest.Console -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/MusicContest.Console/bin/Release/net8.0/MusicContest.Console.dll
+ MusicContest.Common.Tests -> /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/MusicContest.Common.Tests/bin/Release/net8.0/MusicContest.Common.Tests.dll
+
+
+Build succeeded.
+  0 Warning(s)
+  0 Error(s)
+
+
+Time Elapsed 00:00:07.71
+
+
+
+dotnet test
+Test run for /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-
+_Lab/MusicContest.Common.Tests/bin/Release/net8.0/MusicContest.Common.Tests.dll
+(.NETCoreApp,Version=v8.0)
+A total of 1 test files matched the specified pattern.
+
+
+Passed! - Failed:    0, Passed:   27, Skipped:    0, Total:   27, Duration: 2 s -
+MusicContest.Common.Tests.dll (net8.0)
+
+
+
+
+Зображення таблиць отримано із SELECT/PRAGMA до файлу SQLite.
+
+Скріншот окремого GUI-клієнта БД можна додати при захисті.
+
+
+Лабораторна №3 | MusicContest | с. 6
+6. MongoDB: додаткове завдання
+
+
+
+
+Зображення сформовано з реального запиту find() до MongoDB.
+
+
+
+
+Лабораторна №3 | MusicContest | с. 7
+7. Скриншоти DB Browser for SQLite (реальний GUI)
+
+DatabaseStructure
+
+
+
+
+ContestParticipants
+
+
+
+
+Лабораторна №3 | MusicContest | с. 8
+8. Таблиці DB Browser for SQLite
+
+Songs
+
+
+
+
+Performances
+
+
+
+
+Лабораторна №3 | MusicContest | с. 9
+
