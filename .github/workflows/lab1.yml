@@ -24,7 +24,7 @@ jobs:
       - name: Встановити засоби формування PDF
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq fonts-dejavu-core
+          sudo apt-get install -y -qq fonts-dejavu-core poppler-utils
           python -m pip install --quiet reportlab
 
       - name: Відновити залежності
@@ -45,12 +45,15 @@ jobs:
       - name: Сформувати PDF-звіт із фактичних журналів
         run: python scripts/generate_lab1_report.py
 
+      - name: Перевірити текст PDF і створити зображення першої сторінки
+        run: python scripts/check_pdf_language.py docs/Lab1_Report.pdf
+
       - name: Зберегти звіт і журнали в гілці lab1
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/Lab1_Report.pdf docs/Lab1_build.txt docs/Lab1_output.txt
+          git add docs/Lab1_Report.pdf docs/Lab1_Report_extracted.txt docs/Lab1_Report_preview.png docs/Lab1_build.txt docs/Lab1_output.txt
           if ! git diff --cached --quiet; then
             git commit -m "docs(lab1): regenerate report from verified console output [skip ci]"
             git push origin HEAD:lab1
