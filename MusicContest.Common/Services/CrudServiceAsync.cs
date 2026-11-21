@@ -10,15 +10,15 @@ namespace MusicContest.Common.Services;
 // T — generic (універсальний) тип, обмежений "where T : IEntity":
 // сервіс працює з будь-якою моделлю, що має унікальний Guid Id.
 //
-// THREAD-SAFE (поточно-безпечна) КОЛЕКЦІЯ:
-// внутрішня колекція — ConcurrentDictionary<Guid, T> — ВБУДОВANA thread-safe
+// THREAD-SAFE (потокобезпечна) КОЛЕКЦІЯ:
+// внутрішня колекція — ConcurrentDictionary<Guid, T> — вбудована thread-safe
 // колекція .NET (System.Collections.Concurrent). Її методи Add/Update/Remove
 // атомарні під конкурентним доступом багатьох потоків: без lock і без втрат
 // даних. Тому CRUD-операції не потребують критичних секцій (critical section):
 // TryAdd/TryUpdate/TryRemove виконуються одночасно різними потоками безпечно.
 public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
 {
-    // ConcurrentDictionary — вбудована поточно-безпечна колекція .NET:
+    // ConcurrentDictionary — вбудована потокобезпечна колекція .NET:
     // ключ (Guid Id сутності) → елемент. Містить власні внутрішні блокування,
     // тому багато потоків можуть одночасно Add/Remove без зовнішнього lock.
     private readonly ConcurrentDictionary<Guid, T> _items = new();
@@ -28,7 +28,7 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
 
     // СПІЛЬНИЙ (static) SemaphoreSlim на рівні 1: під час запису JSON-файлу
     // одночасно пише лише ОДИН writer. SemaphoreSlim — "лічильниковий"
-    // семафор: WaitAsync/Release забирають та повертають мітки (ліцензії).
+    // семафор: WaitAsync/Release забирають та повертають мітки (дозволи).
     // На відміну від lock, він підтримує await: потік чекає АСІНХРОННО,
     // а не блокує потік пулу (thread pool).
     private static readonly SemaphoreSlim _jsonWriteGate = new(1, 1);
@@ -177,7 +177,7 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         try
         {
             // File.WriteAllTextAsync — справжній async запис: файловий IO
-            // не блокує викликуючий потік на весь час запису.
+            // не блокує потік, що викликав метод на весь час запису.
             await File.WriteAllTextAsync(filePath, json);
             return true;
         }
