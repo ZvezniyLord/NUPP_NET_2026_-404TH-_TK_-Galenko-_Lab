@@ -59,7 +59,7 @@ public static class Lab3NoSqlDemo
 
         foreach (var item in await songs.ReadAllAsync())
             Console.WriteLine($"MongoDB document: {item.DatabaseId}, {item.Title}, "
-                + $"votes={item.Stats.ListenerVotes}, tags={string.Join('/',item.Stats.Tags)}");
+                + $"votes={item.Stats.ListenerVotes}, tags={string.Join("/", item.Stats.Tags)}");
         Console.WriteLine($"Documents count: {(await songs.ReadAllAsync()).Count()}");
         Console.WriteLine("MongoDB collection: MusicContestLab3.songs");
     }
