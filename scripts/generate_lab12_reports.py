@@ -111,7 +111,7 @@ def main():
           "Generic CRUD (Create, Read, Update, Remove) та JSON Save/Load.",
           "Реальні українські назви навчальних учасників і пісень."]),
         (2, "асинхронний CRUD, багатопотоковість, IEnumerable та LINQ",
-         ["ICrudServiceAsync<T>, ConcurrentDictionary<Guid,T> та snapshot.",
+         ["ICrudServiceAsync<T> і snapshot для читання. CRUD-операції над словником синхронні, Task.Yield планує продовження; SaveAsync виконує асинхронний файловий запис.",
           "Parallel.For створює 2000 об'єктів, Task.WhenAll завершує додавання.",
           "LINQ: Min, Max, Average, Where, Select, Aggregate, OrderBy.",
           "Пагінація, foreach, асинхронна JSON-серіалізація.",
