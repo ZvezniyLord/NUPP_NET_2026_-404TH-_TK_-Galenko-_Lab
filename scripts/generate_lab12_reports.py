@@ -52,12 +52,12 @@ def render_pdf(number: int, goal: str, explanations: list[str], output: list[str
         for frag in textwrap.wrap(str(text), max_chars, break_long_words=True,
                                   break_on_hyphens=False) or [""]:
             if top < 58:
-                new_page("Лабораторна робота №%s — продовження" % number)
+                new_page("Лабораторна робота №%s: продовження" % number)
             c.setFont(font_name, size)
             c.drawString(42 + indent, top, frag)
             top -= 16
 
-    new_page(f"Лабораторна робота №{number} — MusicContest")
+    new_page(f"Лабораторна робота №{number}: MusicContest")
     line(f"Мета: {goal}", 10)
     top -= 8
     line("Предметна область: український вокальний конкурс.", 10)
@@ -88,8 +88,8 @@ def render_pdf(number: int, goal: str, explanations: list[str], output: list[str
     for row in output:
         line(row, 8, indent=4)
 
-    c.setTitle(f"Лабораторна робота №{number} — MusicContest")
-    c.setAuthor("MusicContest — навчальний проєкт")
+    c.setTitle(f"Лабораторна робота №{number}: MusicContest")
+    c.setAuthor("MusicContest: навчальний проєкт")
     c.save()
     print(f"Сформовано {out} із реальних логів; сторінок: {page_num}")
     return out
