@@ -1,7 +1,7 @@
 namespace MusicContest.Common.Services;
 
 // Контракт доступу до БД: CRUD-сервіс не залежить від конкретної СУБД.
-// DatabaseId (int) — первинний ключ таблиці, Id (Guid) — публічний ID моделі.
+// DatabaseId (int) є первинним ключем таблиці. Id (Guid) зберігає публічний ідентифікатор моделі.
 public interface IRepository<T> where T : class
 {
     Task<T> GetByIdAsync(int id);
