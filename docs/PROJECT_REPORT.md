@@ -41,7 +41,7 @@ flowchart LR
 | **Демонстрація** | Консольний застосунок, запис/читання з SQLite, пагінація, тестування |
 | **Додаткове завдання** | `MusicContest.Nosql`, репозиторій MongoDB, вкладені документи |
 
-## ERD — відносини між таблицями
+## ERD — зв'язки між таблицями
 
 ![ERD реальної бази даних MusicContest](https://raw.githubusercontent.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/lab3/docs/Lab3_ERD.png)
 
