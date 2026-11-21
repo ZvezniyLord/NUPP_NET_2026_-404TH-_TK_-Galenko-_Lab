@@ -223,6 +223,31 @@ def make_pdf(conn, pics):
         yy=image_fit(mongo_png,ph-82,620)
         label("Зображення сформовано з реального запиту find() до MongoDB.",33,yy-4,9)
         footer(7)
+    gui_pics = [
+        DOCS / "Lab3_GUI_DatabaseStructure.png",
+        DOCS / "Lab3_GUI_ContestParticipants.png",
+        DOCS / "Lab3_GUI_Songs.png",
+        DOCS / "Lab3_GUI_Performances.png",
+    ]
+    available_gui = [p for p in gui_pics if p.exists()]
+    if available_gui:
+        c.showPage()
+        label("7. Скриншоти DB Browser for SQLite (реальний GUI)",33,ph-55,12,True)
+        y = ph-83
+        for path in available_gui[:2]:
+            label(path.stem.replace("Lab3_GUI_", ""),33,y,9,True)
+            y -= 17
+            y = image_fit(path,y,290)
+        footer(8)
+        if len(available_gui)>2:
+            c.showPage()
+            label("8. Таблиці DB Browser for SQLite",33,ph-55,12,True)
+            y = ph-83
+            for path in available_gui[2:]:
+                label(path.stem.replace("Lab3_GUI_", ""),33,y,9,True)
+                y -= 17
+                y = image_fit(path,y,290)
+            footer(9)
     c.save()
     return pdf_path
 
