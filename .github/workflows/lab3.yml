@@ -4,6 +4,10 @@ on:
     branches: [lab3]
   workflow_dispatch:
 
+concurrency:
+  group: lab3-report-generation
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
