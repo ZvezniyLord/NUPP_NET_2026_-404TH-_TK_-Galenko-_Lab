@@ -19,7 +19,7 @@ public static class SynchronizationDemos
     // Оператор ++ складається з трьох кроків: read-modify-write
     // (прочитати — змінити — записати). Без синхронізації два потоки
     // можуть одночасно прочитати одне й те саме значення, і одне
-    // зростання "губиться" (race condition — гоніжка потоків).
+    // зростання "губиться" (race condition — стан гонитви потоків).
     // lock (gate) — взаємне виключення (mutual exclusion):
     // в критичній секції одночасно ОДИН потік, інші чекають.
     public static async Task<LockDemoResult> RunLockDemoAsync(
@@ -79,8 +79,8 @@ public static class SynchronizationDemos
     // ============================================================
     // 2) SEMAPHORESLIM-демонстрація: 10 worker'ів, maxConcurrency = 3.
     // ============================================================
-    // SemaphoreSlim(max) — семафор-лічильник з max "ліцензіями".
-    // WaitAsync "забирає" ліцензію, Release — повертає її.
+    // SemaphoreSlim(max) — семафор-лічильник з max "дозволами".
+    // WaitAsync "забирає" дозвіл, Release — повертає її.
     // Не більше max потоків одночасно перебуває в ділянці,
     // обмеженій WaitAsync/Release. Очікування — асинхронне
     // (await, без блокування потоку).
@@ -92,7 +92,7 @@ public static class SynchronizationDemos
         int maxConcurrency,
         TextWriter? console = null)
     {
-        // Семафор з maxConcurrency ліцензіями.
+        // Семафор з maxConcurrency дозволами.
         SemaphoreSlim semaphore = new(maxConcurrency);
 
         // Лічильник поточно-активних worker'ів.
@@ -104,7 +104,7 @@ public static class SynchronizationDemos
 
         async Task WorkerAsync(int index)
         {
-            // Зайняти одну ліцензію; якщо немає — асинхронно чекати.
+            // Зайняти одну дозвіл; якщо немає — асинхронно чекати.
             await semaphore.WaitAsync();
 
             try
@@ -136,7 +136,7 @@ public static class SynchronizationDemos
             finally
             {
                 // Worker завершує: зменшити активний лічильник
-                // і повернути ліцензію семафору.
+                // і повернути дозвіл семафору.
                 Interlocked.Decrement(ref activeWorkers);
                 semaphore.Release();
             }
