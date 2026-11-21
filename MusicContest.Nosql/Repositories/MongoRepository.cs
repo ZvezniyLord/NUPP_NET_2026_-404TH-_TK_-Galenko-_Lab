@@ -19,14 +19,28 @@ public sealed class MongoRepository<T>(IMongoCollection<T> collection) : IReposi
 
     public async Task Update(T entity)
     {
-        var result = await collection.ReplaceOneAsync(x => x.Id == entity.Id, entity);
+        var result = await collection.ReplaceOneAsync(GetDatabaseIdFilter(entity), entity);
         if (result.MatchedCount == 0)
             throw new KeyNotFoundException("MongoDB: документа для оновлення немає.");
     }
 
     public async Task Delete(T entity)
     {
-        await collection.DeleteOneAsync(x => x.Id == entity.Id);
+        await collection.DeleteOneAsync(GetDatabaseIdFilter(entity));
+    }
+
+    // Використовуємо int DatabaseId — той самий ключ, що й у GetByIdAsync(int).
+    // Фільтр за Guid (_id) може розрізняти BSON GUID representations.
+    private static FilterDefinition<T> GetDatabaseIdFilter(T entity)
+    {
+        var property = typeof(T).GetProperty("DatabaseId")
+            ?? throw new InvalidOperationException(
+                "MongoRepository вимагає int властивість DatabaseId.");
+        if (property.PropertyType != typeof(int))
+            throw new InvalidOperationException("DatabaseId повинен мати тип int.");
+        int id = (int)(property.GetValue(entity)
+            ?? throw new InvalidOperationException("DatabaseId не встановлено."));
+        return Builders<T>.Filter.Eq("DatabaseId", id);
     }
 
     // MongoDB Insert/Replace/Delete виконуються негайно, окремого SaveChanges немає.
