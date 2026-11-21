@@ -4,7 +4,7 @@ using MusicContest.Common.Services;
 
 namespace MusicContest.Nosql.Repositories;
 
-// Додаткове завдання ЛР3: той самий IRepository<T>, але замість EF — MongoDB.
+// Додаткове завдання ЛР3: реалізація IRepository<T> для MongoDB.
 public sealed class MongoRepository<T>(IMongoCollection<T> collection) : IRepository<T>
     where T : class, IEntity
 {
@@ -29,8 +29,8 @@ public sealed class MongoRepository<T>(IMongoCollection<T> collection) : IReposi
         await collection.DeleteOneAsync(GetDatabaseIdFilter(entity));
     }
 
-    // Використовуємо int DatabaseId — той самий ключ, що й у GetByIdAsync(int).
-    // Фільтр за Guid (_id) може розрізняти BSON GUID representations.
+    // Використовує int DatabaseId, який також використовується в GetByIdAsync(int).
+    // Фільтр за Guid (_id) може залежати від BSON-представлення GUID.
     private static FilterDefinition<T> GetDatabaseIdFilter(T entity)
     {
         var property = typeof(T).GetProperty("DatabaseId")
@@ -43,6 +43,6 @@ public sealed class MongoRepository<T>(IMongoCollection<T> collection) : IReposi
         return Builders<T>.Filter.Eq("DatabaseId", id);
     }
 
-    // MongoDB Insert/Replace/Delete виконуються негайно, окремого SaveChanges немає.
+    // MongoDB записує кожну операцію одразу. Окремого накопичення змін немає.
     public Task<int> SaveChangesAsync() => Task.FromResult(0);
 }
