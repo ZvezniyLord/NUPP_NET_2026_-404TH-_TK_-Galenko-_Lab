@@ -11,14 +11,14 @@ namespace MusicContest.Common.Services;
 // сервіс працює з будь-якою моделлю, що має унікальний Guid Id.
 //
 // THREAD-SAFE (поточно-безпечна) КОЛЕКЦІЯ:
-// внутрішня колекція — ConcurrentDictionary<Guid, T> — ВБУДОВANA thread-safe
+// внутрішня колекція — ConcurrentDictionary<Guid, T> — вбудована потокобезпечна
 // колекція .NET (System.Collections.Concurrent). Її методи Add/Update/Remove
 // атомарні під конкурентним доступом багатьох потоків: без lock і без втрат
 // даних. Тому CRUD-операції не потребують критичних секцій (critical section):
 // TryAdd/TryUpdate/TryRemove виконуються одночасно різними потоками безпечно.
 public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
 {
-    // ConcurrentDictionary — вбудована поточно-безпечна колекція .NET:
+    // ConcurrentDictionary — вбудована потокобезпечна колекція .NET:
     // ключ (Guid Id сутності) → елемент. Містить власні внутрішні блокування,
     // тому багато потоків можуть одночасно Add/Remove без зовнішнього lock.
     private readonly ConcurrentDictionary<Guid, T> _items = new();
@@ -177,7 +177,7 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
         try
         {
             // File.WriteAllTextAsync — справжній async запис: файловий IO
-            // не блокує викликуючий потік на весь час запису.
+            // не блокує потік, що викликав метод на весь час запису.
             await File.WriteAllTextAsync(filePath, json);
             return true;
         }
