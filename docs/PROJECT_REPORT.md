@@ -13,7 +13,7 @@
 | Виступи | 12 |
 | Зв'язки учасників із піснями | 12 |
 
-**Основні результати:** [PDF-звіт](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_Report.pdf) · [ERD-діаграма](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_ERD.png) · [SQLite-база](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/musiccontest.db) · [Скріншоти таблиць](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_GUI_ContestParticipants.png) · [Навчальний довідник](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/README.md)
+**Матеріали перевірки:** [PDF-звіт](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_Report.pdf) · [ERD-діаграма](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_ERD.png) · [SQLite-база](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/musiccontest.db) · [Скріншоти таблиць](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_GUI_ContestParticipants.png) · [Навчальний довідник](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/README.md)
 
 ---
 
@@ -77,6 +77,6 @@ dotnet run --project MusicContest.Console -- --lab3-only
 
 Додаткова MongoDB-демонстрація: `dotnet run --project MusicContest.Console -- --lab3-nosql` (потрібна запущена MongoDB).
 
-Докладний опис класів, термінів, зв'язків, TPT і механізмів лабораторних №1–3: **[навчально-науковий довідник README.md](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/README.md)**.
+Докладний опис класів, термінів, зв'язків, TPT і механізмів лабораторних №1–3: [довідник README.md](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/README.md)**.
 
 *Усі демонстраційні учасники мають українські імена або назви колективів; їхні особи та заявки є навчальними прикладами. Пісні представляють український репертуар.*
