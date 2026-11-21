@@ -26,9 +26,6 @@ public static class Lab3Demo
             : "Відкрито SQLite: демонстраційні записи вже існують.");
 
         var songs = new RepositoryCrudServiceAsync<SongModel>(new EfRepository<SongModel>(db));
-        var performances = new RepositoryCrudServiceAsync<PerformanceModel>(
-            new EfRepository<PerformanceModel>(db));
-
         // Справжні Create / Read / Update / Delete через EfRepository<T>.
         // Пробну пісню після демонстрації видаляємо.
         var trial = new SongModel
