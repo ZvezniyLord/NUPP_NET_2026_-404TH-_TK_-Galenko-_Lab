@@ -74,6 +74,14 @@ jobs:
           dotnet run --project MusicContest.Console -c Release --no-build -- --lab3-nosql 2>&1 | tee docs/Lab3_mongodb_output.txt
           python scripts/generate_lab3_mongo_screenshot.py
 
+      - name: Capture actual DB Browser screenshots
+        continue-on-error: true
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq sqlitebrowser xvfb scrot xdotool
+          xvfb-run -a -s "-screen 0 1600x900x24" bash scripts/capture_db_browser.sh
+
       - name: Generate genuine SQLite table views and PDF
         run: python scripts/generate_lab3_report.py
 
