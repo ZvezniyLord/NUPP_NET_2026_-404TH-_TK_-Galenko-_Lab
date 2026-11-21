@@ -67,7 +67,7 @@ Console.WriteLine($"Коротко: {found.ToShortInfo()}");
 // Спочатку змінюємо властивість об'єкта, потім передаємо його сервісу.
 Console.WriteLine();
 Console.WriteLine("3. Після Update:");
-singer.StageName = "Олена Ковальчук — фіналістка";
+singer.StageName = "Олена Ковальчук (фіналістка)";
 participantService.Update(singer);
 PrintParticipants(participantService.ReadAll());
 
