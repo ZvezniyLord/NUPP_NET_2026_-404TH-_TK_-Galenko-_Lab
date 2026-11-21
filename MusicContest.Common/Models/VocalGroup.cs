@@ -34,7 +34,7 @@ public class VocalGroup : ContestParticipant
 
     // Перевизначення GetDescription().
     // Тут проявляється поліморфізм: змінна може мати тип ContestParticipant,
-    // але виконається метод фактичного об'єкта — SoloSinger або VocalGroup.
+    // буде викликано метод фактичного типу об'єкта: SoloSinger або VocalGroup.
     public override string GetDescription()
     {
         return $"Вокальний гурт: {base.GetDescription()}, учасників: {MemberCount}, жанр: {Genre}";
