@@ -1,24 +1,19 @@
 namespace MusicContest.Common.Services;
 
-// Результат producer/consumer-демонстрації (M = plannedCount).
-// Усі значення — СПРАВЖНІ, з атомарних лічильників,
-// а не константи з коментаря.
+// Підсумок демонстрації взаємодії producer і consumer.
 public readonly record struct ProducerConsumerResult(
-    // Планова кількість елементів M (з параметра-завдання).
+    // Кількість елементів, яку планувалося створити.
     int PlannedCount,
-    // ФАКТ: скільки елементів producer НАСПРАВДІ створив
-    // (лічильник producedCount, Interlocked.Increment).
+    // Кількість елементів, фактично доданих до буфера.
     int ProducedCount,
-    // ФАКТ: скільки елементів consumer НАСПРАВДІ зняв із буфера
-    // (лічильник consumedCount, Interlocked.Increment).
+    // Кількість елементів, фактично забраних із буфера.
     int ConsumedCount)
 {
-    // Лічильники збалансовані (balanced): produced (створено)
-    // == consumed (спожито) == план M — жоден елемент не загубився.
+    // Перевіряє, чи створено й оброблено всю заплановану кількість елементів.
     public bool IsBalanced =>
         ProducedCount == PlannedCount && ConsumedCount == PlannedCount;
 
-    // Buffer (буфер) порожній: створено стільки, скільки спожито —
-    // в черзі не залишилося необроблених елементів.
+    // Після завершення обох завдань рівність лічильників означає,
+    // що в буфері не залишилося необроблених елементів.
     public bool BufferEmpty => ProducedCount == ConsumedCount;
 }
