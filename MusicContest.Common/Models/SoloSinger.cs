@@ -54,8 +54,8 @@ public class SoloSinger : ContestParticipant
     // СТАТИЧНИЙ ФАБРИЧНИЙ МЕТОД CreateNew("створити новий").
     // Фабрика (factory) — метод, який повертає готовий об'єкт.
     // Через Random.Shared (спільна thread-safe копія Random)
-    // кожен виклик повертає РІЗНІ значення — безпечно для паралельного
-    // (parallel) створення сотень і тисяч об'єктів у потоках.
+    // кожен об'єкт отримує власний унікальний Guid Id; випадково вибрані
+    // українські навчальні імена можуть повторюватися між об'єктами.
     public static SoloSinger CreateNew()
     {
         var seeds = UkrainianMusicData.Singers;
