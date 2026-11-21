@@ -13,7 +13,7 @@ public class SynchronizationDemosTests
 
     // Тест: lock реально синхронізує. Очікуване значення
     // threadCount × incrementsPerThread (число з коментаря-завдання,
-    // а не з лічильника), фактичне — лічильник після завершення.
+    // а не з лічильника. Фактичне значення читається після завершення потоків.
     [Fact]
     public async Task LockDemo_ActualMatchesExpectedAfterParallelIncrements()
     {
@@ -52,14 +52,14 @@ public class SynchronizationDemosTests
             maxConcurrency,
             console: null);
 
-        // Межа — НЕ "надрукована", а ФАКТИЧНИЙ (з лічильника) максимум:
+        // Перевіряється фактичний максимум, отриманий із лічильника:
         // він НЕ перевищує заявлений maxConcurrency.
         Assert.True(result.MeasuredMaxConcurrency <= result.MaxConcurrencySetting,
             $"Виміряний максимум {result.MeasuredMaxConcurrency} перевищує ліміт {result.MaxConcurrencySetting}.");
     }
 
     // ============================================================
-    // AUTORESETEVENT producer/consumer — M = 500.
+    // AUTORESETEVENT перевіряє обробку 500 елементів у схемі producer/consumer.
     // ============================================================
 
     // Тест: producer НАСПРАВДІ (потік) створює M = 500 елементів,
