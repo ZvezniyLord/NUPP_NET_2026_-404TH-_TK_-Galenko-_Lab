@@ -10,7 +10,7 @@ namespace MusicContest.Common.Services;
 // T — generic (універсальний) тип, обмежений "where T : IEntity":
 // сервіс працює з будь-якою моделлю, що має унікальний Guid Id.
 //
-// THREAD-SAFE (поточно-безпечна) КОЛЕКЦІЯ:
+// THREAD-SAFE (потокобезпечна) КОЛЕКЦІЯ:
 // внутрішня колекція — ConcurrentDictionary<Guid, T> — вбудована потокобезпечна
 // колекція .NET (System.Collections.Concurrent). Її методи Add/Update/Remove
 // атомарні під конкурентним доступом багатьох потоків: без lock і без втрат
@@ -28,7 +28,7 @@ public class CrudServiceAsync<T> : ICrudServiceAsync<T> where T : IEntity
 
     // СПІЛЬНИЙ (static) SemaphoreSlim на рівні 1: під час запису JSON-файлу
     // одночасно пише лише ОДИН writer. SemaphoreSlim — "лічильниковий"
-    // семафор: WaitAsync/Release забирають та повертають мітки (ліцензії).
+    // семафор: WaitAsync/Release забирають та повертають мітки (дозволи).
     // На відміну від lock, він підтримує await: потік чекає АСІНХРОННО,
     // а не блокує потік пулу (thread pool).
     private static readonly SemaphoreSlim _jsonWriteGate = new(1, 1);
