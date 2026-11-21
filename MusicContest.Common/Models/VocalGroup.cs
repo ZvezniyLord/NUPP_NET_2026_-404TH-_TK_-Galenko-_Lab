@@ -1,3 +1,5 @@
+using MusicContest.Common.Data;
+
 namespace MusicContest.Common.Models;
 
 // VocalGroup = вокальний гурт.
@@ -52,16 +54,9 @@ public class VocalGroup : ContestParticipant
     // метод можна викликати з безлічі потоків одночасно.
     public static VocalGroup CreateNew()
     {
-        // Random.Shared безпечний для потоку: різні потоки
-        // одночасно отримують незалежні рандомні значення.
-        Random random = Random.Shared;
-
-        return new VocalGroup(
-            $"Group-{Guid.NewGuid():N}",         // унікальне сценічне ім'я
-            $"Country-{random.Next(1, 31)}",     // country: країна
-            random.Next(18, 35),                 // age: вік
-            random.Next(2, 12),                  // memberCount: кількість учасників
-            $"Genre-{random.Next(1, 10)}",       // genre: жанр
-            random.Next(1) > 0);                  // hasBackingVocals: є бек-вокал (true/false)
+        var seeds = UkrainianMusicData.Groups;
+        var selected = seeds[Random.Shared.Next(seeds.Length)];
+        return new VocalGroup(selected.StageName, "Україна", selected.Age,
+            selected.MemberCount, selected.Genre, selected.HasBackingVocals);
     }
 }
