@@ -107,6 +107,12 @@ def main():
           "Репертуар і виконавці генеруються з українського набору."])
     ):
         lines = read_required(f"Lab{number}_output.txt")
+        if number == 2:
+            header = next((i for i, item in enumerate(lines)
+                           if item.strip() == "ЛАБОРАТОРНА РОБОТА №2"), -1)
+            if header < 0:
+                raise ValueError("У реальному виході немає блоку ЛР2")
+            lines = lines[max(0, header-1):]
         render_pdf(number, goal, features, lines, build, tests)
 
 if __name__ == "__main__":
