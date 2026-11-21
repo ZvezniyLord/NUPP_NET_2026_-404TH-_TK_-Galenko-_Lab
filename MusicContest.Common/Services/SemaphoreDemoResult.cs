@@ -1,12 +1,8 @@
 namespace MusicContest.Common.Services;
 
-// Результат SemaphoreSlim-демонстрації.
-// readonly record struct — незмінний (immutable) результат,
-// який передається всім потокам безпосередньо.
+// Результат вимірювання паралельності в демонстрації SemaphoreSlim.
 public readonly record struct SemaphoreDemoResult(
-    // Скільки «ліцензій» (maxConcurrency) ЗАЯВЛЕНО у завданні —
-    // число з параметра, а не з вимірювання.
+    // Максимальна кількість одночасних завдань, задана під час запуску.
     int MaxConcurrencySetting,
-    // ФАКТ (з атомарного лічильника): скільки worker'ів реально
-    // було одночасно всередині обмеженої ділянки під час запуску.
+    // Найбільша кількість завдань, одночасно зафіксована лічильником.
     int MeasuredMaxConcurrency);
