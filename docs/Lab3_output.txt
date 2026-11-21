@@ -1,0 +1,21 @@
+
+=========================================
+ЛАБОРАТОРНА РОБОТА №3: EF Core + SQLite
+=========================================
+Створено початкові записи учасників, пісень, виступів і профілів.
+CREATE: True
+READ: Temporary song, DatabaseId=3
+UPDATE: True
+DELETE: True
+SAVE: True
+Сторінка 1, по 2 пісні:
+  Song #2: Skyfall
+  Song #1: Gravity
+Учасник #1: Astra; профіль=True; пісень M:N=2; виступів 1:N=1
+Учасник #2: Northern Lights; профіль=True; пісень M:N=1; виступів 1:N=1
+TPT SoloSingers: 1
+TPT VocalGroups: 1
+Songs: 2
+Performances: 2
+ParticipantSongs: 3
+SQLite: /home/runner/work/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/docs/musiccontest.db
