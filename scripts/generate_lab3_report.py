@@ -215,7 +215,15 @@ def make_pdf(conn, pics):
         y-=18
     label("Зображення таблиць отримано із SELECT/PRAGMA до файлу SQLite.",33,72,8)
     label("Скріншот окремого GUI-клієнта БД можна додати при захисті.",33,55,8)
-    footer(6);c.save()
+    footer(6)
+    mongo_png = DOCS / "Lab3_MongoDB.png"
+    if mongo_png.exists():
+        c.showPage()
+        label("6. MongoDB — додаткове завдання",33,ph-55,15,True)
+        yy=image_fit(mongo_png,ph-82,620)
+        label("Зображення сформовано з реального запиту find() до MongoDB.",33,yy-4,9)
+        footer(7)
+    c.save()
     return pdf_path
 
 def main():
