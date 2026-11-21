@@ -1,4 +1,4 @@
-# MusicContest — Лабораторні роботи
+# MusicContest: Лабораторні роботи
 
 > Мова матеріалів: українська; англійська використовується для технічних назв і міжнародних матеріалів. [Мовна політика](EDITORIAL_LANGUAGE_POLICY.md) · [Редакційний стандарт](EDITORIAL_WRITING_STANDARD.md).
 
@@ -6,26 +6,26 @@
 
 ## Структура
 
-- `MusicContest.Common` — моделі, синхронний CRUD, **асинхронний CRUD**,
+- `MusicContest.Common`: моделі, синхронний CRUD, **асинхронний CRUD**,
   демонстрації синхронізації (lock, SemaphoreSlim, AutoResetEvent),
   Parallel-створення, метод розширення.
-- `MusicContest.Console` — демонстрація роботи ЛР1 (CRUD, статика,
+- `MusicContest.Console`: демонстрація роботи ЛР1 (CRUD, статика,
   делегат, подія, серіалізація) та ЛР2 (async CRUD, thread safety,
   Parallel, lock, SemaphoreSlim, AutoResetEvent, LINQ).
-- `MusicContest.Common.Tests` — xUnit-тести async CRUD та механізмів
+- `MusicContest.Common.Tests`: xUnit-тести async CRUD та механізмів
   синхронізації.
-- `docs/Lab1_Report.pdf` — PDF із результатом ЛР1.
-- `docs/Lab2_Report.pdf` — PDF із результатом ЛР2.
+- `docs/Lab1_Report.pdf`: PDF із результатом ЛР1.
+- `docs/Lab2_Report.pdf`: PDF із результатом ЛР2.
 - `docs/Lab2_build.txt`, `docs/Lab2_test.txt`, `docs/Lab2_output.txt`
   містять журнали build/test/run.
 
 ## Класи моделі
 
-- `ContestParticipant` — абстрактний базовий клас.
-- `SoloSinger : ContestParticipant` — сольний виконавець.
-- `VocalGroup : ContestParticipant` — вокальний гурт.
-- `Song` — конкурсна пісня.
-- `Performance` — конкурсний виступ.
+- `ContestParticipant`: абстрактний базовий клас.
+- `SoloSinger : ContestParticipant`: сольний виконавець.
+- `VocalGroup : ContestParticipant`: вокальний гурт.
+- `Song`: конкурсна пісня.
+- `Performance`: конкурсний виступ.
 
 У моделі використано конструктори, статичне поле, статичний конструктор,
 звичайні й статичні методи, делегат, подію та метод розширення.
@@ -45,21 +45,21 @@
 `Services/ICrudServiceAsync.cs`):
 
 - асинхронні методи за інтерфейсом завдання: `CreateAsync`/`UpdateAsync`/
-  `RemoveAsync` повертають `Task<bool>`, `ReadAsync` — `Task<T>`,
-  `ReadAllAsync` та `ReadAllAsync(page, amount)` — `Task<IEnumerable<T>>`,
-  `SaveAsync()` — `Task<bool>`;
-- внутрішня колекція — `ConcurrentDictionary<Guid, T>` є вбудованою потокобезпечною колекцією .NET (`System.Collections.Concurrent`). Її операції
+  `RemoveAsync` повертають `Task<bool>`, `ReadAsync`: `Task<T>`,
+  `ReadAllAsync` та `ReadAllAsync(page, amount)`: `Task<IEnumerable<T>>`,
+  `SaveAsync()`: `Task<bool>`;
+- внутрішня колекція: `ConcurrentDictionary<Guid, T>` є вбудованою потокобезпечною колекцією .NET (`System.Collections.Concurrent`). Її операції
   `TryAdd`/`TryUpdate`/`TryRemove` атомарні під конкурентним доступом;
 - методи читання та ітерація повертають **snapshot** (копію послідовності,
   впорядковану за Id), а не саму внутрішню колекцію. Це забезпечує
   стабільний порядок елементів під час читання; копія не є глибокою копією
   самих об'єктів.
-- `CreateAsync` при повторному Id — `false`; `UpdateAsync`/`RemoveAsync`
-  при відсутньому Id — `false`; `ReadAsync` при відсутньому Id —
+- `CreateAsync` при повторному Id: `false`; `UpdateAsync`/`RemoveAsync`
+  при відсутньому Id: `false`; `ReadAsync` при відсутньому Id —
   `KeyNotFoundException`;
 - пагінація через LINQ: `Skip((page - 1) * amount).Take(amount)`,
   нумерація сторінок з 1; `page <= 0` або `amount <= 0` —
-  `ArgumentOutOfRangeException`; сторінка поза межами — порожня
+  `ArgumentOutOfRangeException`; сторінка поза межами: порожня
   колекція;
 - сервіс зберігає колекцію у файл за властивістю `FilePath`:
   `SaveAsync()` записує JSON через `File.WriteAllTextAsync`.
@@ -67,10 +67,10 @@
 
 ### Thread safety та синхронізація
 
-- `lock` — демонстрація 8 потоків × 10 000 зростань (очікуване значення — 80 000; фактичне зчитується з лічильника);
-- `SemaphoreSlim` — 10 worker'ів, maxConcurrency = 3, фактичний
+- `lock`: демонстрація 8 потоків × 10 000 зростань (очікуване значення: 80 000; фактичне зчитується з лічильника);
+- `SemaphoreSlim`: 10 worker'ів, maxConcurrency = 3, фактичний
   максимум вимірюється атомарним лічильником;
-- `AutoResetEvent` — справжня producer/consumer-демонстрація
+- `AutoResetEvent`: справжня producer/consumer-демонстрація
   (M = 500), атомарні лічильники `producedCount`/`consumedCount`.
 
 ### IEnumerable<T>
@@ -121,7 +121,7 @@ snapshot, тому `foreach (var item in service)` безпечний серед
    не потрібен, оскільки синхронізацію забезпечує сама колекція.
 4. **Пагінація через LINQ.** Її реалізовано в `ReadAllAsync(page, amount)`.
    Використовується вираз `Skip((page - 1) * amount).Take(amount)`:
-   нумерація сторінок з 1; сторінка поза межами — порожня колекція
+   нумерація сторінок з 1; сторінка поза межами: порожня колекція
    (не помилка); недійсна `page`/`amount` —
    `ArgumentOutOfRangeException`.
 5. **Збереження (SaveAsync).** Метод створює знімок колекції та серіалізує
@@ -131,7 +131,7 @@ snapshot, тому `foreach (var item in service)` безпечний серед
 6. **IEnumerable<T>.** Інтерфейс `ICrudServiceAsync<T> : IEnumerable<T>`
    та метод `GetEnumerator()` у реалізації. Саме тому в `Program.cs`
    можна написати звичайний `foreach (var item in service)`:
-   foreach іде по snapshot, а не по живій колекції сервісу.
+   foreach іде по snapshot, а не безпосередньо по внутрішньому словнику сервісу.
 7. **Parallel.** Реалізація міститься у `Services/Parallell.cs`. `Parallel.For(0, count, ...)`: тіло паралельно створює об'єкти та запускає їх додавання у CRUD-сервіс:
    кожний `Song.CreateNew()` + запуск `CreateAsync` виконується різними потоками пулу без блокування; після завершення `Parallel.For` метод очікує всі завдання через `Task.WhenAll`;
    `ConcurrentDictionary` у сервісі thread-safe сам; реальну кількість зчитують з сервісу, час вимірює
@@ -158,12 +158,12 @@ snapshot, тому `foreach (var item in service)` безпечний серед
     результати, отримані під час виконання; тести перевіряють саме їх.
 12. **Тести.** У `MusicContest.Common.Tests` кожен механізм
     перевіряється окремим тестом (lock: actual == 8 × 10 000;
-    semaphore: виміряний max ≤ 3, якби семафора не було — був би 10;
+    semaphore: виміряний max ≤ 3, якби семафора не було: був би 10;
     producer/consumer: produced == consumed == 500 і порожній буфер).
 
 #### Українські демонстраційні дані
 
-Фабричні методи `SoloSinger.CreateNew()`, `VocalGroup.CreateNew()`, `Song.CreateNew()` і `Performance.CreateNew()` використовують спільний набір `UkrainianMusicData`. Учасники та колективи мають українські назви, країна для учасників — Україна, а репертуар складається з українських пісень. Тривалість генерується окремо для демонстрації статистичних операцій LINQ.
+Фабричні методи `SoloSinger.CreateNew()`, `VocalGroup.CreateNew()`, `Song.CreateNew()` і `Performance.CreateNew()` використовують спільний набір `UkrainianMusicData`. Учасники та колективи мають українські назви, країна для учасників: Україна, а репертуар складається з українських пісень. Тривалість генерується окремо для демонстрації статистичних операцій LINQ.
 
 ### Тести
 
@@ -187,7 +187,7 @@ dotnet test MusicContest.Common.Tests/MusicContest.Common.Tests.csproj
 dotnet run --project MusicContest.Console
 ```
 
-Кожен запуск консольного застосунку — незалежна (детермінована)
+Кожен запуск консольного застосунку: незалежна (детермінована)
 сесія: перед демонстрацією `lab2_songs.json` очищається, тому
 результати не накопичуються між запусками.
 
@@ -197,14 +197,14 @@ PDF-звіт формується скриптом `docs/Lab2_report_generator.p
 `docs/Lab2_build.txt`, `docs/Lab2_test.txt`, `docs/Lab2_output.txt`.
 
 Результати перевірок (фактичні, з журналів):
-- `dotnet build MusicContest.sln`: Build succeeded, 0 Warning(s), 0 Error(s) — exit code 0;
-- `dotnet test MusicContest.Common.Tests`: Passed! Failed: 0, Passed: 22, Total: 22 — exit code 0 (процес завершився сам, без зависання);
-- `dotnet run --project MusicContest.Console`: exit code 0; Parallel.For створив 2000 із 2000 об'єктів через CRUD-сервіс; LINQ по реальній колекції: Min = 120 s, Max = 359 s, Average ≈ 239,18 s; SaveAsync — у файлі 2000 елементів після 3 конкурентних saves; lock Match: True (80000); SemaphoreSlim виміряний max = 3; AutoResetEvent Produced = Consumed = 500.
+- `dotnet build MusicContest.sln`: Build succeeded, 0 Warning(s), 0 Error(s): exit code 0;
+- `dotnet test MusicContest.Common.Tests`: Passed! Failed: 0, Passed: 22, Total: 22: exit code 0 (процес завершився сам, без зависання);
+- `dotnet run --project MusicContest.Console`: exit code 0; Parallel.For створив 2000 із 2000 об'єктів через CRUD-сервіс; LINQ по реальній колекції: Min = 120 s, Max = 359 s, Average ≈ 239,18 s; SaveAsync: у файлі 2000 елементів після 3 конкурентних saves; lock Match: True (80000); SemaphoreSlim виміряний max = 3; AutoResetEvent Produced = Consumed = 500.
 
 ## Git / GitHub
 
 Робоча гілка ЛР1: `lab1`.
-Робоча гілка ЛР2: `lab2` — містить код ЛР1 та ЛР2; розробкова гілка: `lab2-qwen38`.
+Робоча гілка ЛР2: `lab2`: містить код ЛР1 та ЛР2; розробкова гілка: `lab2-qwen38`.
 
 Готова лабораторна робота №2 подається через Pull Request із гілки `lab2`:
 у `master`, або у `lab1`, якщо PR із `lab1` ще не закритий. Фактично відкритий Pull Request #2 `lab2 → lab1` (PR лабораторної №1 ще відкритий): https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/pull/2. Експериментальна гілка `lab2-qwen38` для здачі не використовується.
