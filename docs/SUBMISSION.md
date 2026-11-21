@@ -8,6 +8,7 @@
 
 - [Гілка lab2](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/tree/lab2)
 - [Pull Request №2: lab2 → lab1](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/pull/2)
+- [Короткий звіт зі схемою виконання](PROJECT_REPORT.md)
 - [PDF-звіт лабораторної №2](Lab2_Report.pdf)
 - [PDF-звіт лабораторної №1](Lab1_Report.pdf)
 - [Контрольні запитання](../LAB2_CONTROL_QUESTIONS.md)
