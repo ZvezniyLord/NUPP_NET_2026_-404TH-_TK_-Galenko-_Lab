@@ -7,10 +7,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: lab3-verify
-  cancel-in-progress: true
-
 jobs:
   build-test-report:
     runs-on: ubuntu-latest
