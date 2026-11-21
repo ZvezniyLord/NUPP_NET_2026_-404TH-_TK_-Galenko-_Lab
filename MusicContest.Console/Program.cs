@@ -19,7 +19,7 @@ CrudService<ContestParticipant> participantService = new();
 
 // Створюємо об'єкт SoloSinger.
 SoloSinger singer = new(
-    "Astra",       // stageName = сценічне ім'я
+    "Олена Ковальчук",       // stageName = сценічне ім'я
     "Україна",     // country = країна
     21,            // age = вік
     "сопрано",     // voiceType = тип голосу
@@ -32,11 +32,11 @@ SoloSinger singer = new(
 
 // Другий тип нащадка — VocalGroup.
 VocalGroup group = new(
-    "Northern Lights",
+    "Дніпровські голоси",
     "Україна",
     24,
     4,             // memberCount = кількість учасників
-    "pop / soul",  // genre = жанр
+    "народний поп",  // genre = жанр
     true)          // hasBackingVocals = є бек-вокал
 {
     Id = Guid.Parse("00000000-0000-0000-0000-000000000002")
@@ -59,7 +59,7 @@ Console.WriteLine($"Коротко: {found.ToShortInfo()}");
 // UPDATE = оновлення.
 Console.WriteLine();
 Console.WriteLine("3. Після Update:");
-singer.StageName = "Astra Nova";
+singer.StageName = "Олена Ковальчук — фіналістка";
 participantService.Update(singer);
 PrintParticipants(participantService.ReadAll());
 
@@ -73,7 +73,7 @@ PrintParticipants(participantService.ReadAll());
 Console.WriteLine();
 Console.WriteLine($"Створено об'єктів-нащадків ContestParticipant: {ContestParticipant.GetCreatedCount()}");
 
-Song song = Song.FromMinutes("Gravity", "Sara Bareilles", 3.9, "F major");
+Song song = Song.FromMinutes("Червона рута", "Володимир Івасюк", 3.9, "фа мажор");
 Console.WriteLine($"Пісня: {song.Title}; тривалість: {song.GetFormattedDuration()}");
 
 // Створюємо об'єкт виступу.
