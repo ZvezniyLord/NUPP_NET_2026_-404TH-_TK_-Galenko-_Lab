@@ -17,27 +17,30 @@ ERD (Entity Relationship Diagram) показує таблиці, їхні пол
 
 ### 4. Що таке DbContext?
 
-Клас <code>DbContext</code> координує роботу Entity Framework Core з базою даних. Він виконує запити, відстежує зміни сутностей, зіставляє моделі з таблицями та зберігає зміни через <code>SaveChangesAsync()</code>. У проєкті клас <code>MusicContestContext</code> оголошує шість наборів <code>DbSet</code> і налаштовує зв'язки в методі <code>OnModelCreating</code>. Параметри підключення до SQLite визначає <code>MusicContestDatabase.Options()</code>.
+Клас `DbContext` координує роботу Entity Framework Core з базою даних. Він виконує запити, відстежує зміни сутностей, зіставляє моделі з таблицями та зберігає зміни через `SaveChangesAsync()`. У проєкті клас `MusicContestContext` оголошує шість наборів `DbSet` і налаштовує зв'язки в методі `OnModelCreating`. Параметри підключення до SQLite визначає `MusicContestDatabase.Options()`.
 
 ### 5. Поясніть зв'язки 1:1, 1:N і M:N в EF Core.
 
-**1:1.** Один учасник може мати не більше одного профілю. Зв'язок між <code>ContestParticipantModel</code> і <code>ParticipantProfileModel</code> налаштовано через зовнішній ключ профілю. EF Core створює для нього унікальне обмеження.
+**1:1.** Один учасник може мати не більше одного профілю. Зв'язок між `ContestParticipantModel` і `ParticipantProfileModel` налаштовано через зовнішній ключ профілю. EF Core створює для нього унікальне обмеження.
 
-**1:N.** Один учасник може мати кілька виступів. Кожен запис <code>PerformanceModel</code> посилається на одного учасника через <code>ParticipantDatabaseId</code>.
+**1:N.** Один учасник може мати кілька виступів. Кожен запис `PerformanceModel` посилається на одного учасника через `ParticipantDatabaseId`.
 
-**M:N.** Учасник може обрати кілька пісень, а ту саму пісню можуть виконувати різні учасники. Зв'язок зберігається в проміжній таблиці <code>ParticipantSongs</code>.
+**M:N.** Учасник може обрати кілька пісень, а ту саму пісню можуть виконувати різні учасники. Зв'язок зберігається в проміжній таблиці `ParticipantSongs`.
 
 ### 6. Як налаштувати зв'язок 1:1 за допомогою Fluent API?
 
+```csharp
     modelBuilder.Entity<ParticipantProfileModel>()
         .HasOne(profile => profile.Participant)
         .WithOne(participant => participant.Profile)
         .HasForeignKey<ParticipantProfileModel>(profile => profile.ParticipantDatabaseId);
+```
 
-Виклик <code>WithOne</code> задає зв'язок один-до-одного. EF Core створює унікальне обмеження для зовнішнього ключа, тому одному учаснику не можна призначити два профілі.
+Виклик `WithOne` задає зв'язок один-до-одного. EF Core створює унікальне обмеження для зовнішнього ключа, тому одному учаснику не можна призначити два профілі.
 
 ### 7. Наведіть приклад зв'язку M:N в EF Core.
 
+```csharp
     modelBuilder.Entity<ContestParticipantModel>()
         .HasMany(participant => participant.Songs)
         .WithMany(song => song.Participants)
@@ -46,38 +49,43 @@ ERD (Entity Relationship Diagram) показує таблиці, їхні пол
             right => right.HasOne<SongModel>().WithMany().HasForeignKey("SongDatabaseId"),
             left => left.HasOne<ContestParticipantModel>().WithMany().HasForeignKey("ParticipantDatabaseId"),
             join => join.HasKey("ParticipantDatabaseId", "SongDatabaseId"));
+```
 
 Конфігурація створює проміжну таблицю. Її складений первинний ключ утворюють два зовнішні ключі.
 
 ### 8. Чим відрізняються Data Annotations і Fluent API?
 
-Data Annotations задають правила за допомогою атрибутів у моделях C#, наприклад <code>[Required]</code>, <code>[MaxLength]</code> і <code>[Key]</code>. Такий спосіб зручний для простих обмежень, але пов'язує правила збереження з класами моделей.
+Data Annotations задають правила за допомогою атрибутів у моделях C#, наприклад `[Required]`, `[MaxLength]` і `[Key]`. Такий спосіб зручний для простих обмежень, але пов'язує правила збереження з класами моделей.
 
-Fluent API налаштовує схему в методі <code>OnModelCreating</code>. Він підтримує складні зв'язки, індекси, каскадне видалення, M:N та стратегії наслідування. У проєкті MusicContest використано Fluent API.
+Fluent API налаштовує схему в методі `OnModelCreating`. Він підтримує складні зв'язки, індекси, каскадне видалення, M:N та стратегії наслідування. У проєкті MusicContest використано Fluent API.
 
 ### 9. Як створити та застосувати міграцію EF Core?
 
-Спочатку встановлюють інструмент <code>dotnet-ef</code>. Потім створюють міграцію:
+Спочатку встановлюють інструмент `dotnet-ef`. Потім створюють міграцію:
 
-    dotnet ef migrations add InitialCreate --project MusicContest.Infrastructure --startup-project MusicContest.Console
+```bash
+dotnet ef migrations add InitialCreate --project MusicContest.Infrastructure --startup-project MusicContest.Console
+```
 
 Для застосування змін до бази даних виконують:
 
-    dotnet ef database update --project MusicContest.Infrastructure --startup-project MusicContest.Console
+```bash
+dotnet ef database update --project MusicContest.Infrastructure --startup-project MusicContest.Console
+```
 
-У міграції метод <code>Up()</code> описує створення або зміну схеми, а <code>Down()</code> містить зворотні дії. EF Core зберігає відомості про застосовані міграції в таблиці <code>__EFMigrationsHistory</code>. У цій лабораторній початкова міграція міститься в каталозі <code>Migrations/</code>; під час запуску консольного застосунку її застосовує <code>Database.MigrateAsync()</code>.
+У міграції метод `Up()` описує створення або зміну схеми, а `Down()` містить зворотні дії. EF Core зберігає відомості про застосовані міграції в таблиці `__EFMigrationsHistory`. У цій лабораторній початкова міграція міститься в каталозі `Migrations/`; під час запуску консольного застосунку її застосовує `Database.MigrateAsync()`.
 
 ### 10. Для чого потрібен проєкт MusicContest.Infrastructure?
 
-Цей проєкт містить інфраструктурний код: моделі збереження, <code>DbContext</code>, конфігурацію SQLite, міграції, <code>EfRepository&lt;T&gt;</code> та адаптер CRUD-сервісу. Проєкт <code>MusicContest.Common</code> описує предметну модель і контракт <code>IRepository&lt;T&gt;</code>, не прив'язуючи його до конкретної СУБД. Консольний застосунок використовує інфраструктурний шар для роботи з базою даних.
+Цей проєкт містить інфраструктурний код: моделі збереження, `DbContext`, конфігурацію SQLite, міграції, `EfRepository<T>` та адаптер CRUD-сервісу. Проєкт `MusicContest.Common` описує предметну модель і контракт `IRepository<T>`, не прив'язуючи його до конкретної СУБД. Консольний застосунок використовує інфраструктурний шар для роботи з базою даних.
 
 ### 11. Чим доменна модель відрізняється від моделі бази даних?
 
-Доменні класи <code>SoloSinger</code>, <code>VocalGroup</code>, <code>Song</code> і <code>Performance</code> описують об'єкти та поведінку предметної області. EF-моделі із суфіксом <code>Model</code> призначені для збереження даних. Вони містять <code>DatabaseId</code>, зовнішні ключі та навігаційні властивості. Такий поділ не дає деталям конкретної СУБД проникати в доменну логіку.
+Доменні класи `SoloSinger`, `VocalGroup`, `Song` і `Performance` описують об'єкти та поведінку предметної області. EF-моделі із суфіксом `Model` призначені для збереження даних. Вони містять `DatabaseId`, зовнішні ключі та навігаційні властивості. Такий поділ не дає деталям конкретної СУБД проникати в доменну логіку.
 
 ### 12. Яку проблему розв'язує Repository Pattern?
 
-Шаблон Repository відокремлює доступ до даних від логіки сервісу. CRUD-сервіс працює через інтерфейс <code>IRepository&lt;T&gt;</code>, а не звертається безпосередньо до <code>DbContext</code> або SQL. Це спрощує тестування та дає змогу замінити спосіб зберігання без зміни коду, який використовує контракт. У ЛР3 реалізацію для EF Core надає <code>EfRepository&lt;T&gt;</code>.
+Шаблон Repository відокремлює доступ до даних від логіки сервісу. CRUD-сервіс працює через інтерфейс `IRepository<T>`, а не звертається безпосередньо до `DbContext` або SQL. Це спрощує тестування та дає змогу замінити спосіб зберігання без зміни коду, який використовує контракт. У ЛР3 реалізацію для EF Core надає `EfRepository<T>`.
 
 ### 13. У чому різниця між реляційними та нереляційними базами даних?
 
@@ -85,4 +93,4 @@ Fluent API налаштовує схему в методі <code>OnModelCreating
 
 ---
 
-**Для захисту:** файл бази даних розміщено в <code>docs/musiccontest.db</code>. У ньому є таблиці <code>ContestParticipants</code>, <code>SoloSingers</code>, <code>VocalGroups</code>, <code>ParticipantProfiles</code>, <code>Songs</code>, <code>Performances</code> і <code>ParticipantSongs</code>. EF Core також створює службову таблицю <code>__EFMigrationsHistory</code>.
+**Для захисту:** файл бази даних розміщено в `docs/musiccontest.db`. У ньому є таблиці `ContestParticipants`, `SoloSingers`, `VocalGroups`, `ParticipantProfiles`, `Songs`, `Performances` і `ParticipantSongs`. EF Core також створює службову таблицю `__EFMigrationsHistory`.
