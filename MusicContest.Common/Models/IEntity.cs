@@ -7,7 +7,7 @@ namespace MusicContest.Common.Models;
 public interface IEntity
 {
     // Id = Identifier = ідентифікатор.
-    // Guid (Globally Unique Identifier) — глобально унікальний ідентифікатор.
+    // Guid (Globally Unique Identifier) є глобально унікальним ідентифікатором.
     // Він значно надійніший за прості 1, 2, 3, коли об'єкти можуть створюватися незалежно.
     Guid Id { get; set; }
 }
