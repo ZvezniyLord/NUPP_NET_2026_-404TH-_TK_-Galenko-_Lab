@@ -1,6 +1,5 @@
-using MongoDB.Bson;
-using MongoDB.Bson.IO;
 using MongoDB.Driver;
+using MusicContest.Common.Data;
 using MusicContest.Infrastructure.Services;
 using MusicContest.Nosql.Models;
 using MusicContest.Nosql.Repositories;
@@ -26,40 +25,62 @@ public static class Lab3NoSqlDemo
                 Builders<SongDocument>.IndexKeys.Ascending(x => x.DatabaseId),
                 new CreateIndexOptions { Unique = true }));
 
-        var repository = new MongoRepository<SongDocument>(collection);
-        var songs = new RepositoryCrudServiceAsync<SongDocument>(repository);
+        var songs = new RepositoryCrudServiceAsync<SongDocument>(
+            new MongoRepository<SongDocument>(collection));
 
-        if (!(await songs.ReadAllAsync()).Any())
+        // Всі збережені зразки репертуару — українські.
+        // Перезаписуються тільки записи нашого демонстраційного набору (id 1..8).
+        var current = (await songs.ReadAllAsync()).ToList();
+        for (int i = 0; i < UkrainianMusicData.Songs.Length; i++)
         {
-            await songs.CreateAsync(new SongDocument
+            var seed = UkrainianMusicData.Songs[i];
+            var existing = current.FirstOrDefault(x => x.DatabaseId == i + 1);
+            if (existing is not null)
             {
-                DatabaseId = 1, Title = "Gravity", OriginalArtist = "Sara Bareilles",
-                DurationSeconds = 234, Key = "F major",
-                Stats = new SongStatsDocument { ListenerVotes = 250, Tags = new() { "pop", "ballad" } }
-            });
-            await songs.CreateAsync(new SongDocument
+                existing.Title = seed.Title;
+                existing.OriginalArtist = seed.OriginalArtist;
+                existing.DurationSeconds = seed.DurationSeconds;
+                existing.Key = seed.Key;
+                existing.Stats = new SongStatsDocument
+                {
+                    ListenerVotes = 250 + i * 30,
+                    Tags = new() { "українська музика", "конкурсний репертуар" }
+                };
+                await songs.UpdateAsync(existing);
+            }
+            else
             {
-                DatabaseId = 2, Title = "Skyfall", OriginalArtist = "Adele",
-                DurationSeconds = 286, Key = "C minor",
-                Stats = new SongStatsDocument { ListenerVotes = 420, Tags = new() { "soundtrack", "soul" } }
-            });
+                await songs.CreateAsync(new SongDocument
+                {
+                    DatabaseId = i + 1, Title = seed.Title,
+                    OriginalArtist = seed.OriginalArtist,
+                    DurationSeconds = seed.DurationSeconds, Key = seed.Key,
+                    Stats = new SongStatsDocument
+                    {
+                        ListenerVotes = 250 + i * 30,
+                        Tags = new() { "українська музика", "конкурсний репертуар" }
+                    }
+                });
+            }
         }
 
         var temp = new SongDocument
         {
-            DatabaseId = 999, Title = "Temporary Mongo song",
-            OriginalArtist = "Lab3", DurationSeconds = 165, Key = "A minor"
+            DatabaseId = 999, Title = "Пробна українська пісня",
+            OriginalArtist = "Навчальний конкурс", DurationSeconds = 165,
+            Key = "ля мінор"
         };
         Console.WriteLine($"CREATE: {await songs.CreateAsync(temp)}");
         var read = await songs.ReadAsync(temp.Id);
         Console.WriteLine($"READ: {read.Title}");
-        read.Title = "Temporary Mongo song (updated)";
+        read.Title = "Пробна українська пісня (оновлена)";
         Console.WriteLine($"UPDATE: {await songs.UpdateAsync(read)}");
         Console.WriteLine($"DELETE: {await songs.RemoveAsync(read)}");
 
-        foreach (var item in await songs.ReadAllAsync())
-            Console.WriteLine($"MongoDB document: {item.DatabaseId}, {item.Title}, "
-                + $"votes={item.Stats.ListenerVotes}, tags={string.Join("/", item.Stats.Tags)}");
+        foreach (var item in (await songs.ReadAllAsync()).OrderBy(x => x.DatabaseId))
+            Console.WriteLine($"MongoDB документ: {item.DatabaseId}, {item.Title} — " +
+                $"{item.OriginalArtist}; голосів={item.Stats.ListenerVotes}; " +
+                $"теги={string.Join("/", item.Stats.Tags)}");
         Console.WriteLine($"Documents count: {(await songs.ReadAllAsync()).Count()}");
         Console.WriteLine("MongoDB collection: MusicContestLab3.songs");
     }
