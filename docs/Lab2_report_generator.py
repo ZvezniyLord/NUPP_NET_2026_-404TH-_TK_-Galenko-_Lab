@@ -139,11 +139,11 @@ def main() -> None:
     story += [ft, Paragraph("Схема виконання", styles["SectionUA"])]
 
     flow = [[
-        paragraph("Program.cs<br/>консольний запуск", styles["SmallUA"]),
-        paragraph("Parallell<br/>Parallel.For", styles["SmallUA"]),
-        paragraph("Song.CreateNew<br/>українські дані", styles["SmallUA"]),
-        paragraph("CrudServiceAsync<br/>ConcurrentDictionary", styles["SmallUA"]),
-        paragraph("LINQ / JSON<br/>результати", styles["SmallUA"]),
+        paragraph("Program.cs\nконсольний запуск", styles["SmallUA"]),
+        paragraph("Parallell\nParallel.For", styles["SmallUA"]),
+        paragraph("Song.CreateNew\nукраїнські дані", styles["SmallUA"]),
+        paragraph("CrudServiceAsync\nConcurrentDictionary", styles["SmallUA"]),
+        paragraph("LINQ / JSON\nрезультати", styles["SmallUA"]),
     ]]
     flow_table = Table(flow, colWidths=[34*mm]*5)
     flow_table.setStyle(TableStyle([
