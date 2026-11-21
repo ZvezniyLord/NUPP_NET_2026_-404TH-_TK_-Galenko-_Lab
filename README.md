@@ -157,7 +157,7 @@
    `Interlocked.Increment` і `Interlocked.CompareExchange`.
 10. **AutoResetEvent у схемі producer/consumer.** Producer кладе
     елементи в `ConcurrentQueue<int>` і викликає `itemReady.Set()`.
-    Сигнал пробуджує одного потоку, який очікує через `WaitOne()`.
+    Сигнал пробуджує один потік, який очікує через `WaitOne()`.
     Consumer забирає елементи методом `TryDequeue` та підраховує їх.
     Producer не очікує звільнення буфера, тому в цій демонстрації
     немає циклічного очікування між виробником і споживачем.
@@ -196,9 +196,7 @@ dotnet test MusicContest.Common.Tests/MusicContest.Common.Tests.csproj
 dotnet run --project MusicContest.Console
 ```
 
-Кожен запуск консольного застосунку: незалежна (детермінована)
-сесія: перед демонстрацією `lab2_songs.json` очищається, тому
-результати не накопичуються між запусками.
+Кожен запуск консольного застосунку використовує окремий набір демонстраційних даних. Перед виконанням ЛР2 файл `lab2_songs.json` очищається, тому записи не накопичуються між запусками. Випадково створені дані та виміряний час можуть змінюватися між запусками.
 
 ### Звітні файли та результати перевірок
 
@@ -208,7 +206,7 @@ PDF-звіт формується скриптом `docs/Lab2_report_generator.p
 Результати перевірок (фактичні, з журналів):
 - `dotnet build MusicContest.sln`: Build succeeded, 0 Warning(s), 0 Error(s): exit code 0;
 - `dotnet test MusicContest.Common.Tests`: Passed! Failed: 0, Passed: 22, Total: 22: exit code 0 (процес завершився сам, без зависання);
-- `dotnet run --project MusicContest.Console`: exit code 0; Parallel.For створив 2000 із 2000 об'єктів через CRUD-сервіс; LINQ по реальній колекції: Min = 120 s, Max = 359 s, Average ≈ 239,18 s; SaveAsync: у файлі 2000 елементів після 3 конкурентних saves; lock Match: True (80000); SemaphoreSlim виміряний max = 3; AutoResetEvent Produced = Consumed = 500.
+- `dotnet run --project MusicContest.Console`: exit code 0; Parallel.For створив 2000 із 2000 об'єктів через CRUD-сервіс; LINQ по реальній колекції: Min = 120 s, Max = 359 s, Average = 241,59 s; SaveAsync: у файлі 2000 елементів після 3 конкурентних saves; lock Match: True (80000); SemaphoreSlim виміряний max = 3; AutoResetEvent Produced = Consumed = 500.
 
 ## Git / GitHub
 
