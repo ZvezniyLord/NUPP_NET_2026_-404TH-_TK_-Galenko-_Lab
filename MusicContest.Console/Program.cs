@@ -31,7 +31,7 @@ SoloSinger singer = new(
     Id = Guid.Parse("00000000-0000-0000-0000-000000000001")
 };
 
-// Створюємо другий тип нащадка — VocalGroup.
+// Створюємо другий похідний тип: VocalGroup.
 // group = гурт.
 VocalGroup group = new(
     "Дніпровські голоси",
@@ -91,13 +91,13 @@ Console.WriteLine($"Пісня: {song.Title}; тривалість: {song.GetFor
 // Створюємо об'єкт виступу.
 Performance performance = new(singer.StageName, song.Title, 86.5)
 {
-    // Третій постійний GUID — лише для наочності демонстрації.
+    // Третій постійний GUID потрібен для наочності демонстрації.
     Id = Guid.Parse("00000000-0000-0000-0000-000000000003")
 };
 
 // ПІДПИСКА НА ПОДІЮ.
 // += означає "додати обробник події".
-// (item, oldScore, newScore) => { ... } — лямбда-вираз,
+// (item, oldScore, newScore) => { ... } є лямбда-виразом.
 // тобто короткий запис анонімного методу.
 performance.ScoreChanged += (item, oldScore, newScore) =>
 {
@@ -114,7 +114,7 @@ performance.SetScore(92.0);
 performance.Complete();
 Console.WriteLine($"Виступ завершено: {performance.IsCompleted}");
 
-// SAVE / LOAD — додаткове завдання.
+// SAVE / LOAD: додаткове завдання.
 // AppContext.BaseDirectory = папка, звідки запущена програма.
 // Path.Combine безпечно формує шлях незалежно від операційної системи.
 string dataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
