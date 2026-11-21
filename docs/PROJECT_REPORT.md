@@ -1,5 +1,5 @@
 # MusicContest
-### Лабораторна робота №3 — Entity Framework Core та бази даних
+### Лабораторна робота №3: Entity Framework Core та бази даних
 
 **Технології:** C# · .NET 8 · Entity Framework Core · SQLite · MongoDB  
 **Предметна область:** український вокальний конкурс
@@ -16,6 +16,8 @@
 **Основні результати:** [PDF-звіт](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_Report.pdf) · [ERD-діаграма](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_ERD.png) · [SQLite-база](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/musiccontest.db) · [Скріншоти таблиць](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/docs/Lab3_GUI_ContestParticipants.png) · [Навчальний довідник](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/README.md)
 
 ---
+
+[Редакційний стандарт](../EDITORIAL_WRITING_STANDARD.md) визначає правила написання пояснень і звітів.
 
 ## Архітектура рішення
 
@@ -35,17 +37,17 @@ flowchart LR
 | Складова | Виконання |
 |:--|:--|
 | **Моделі та наслідування** | Окремий `MusicContest.Infrastructure`, стратегія **Table-per-Type (TPT)** |
-| **Реляційні зв'язки** | **1:1** — учасник/профіль; **1:N** — учасник/виступи; **M:N** — учасники/пісні |
+| **Реляційні зв'язки** | **1:1**: учасник/профіль; **1:N**: учасник/виступи; **M:N**: учасники/пісні |
 | **Entity Framework Core** | `MusicContestContext`, конфігурація через Fluent API, міграція `InitialCreate` |
 | **Repository Pattern** | Універсальний `IRepository<T>`, `EfRepository<T>`, асинхронні операції CRUD |
 | **Демонстрація** | Консольний застосунок, запис/читання з SQLite, пагінація, тестування |
 | **Додаткове завдання** | `MusicContest.Nosql`, репозиторій MongoDB, вкладені документи |
 
-## ERD — зв'язки між таблицями
+## ERD: зв'язки між таблицями
 
 ![ERD реальної бази даних MusicContest](https://raw.githubusercontent.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/lab3/docs/Lab3_ERD.png)
 
-**Позначення:** PK — первинний ключ; FK — зовнішній ключ; PK/FK — спільний ключ для наслідування TPT; GUID зберігається у SQLite як TEXT.
+**Позначення:** PK: первинний ключ; FK: зовнішній ключ; PK/FK: спільний ключ для наслідування TPT; GUID зберігається у SQLite як TEXT.
 
 ## Матеріали до перевірки
 
@@ -75,6 +77,6 @@ dotnet run --project MusicContest.Console -- --lab3-only
 
 Додаткова MongoDB-демонстрація: `dotnet run --project MusicContest.Console -- --lab3-nosql` (потрібна запущена MongoDB).
 
-Докладний опис класів, термінів, зв'язків, TPT і механізмів ЛР1–ЛР3: **[навчально-науковий довідник README.md](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/README.md)**.
+Докладний опис класів, термінів, зв'язків, TPT і механізмів лабораторних №1–3: **[навчально-науковий довідник README.md](https://github.com/ZvezniyLord/NUPP_NET_2026_-404TH-_TK_-Galenko-_Lab/blob/lab3/README.md)**.
 
 *Усі демонстраційні учасники мають українські імена або назви колективів; їхні особи та заявки є навчальними прикладами. Пісні представляють український репертуар.*
