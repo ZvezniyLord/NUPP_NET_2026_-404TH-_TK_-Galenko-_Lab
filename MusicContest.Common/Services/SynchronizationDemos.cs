@@ -3,64 +3,50 @@ using System.Threading;
 
 namespace MusicContest.Common.Services;
 
-// Три демонстрації механізмів синхронізації:
-// 1) lock; 2) SemaphoreSlim; 3) AutoResetEvent (справжня producer/consumer).
-// Кожна демонстрація повертає СПРАВЖНІ (real) значення, зібрані з
-// атомарних лічильників та колекцій, а не "надруковані" числа
-// з коментаря.
+// У класі зібрано три демонстрації синхронізації:
+// lock, SemaphoreSlim і AutoResetEvent.
+// Результати обчислюються під час запуску та беруться з лічильників і колекцій.
+
 public static class SynchronizationDemos
 {
-    // ============================================================
-    // 1) LOCK-демонстрація: 8 потоків × 10 000 зростань.
-    // ============================================================
-    // Є СПІЛЬНА (shared) змінна counter і 8 потоків, кожен з яких
-    // виконує 10 000 разів:
-    //     counter++;
-    // Оператор ++ складається з трьох кроків: read-modify-write
-    // (прочитати — змінити — записати). Без синхронізації два потоки
-    // можуть одночасно прочитати одне й те саме значення, і одне
-    // зростання "губиться" (race condition — стан гонитви потоків).
-    // lock (gate) — взаємне виключення (mutual exclusion):
-    // в критичній секції одночасно ОДИН потік, інші чекають.
+    // 1. lock захищає спільний лічильник від одночасного оновлення.
+    // Без синхронізації операція counter++ може втратити одне з оновлень.
+    // У критичній секції lock дозволяє працювати лише одному потоку.
+
     public static async Task<LockDemoResult> RunLockDemoAsync(
         int threadCount,
         int incrementsPerThread,
         TextWriter? console = null)
     {
-        // Спільний (shared) лічильник — саме ця змінна є об'єктом
-        // демонстрації lock.
+        // Усі робочі завдання змінюють цей лічильник.
         int counter = 0;
 
-        // object gate — об'єкт-ключ блоку: lock (gate) = "увійди в
-        // критичну секцію, якщо ключ вільний; інакше чекати".
+        // Приватний об'єкт використовується як маркер блокування.
         object gate = new();
 
         async Task WorkerAsync()
         {
             for (int i = 0; i < incrementsPerThread; i++)
             {
-                // КРИТИЧНА СЕКЦІЯ (critical section):
-                // зростання під lock, тобто атомарна дія.
+                // Збільшення лічильника захищено блокуванням.
                 lock (gate)
                 {
                     counter++;
                 }
 
-                // await Task.Yield() — потік пулу віддає керування
-                // і знову продовжує в пулі: потіки перемінюються,
-                // і lock справді тримає критичну секцію.
+                // Task.Yield() планує продовження асинхронно.
                 await Task.Yield();
             }
         }
 
-        // 8 потоків запускаємо одночасно (Task.Run — у пулі потоків).
+        // Створюємо завдання для всіх робочих циклів.
         Task[] workers = new Task[threadCount];
         for (int i = 0; i < threadCount; i++)
         {
             workers[i] = WorkerAsync();
         }
 
-        // Join (зшивання): чекаємо, доки ВСІ потоки не закінчаться.
+        // Очікуємо завершення всіх робочих циклів.
         await Task.WhenAll(workers);
 
         int expected = threadCount * incrementsPerThread;
@@ -76,51 +62,38 @@ public static class SynchronizationDemos
         return new LockDemoResult(expected, actual, actual == expected);
     }
 
-    // ============================================================
-    // 2) SEMAPHORESLIM-демонстрація: 10 worker'ів, maxConcurrency = 3.
-    // ============================================================
-    // SemaphoreSlim(max) — семафор-лічильник з max "дозволами".
-    // WaitAsync "забирає" дозвіл, Release — повертає її.
-    // Не більше max потоків одночасно перебуває в ділянці,
-    // обмеженій WaitAsync/Release. Очікування — асинхронне
-    // (await, без блокування потоку).
-    // Ми НЕ пишемо максимум вручну: вимірюємо його атомарним
-    // лічильником одночасно-активних worker'ів (Interlocked)
-    // — саме це є фактичним результатом.
+    // 2. SemaphoreSlim обмежує кількість завдань, які одночасно
+    // перебувають у захищеній ділянці. Тут встановлено ліміт 3.
+    // Фактичний максимум вимірюється за допомогою Interlocked.
+
     public static async Task<SemaphoreDemoResult> RunSemaphoreDemoAsync(
         int workerCount,
         int maxConcurrency,
         TextWriter? console = null)
     {
-        // Семафор з maxConcurrency дозволами.
+        // Кожен дозвіл дає змогу одному завданню увійти в захищену ділянку.
         SemaphoreSlim semaphore = new(maxConcurrency);
 
-        // Лічильник поточно-активних worker'ів.
-        // Interlocked — атомарні операції з цілими числами:
-        // зростання та запис без втрат (без lock, але thread-safe).
+        // Лічильник кількості завдань, які зараз працюють у секції.
         int activeWorkers = 0;
         // Виміряний (measured) максимум одночасної активності.
         int measuredMax = 0;
 
         async Task WorkerAsync(int index)
         {
-            // Отримати один дозвіл; якщо немає — асинхронно чекати.
+            // Очікує вільний дозвіл. Очікування не блокує потік.
             await semaphore.WaitAsync();
 
             try
             {
-                // Worker "всередині": атомарно збільшити
-                // активний лічильник.
-                // Interlocked.Increment атомарно повертає нове значення.
+                // Фіксує вхід завдання до захищеної ділянки.
                 int current = Interlocked.Increment(ref activeWorkers);
 
-                // Якщо current перевищує раніше виміряний максимум —
-                // записати новий максимум атомарно
-                // (CompareExchange: "застосувати, якщо все ще однакове").
+                // Оновлює виміряний максимум атомарним порівнянням.
                 int previous = measuredMax;
                 while (current > previous)
                 {
-                    // previous (колишнє) значення — результат порівняння.
+                    // CompareExchange повертає попереднє значення.
                     previous = Interlocked.CompareExchange(
                         ref measuredMax, current, previous);
                     // previous == current → запис відбувся (break).
@@ -130,26 +103,25 @@ public static class SynchronizationDemos
                     }
                 }
 
-                // Пауза: симуляція роботи (IO, API, обчислення).
+                // Коротка затримка імітує роботу завдання.
                 await Task.Delay(10);
             }
             finally
             {
-                // Worker завершує: зменшити активний лічильник
-                // і повернути дозвіл семафору.
+                // Зменшує лічильник і повертає дозвіл семафору.
                 Interlocked.Decrement(ref activeWorkers);
                 semaphore.Release();
             }
         }
 
-        // Запускаємо 10 worker'ів одночасно.
+        // Створює задану кількість робочих завдань.
         Task[] workers = new Task[workerCount];
         for (int i = 0; i < workerCount; i++)
         {
             workers[i] = WorkerAsync(i);
         }
 
-        // Join (зшивання): чекаємо завершення всіх worker'ів.
+        // Очікує завершення всіх завдань.
         await Task.WhenAll(workers);
 
         if (console is not null)
@@ -161,105 +133,72 @@ public static class SynchronizationDemos
         return new SemaphoreDemoResult(maxConcurrency, measuredMax);
     }
 
-    // ============================================================
-    // 3) AUTORESETEVENT — справжня PRODUCER/CONSUMER-демонстрація.
-    // ============================================================
-    // AutoResetEvent — подія автоскидання (auto reset):
-    // Set() пробуджує ТОЛЬКИ ОДИН потік, який чекає WaitOne(),
-    // і одразу повертається в стан очікування.
-    //
-    // Архітектура (architecture):
-    //   Producer ("виробник") створює M елементів, додає їх
-    //   у ConcurrentQueue<int> (спільний буфер) і на КОЖЕН
-    //   елемент викликає itemReady.Set();
-    //   Consumer ("споживач") чекає WaitOne() на itemReady і
-    //   потім РЕАЛЬНО знімає елементи з буфера (TryDequeue)
-    //   та обробляє їх (збільшує consumedCount).
-    //
-    // DEADLOCK (мертве блокування) — коли два потоки чекають
-    // один на одного, і жоден не може виконати код.
-    // Deadlock У НАС НЕВОЗМОЖЛИВИЙ:
-    //   - producer НЕ чекає ні на що (ні на consumer, ні на буфер);
-    //   - consumer чекає ТОЛЬКИ на producer, який обов'язково
-    //     викликає producerFinished.Set();
-    //   - після останнього Set() consumer бачить порожній
-    //     буфер і завершується.
+    // 3. AutoResetEvent передає сигнали між виробником і споживачем.
+    // Producer додає елементи до ConcurrentQueue та повідомляє про них.
+    // Consumer очікує сигнал, забирає доступні елементи й підраховує їх.
+    // Після завершення виробник надсилає окремий сигнал, а також будить
+    // consumer через itemReady, щоб той міг перевірити порожній буфер.
+
     public static async Task<ProducerConsumerResult> RunProducerConsumerDemoAsync(
         int itemCount,
         TextWriter? console = null)
     {
-        // Буфер: ConcurrentQueue — thread-safe черга (queue).
-        // Enqueue (вставляти) з одного боку,
-        // TryDequeue (знімати) з іншого боку.
+        // ConcurrentQueue є потокобезпечною чергою для передавання даних.
         ConcurrentQueue<int> buffer = new();
 
-        // AutoResetEvent №1: "елемент у буфері, обробіть його".
+        // Сигналізує, що в черзі з'явилися дані або виробник завершив роботу.
         AutoResetEvent itemReady = new(false);
 
-        // AutoResetEvent №2: "producer завершив УСЮ роботу".
+        // Повідомляє споживачу про завершення виробництва всіх елементів.
         AutoResetEvent producerFinished = new(false);
 
-        // СПРАВЖНІ (real) лічильники: стартують з 0,
-        // а не з itemCount. itemCount (M) з'являється
-        // лише як план у звіті та в перевірці наприкінці.
+        // Лічильники фактично створених і оброблених елементів.
         int producedCount = 0;
         int consumedCount = 0;
 
-        // === PRODUCER: виробляє елементи та додає їх у буфер ===
-        // Звичайна (не async) локальна функція: виконується
-        // на потоці пулу через Task.Run(ProducerAsync).
+        // Producer створює елементи та додає їх до спільної черги.
         void ProducerAsync()
         {
             for (int i = 0; i < itemCount; i++)
             {
-                // "Дані" (data), які producer виробляє.
+                // Для прикладу кожен елемент містить парне число.
                 int data = i * 2;
 
-                // Додаємо в буфер (без lock: ConcurrentQueue
-                // сам по собі thread-safe).
+                // Додає елемент до потокобезпечної черги.
                 buffer.Enqueue(data);
 
-                // Producer НАСПРАВДІ створив елемент:
-                // атомарне зростання лічильника.
+                // Фіксує створення елемента.
                 Interlocked.Increment(ref producedCount);
 
-                // Сигнал (notify) consumer'у: Set() пробуджує ОДИН
-                // потік, що чекає WaitOne().
+                // Повідомляє споживача про появу даних.
                 itemReady.Set();
             }
 
-            // Producer завершив: сигнал "все вироблено".
+            // Повідомляє про завершення та будить consumer,
+            // щоб він перевірив, чи залишилися необроблені елементи.
             producerFinished.Set();
+            itemReady.Set();
         }
 
-        // === CONSUMER: чекає сигнали та РЕАЛЬНО обробляє елементи ===
-        // Звичайна (не async) локальна функція: виконується
-        // на потоці пулу через Task.Run(ConsumerAsync).
-        // WaitOne() блокує ТОЛЬКИ потік пулу (не UI-потік),
-        // тому deadlock-а немає: producer не чекає на consumer.
+        // Consumer очікує сигнали й забирає доступні елементи з черги.
         void ConsumerAsync()
         {
             while (true)
             {
-                // WaitOne(): потік очікує, доки producer не
-                // викликає Set().
+                // Очікує сигнал від виробника.
                 itemReady.WaitOne();
 
-                // Знімаємо ВСІ елементи, які є в буфері,
-                // і НАСПРАВДІ їх обробляємо (збільшуємо лічильник).
+                // Обробляє всі елементи, які на цей момент є в черзі.
                 while (buffer.TryDequeue(out int data))
                 {
-                    // Обробка: використання даних,
-                    // наданих producer'ом.
+                    // Фіксує обробку одного елемента.
                     Interlocked.Increment(ref consumedCount);
                 }
 
-                // WaitOne(0) — "нульовий" (неблокуючий) запит:
-                // перевіряємо, чи producer уже завершив.
+                // Перевіряє, чи виробник уже завершив роботу.
                 bool producerDone = producerFinished.WaitOne(0);
 
-                // Якщо producer закінчив і буфер порожній —
-                // consumer виходить із циклу (break).
+                // Завершує цикл, коли виробництво завершено й черга порожня.
                 if (producerDone && buffer.IsEmpty)
                 {
                     break;
@@ -267,16 +206,12 @@ public static class SynchronizationDemos
             }
         }
 
-        // Запускаємо producer та consumer в пулі потоків
-        // (Task.Run — кожна функція на своєму потоці пулу)
-        // і чекаємо їх завершення (join — зшивання).
+        // Запускає обидві функції та очікує завершення кожної.
         await Task.WhenAll(
             Task.Run(ProducerAsync),
             Task.Run(ConsumerAsync));
 
-        // РЕАЛЬНІ (real) лічильники: значення з
-        // атомарних лічильників, а не константи
-        // з коментаря.
+        // Зчитує підсумкові значення атомарних лічильників.
         int finalProduced = Volatile.Read(ref producedCount);
         int finalConsumed = Volatile.Read(ref consumedCount);
 
