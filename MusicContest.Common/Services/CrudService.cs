@@ -4,11 +4,11 @@ using MusicContest.Common.Models;
 namespace MusicContest.Common.Services;
 
 // Generic-клас: CrudService<T> може працювати з різними типами.
-// "where T : IEntity" — обмеження generic-типу:
+// Обмеження "where T : IEntity" вимагає, щоб узагальнений тип T реалізував IEntity.
 // T обов'язково повинен реалізовувати IEntity, тобто мати Id.
 public class CrudService<T> : ICrudService<T> where T : IEntity
 {
-    // List<T> — вбудована колекція .NET, у якій зберігаються дані.
+    // List<T> є вбудованою колекцією .NET для зберігання елементів.
     // readonly означає, що посилання _items не можна замінити іншим List,
     // але елементи всередині списку можна додавати/видаляти.
     private readonly List<T> _items = new();
@@ -17,7 +17,7 @@ public class CrudService<T> : ICrudService<T> where T : IEntity
     public void Create(T element)
     {
         // Any(...) перевіряє, чи вже існує елемент з таким Id.
-        // x => ... — лямбда-вираз; x означає поточний елемент списку.
+        // Вираз x => ... є лямбда-виразом; x позначає поточний елемент списку.
         if (_items.Any(x => x.Id == element.Id))
         {
             throw new InvalidOperationException($"Елемент з Id {element.Id} уже існує.");
@@ -30,7 +30,7 @@ public class CrudService<T> : ICrudService<T> where T : IEntity
     public T Read(Guid id)
     {
         // FirstOrDefault повертає перший збіг або null/default, якщо нічого не знайдено.
-        // Оператор ?? означає: якщо зліва null — виконати те, що справа.
+        // Оператор ?? повертає правий вираз, якщо лівий має значення null.
         return _items.FirstOrDefault(x => x.Id == id)
             ?? throw new KeyNotFoundException($"Елемент з Id {id} не знайдено.");
     }
@@ -68,14 +68,14 @@ public class CrudService<T> : ICrudService<T> where T : IEntity
     }
 
     // ДОДАТКОВЕ ЗАВДАННЯ: SAVE = зберегти.
-    // Серіалізація — перетворення об'єктів C# у формат, придатний для збереження.
+    // Серіалізація перетворює об'єкти C# на формат, придатний для збереження.
     // Тут колекція перетворюється в текст JSON і записується у файл.
     public void Save(string filePath)
     {
         // Отримуємо папку з повного шляху до файлу.
         string? directory = Path.GetDirectoryName(filePath);
 
-        // Якщо папка вказана і ще не існує — створюємо її.
+        // Якщо каталог ще не існує, створюємо його.
         if (!string.IsNullOrWhiteSpace(directory))
         {
             Directory.CreateDirectory(directory);
@@ -95,7 +95,7 @@ public class CrudService<T> : ICrudService<T> where T : IEntity
     }
 
     // ДОДАТКОВЕ ЗАВДАННЯ: LOAD = завантажити.
-    // Десеріалізація — зворотний процес: JSON -> об'єкти C#.
+    // Десеріалізація відновлює об'єкти C# із JSON.
     public void Load(string filePath)
     {
         if (!File.Exists(filePath))
