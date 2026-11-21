@@ -19,6 +19,7 @@
 - [Скріншот документів MongoDB](Lab3_MongoDB.png)
 - [Контрольні запитання](../LAB3_CONTROL_QUESTIONS.md)
 - [Редакційна мовна політика](../EDITORIAL_LANGUAGE_POLICY.md)
+- [Редакційний стандарт природного тексту](../EDITORIAL_WRITING_STANDARD.md)
 
 ## Виконані завдання
 
