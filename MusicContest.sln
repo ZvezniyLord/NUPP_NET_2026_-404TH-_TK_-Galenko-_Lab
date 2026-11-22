@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.Infrastructure
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.Nosql", "MusicContest.Nosql\MusicContest.Nosql.csproj", "{1CAB6406-D2DA-4C11-9A76-C6B1102DFD11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.REST", "MusicContest.REST\\MusicContest.REST.csproj", "{B31C2930-01A6-4F7B-B66A-C9DD4997A201}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.REST", "MusicContest.REST\MusicContest.REST.csproj", "{B31C2930-01A6-4F7B-B66A-C9DD4997A201}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
