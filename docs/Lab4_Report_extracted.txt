@@ -1,0 +1,69 @@
+Лабораторна робота №4
+Розробка вебсерверів засобами ASP.NET Core Web API
+
+Проєкт MusicContest.REST. Дві сутності: Songs і Performances. Трирівнева архітектура: контролери,
+CRUD-сервіс, репозиторій і SQLite.
+
+
+
+Результати фактичних HTTP-запитів
+Метод    Маршрут                             HTTP   Відповідь
+
+GET      /api/songs?page=1&amount=3          200    [{"id": "3a298d63-62d2-4234-a312-bafc8851c0ec", "title": "Думи",
+                                                    "originalArtist": "Артем Пивоваров і Надя Дорофєєва",
+                                                    "durationSeconds": 219, "key": "ре мінор"},...
+
+GET      /api/songs?page=0                   400    "page має бути не менше 1, amount від 1 до 100."
+
+GET      /api/songs/00000000-0000-0000-00    404    {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title":
+         00-000000000000                            "Not Found", "status": 404, "traceId":
+                                                    "00-4ae932686221f6e46f854d9f1a8a1d2b-5504139358c4e7...
+
+POST     /api/songs                          201    {"id": "7ac0bec2-8925-43f6-aea9-a43470b4810e", "title": "Тестова
+                                                    українська пісня", "originalArtist": "Навчальний конкурс",
+                                                    "durationSeconds": 184, "key": "до маж...
+
+GET      /api/songs/7ac0bec2-8925-43f6-aea   200    {"id": "7ac0bec2-8925-43f6-aea9-a43470b4810e", "title": "Тестова
+         9-a43470b4810e                             українська пісня", "originalArtist": "Навчальний конкурс",
+                                                    "durationSeconds": 184, "key": "до маж...
+
+PUT      /api/songs/7ac0bec2-8925-43f6-aea   204    Без тіла відповіді
+         9-a43470b4810e
+
+DELETE   /api/songs/7ac0bec2-8925-43f6-aea   204    Без тіла відповіді
+         9-a43470b4810e
+
+GET      /api/songs/7ac0bec2-8925-43f6-aea   404    {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title":
+         9-a43470b4810e                             "Not Found", "status": 404, "traceId":
+                                                    "00-666b043bf6e4436cf5924d5147f23852-b724b8b11ac9d8...
+
+GET      /api/performances?page=1&amount     200    [{"id": "1f125389-90eb-4c40-a55c-c97b64af94cd",
+         =3                                         "participantDatabaseId": 1, "songDatabaseId": 4, "score": 85,
+                                                    "isCompleted": true}, {"id": "6642f6b9-0ac0-426c-968...
+
+GET      /api/performances?amount=0          400    "page має бути не менше 1, amount від 1 до 100."
+
+POST     /api/performances                   201    {"id": "8b43a749-e300-484e-9c79-10d91a3b5bf2",
+                                                    "participantDatabaseId": 1, "songDatabaseId": 1, "score": 81.5,
+                                                    "isCompleted": false}
+
+GET      /api/performances/8b43a749-e300-    200    {"id": "8b43a749-e300-484e-9c79-10d91a3b5bf2",
+         484e-9c79-10d91a3b5bf2                     "participantDatabaseId": 1, "songDatabaseId": 1, "score": 81.5,
+                                                    "isCompleted": false}
+
+PUT      /api/performances/8b43a749-e300-    204    Без тіла відповіді
+         484e-9c79-10d91a3b5bf2
+
+DELETE   /api/performances/8b43a749-e300-    204    Без тіла відповіді
+         484e-9c79-10d91a3b5bf2
+
+GET      /api/performances/8b43a749-e300-    404    {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title":
+         484e-9c79-10d91a3b5bf2                     "Not Found", "status": 404, "traceId":
+                                                    "00-208fc2a1297b27cf486e4f3dffe13620-952ea483250983...
+
+
+
+Виконано 15 запитів. Для створення перевірено HTTP 201, для читання 200, для оновлення та
+видалення 204, для відсутніх записів 404, для некоректної пагінації 400. Першоджерело
+результатів: docs/Lab4_http_results.json.
+
