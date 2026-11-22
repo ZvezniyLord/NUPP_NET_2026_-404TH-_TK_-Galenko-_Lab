@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.Nosql", "Music
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.REST", "MusicContest.REST\MusicContest.REST.csproj", "{B31C2930-01A6-4F7B-B66A-C9DD4997A201}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicContest.MVC", "MusicContest.MVC\MusicContest.MVC.csproj", "{D6E3B478-5E4B-499A-AC21-6D9B4C6E7422}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,9 @@ Global
 		{B31C2930-01A6-4F7B-B66A-C9DD4997A201}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B31C2930-01A6-4F7B-B66A-C9DD4997A201}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B31C2930-01A6-4F7B-B66A-C9DD4997A201}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6E3B478-5E4B-499A-AC21-6D9B4C6E7422}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6E3B478-5E4B-499A-AC21-6D9B4C6E7422}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6E3B478-5E4B-499A-AC21-6D9B4C6E7422}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6E3B478-5E4B-499A-AC21-6D9B4C6E7422}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
