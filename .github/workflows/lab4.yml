@@ -1,0 +1,74 @@
+name: Lab4 ASP.NET Core REST API verification
+on:
+  push:
+    branches: [lab4]
+  workflow_dispatch:
+
+concurrency:
+  group: lab4-api-report
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Отримати вихідний код
+        uses: actions/checkout@v4
+
+      - name: Налаштувати .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Встановити інструменти PDF
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-dejavu-core poppler-utils
+          python -m pip install --quiet reportlab
+
+      - name: Відновити залежності
+        run: dotnet restore MusicContest.sln
+
+      - name: Зібрати рішення
+        run: dotnet build MusicContest.sln --no-restore -c Release
+
+      - name: Виконати модульні тести
+        run: dotnet test MusicContest.sln --no-build -c Release
+
+      - name: Створити демонстраційну SQLite-базу
+        run: |
+          rm -f docs/musiccontest.db docs/musiccontest.db-shm docs/musiccontest.db-wal
+          dotnet run --project MusicContest.Console -c Release --no-build -- --lab3-only
+
+      - name: Запустити API та перевірити HTTP-коди
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet run --project MusicContest.REST -c Release --no-build --no-launch-profile --urls http://127.0.0.1:5084 > /tmp/lab4-api.log 2>&1 &
+          api_pid=$!
+          trap 'kill "$api_pid" 2>/dev/null || true' EXIT
+          for i in {1..40}; do
+            if curl --fail --silent http://127.0.0.1:5084/swagger/v1/swagger.json > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:5084/swagger/v1/swagger.json > /dev/null
+          python scripts/check_lab4_api.py
+
+      - name: Сформувати PDF із результатів HTTP-запитів
+        run: |
+          python scripts/generate_lab4_report.py
+          python scripts/check_pdf_language.py docs/Lab4_Report.pdf
+
+      - name: Опублікувати підтверджені результати
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/Lab4_http_results.json docs/Lab4_Report.pdf docs/Lab4_Report_extracted.txt docs/Lab4_Report_preview.png
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(lab4): verified HTTP responses and PDF report [skip ci]"
+            git push origin HEAD:lab4
+          fi

@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "MusicContest";
+    var songs = (IReadOnlyList<SongModel>)ViewBag.Songs;
+    var performances = (IReadOnlyList<PerformanceModel>)ViewBag.Performances;
+}
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>@ViewData["Title"]</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #172538; }
+    h1, h2 { margin-bottom: .5rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 2rem; }
+    th, td { text-align: left; padding: .6rem; border-bottom: 1px solid #cbd5e1; }
+    th { background: #eff4f9; }
+    p { color: #475569; }
+  </style>
+</head>
+<body>
+  <h1>MusicContest</h1>
+  <p>Навчальний вебзастосунок ASP.NET Core MVC на основі моделей і SQLite-бази лабораторної роботи №3.</p>
+  <h2>Пісні (@songs.Count)</h2>
+  <table>
+    <thead><tr><th>Назва</th><th>Виконавець</th><th>Тривалість, с</th></tr></thead>
+    <tbody>
+    @foreach (var song in songs)
+    {
+        <tr><td>@song.Title</td><td>@song.OriginalArtist</td><td>@song.DurationSeconds</td></tr>
+    }
+    </tbody>
+  </table>
+  <h2>Виступи (@performances.Count)</h2>
+  <table>
+    <thead><tr><th>Учасник</th><th>Пісня</th><th>Оцінка</th><th>Завершено</th></tr></thead>
+    <tbody>
+    @foreach (var item in performances)
+    {
+        <tr><td>@item.Participant.StageName</td><td>@item.Song.Title</td><td>@item.Score</td><td>@(item.IsCompleted ? "Так" : "Ні")</td></tr>
+    }
+    </tbody>
+  </table>
+</body>
+</html>

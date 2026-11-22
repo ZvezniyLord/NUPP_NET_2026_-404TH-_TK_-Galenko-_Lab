@@ -1,0 +1,190 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/songs?page=1&amount=3",
+    "status": 200,
+    "response": [
+      {
+        "id": "4366287b-6701-4696-8380-a70c689c61ca",
+        "title": "Тримай",
+        "originalArtist": "Христина Соловій",
+        "durationSeconds": 213,
+        "key": "ля мінор"
+      },
+      {
+        "id": "74fb1d4a-7abf-4762-b3aa-93f0925e1851",
+        "title": "Україна",
+        "originalArtist": "Тарас Петриненко",
+        "durationSeconds": 247,
+        "key": "соль мажор"
+      },
+      {
+        "id": "9dba0f6f-986a-46b4-9e0d-5eb6d40a7e2e",
+        "title": "Щедрик",
+        "originalArtist": "Микола Леонтович",
+        "durationSeconds": 192,
+        "key": "мі мінор"
+      }
+    ],
+    "location": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/songs?page=0",
+    "status": 400,
+    "response": "page має бути не менше 1, amount від 1 до 100.",
+    "location": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/songs/00000000-0000-0000-0000-000000000000",
+    "status": 404,
+    "response": {
+      "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+      "title": "Not Found",
+      "status": 404,
+      "traceId": "00-ab16c8b9a799ebd2abe34a35cba22ab4-c8a6eb7875aef864-00"
+    },
+    "location": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/songs",
+    "status": 201,
+    "response": {
+      "id": "58d9c039-6943-4b35-bb78-ab317162b11c",
+      "title": "Тестова українська пісня",
+      "originalArtist": "Навчальний конкурс",
+      "durationSeconds": 184,
+      "key": "до мажор"
+    },
+    "location": "http://127.0.0.1:5084/api/songs/58d9c039-6943-4b35-bb78-ab317162b11c"
+  },
+  {
+    "method": "GET",
+    "path": "/api/songs/58d9c039-6943-4b35-bb78-ab317162b11c",
+    "status": 200,
+    "response": {
+      "id": "58d9c039-6943-4b35-bb78-ab317162b11c",
+      "title": "Тестова українська пісня",
+      "originalArtist": "Навчальний конкурс",
+      "durationSeconds": 184,
+      "key": "до мажор"
+    },
+    "location": null
+  },
+  {
+    "method": "PUT",
+    "path": "/api/songs/58d9c039-6943-4b35-bb78-ab317162b11c",
+    "status": 204,
+    "response": null,
+    "location": null
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/songs/58d9c039-6943-4b35-bb78-ab317162b11c",
+    "status": 204,
+    "response": null,
+    "location": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/songs/58d9c039-6943-4b35-bb78-ab317162b11c",
+    "status": 404,
+    "response": {
+      "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+      "title": "Not Found",
+      "status": 404,
+      "traceId": "00-9a67cb9d09dd82c1095b5f5e5ea205d7-f49509e210d21bdf-00"
+    },
+    "location": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/performances?page=1&amount=3",
+    "status": 200,
+    "response": [
+      {
+        "id": "00deff97-f367-4abd-bcfa-2e88804dda8c",
+        "participantDatabaseId": 4,
+        "songDatabaseId": 7,
+        "score": 88,
+        "isCompleted": true
+      },
+      {
+        "id": "073977d5-e08a-4211-8bda-8e806f7925a9",
+        "participantDatabaseId": 3,
+        "songDatabaseId": 6,
+        "score": 87,
+        "isCompleted": true
+      },
+      {
+        "id": "146796b3-5def-4231-94bc-1296154c24ce",
+        "participantDatabaseId": 1,
+        "songDatabaseId": 1,
+        "score": 82,
+        "isCompleted": true
+      }
+    ],
+    "location": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/performances?amount=0",
+    "status": 400,
+    "response": "page має бути не менше 1, amount від 1 до 100.",
+    "location": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/performances",
+    "status": 201,
+    "response": {
+      "id": "3beed8d6-656f-4b9b-b1c1-d62f77dcdf2e",
+      "participantDatabaseId": 1,
+      "songDatabaseId": 1,
+      "score": 81.5,
+      "isCompleted": false
+    },
+    "location": "http://127.0.0.1:5084/api/performances/3beed8d6-656f-4b9b-b1c1-d62f77dcdf2e"
+  },
+  {
+    "method": "GET",
+    "path": "/api/performances/3beed8d6-656f-4b9b-b1c1-d62f77dcdf2e",
+    "status": 200,
+    "response": {
+      "id": "3beed8d6-656f-4b9b-b1c1-d62f77dcdf2e",
+      "participantDatabaseId": 1,
+      "songDatabaseId": 1,
+      "score": 81.5,
+      "isCompleted": false
+    },
+    "location": null
+  },
+  {
+    "method": "PUT",
+    "path": "/api/performances/3beed8d6-656f-4b9b-b1c1-d62f77dcdf2e",
+    "status": 204,
+    "response": null,
+    "location": null
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/performances/3beed8d6-656f-4b9b-b1c1-d62f77dcdf2e",
+    "status": 204,
+    "response": null,
+    "location": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/performances/3beed8d6-656f-4b9b-b1c1-d62f77dcdf2e",
+    "status": 404,
+    "response": {
+      "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+      "title": "Not Found",
+      "status": 404,
+      "traceId": "00-e4c4d4ed4c6d6bef3e02d0b3d17c637f-bbf7c5cceb11e277-00"
+    },
+    "location": null
+  }
+]
