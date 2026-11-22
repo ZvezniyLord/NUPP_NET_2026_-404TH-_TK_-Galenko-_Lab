@@ -9,7 +9,7 @@ CRUD-сервіс, репозиторій і SQLite.
 Результати фактичних HTTP-запитів
 Метод    Маршрут                             HTTP   Відповідь
 
-GET      /api/songs?page=1&amount=3          200    [{"id": "3a298d63-62d2-4234-a312-bafc8851c0ec", "title": "Думи",
+GET      /api/songs?page=1&amount=3          200    [{"id": "3e68cea2-5c02-4ef1-8cc8-0f64b21473cb", "title": "Думи",
                                                     "originalArtist": "Артем Пивоваров і Надя Дорофєєва",
                                                     "durationSeconds": 219, "key": "ре мінор"},...
 
@@ -17,49 +17,49 @@ GET      /api/songs?page=0                   400    "page має бути не �
 
 GET      /api/songs/00000000-0000-0000-00    404    {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title":
          00-000000000000                            "Not Found", "status": 404, "traceId":
-                                                    "00-4ae932686221f6e46f854d9f1a8a1d2b-5504139358c4e7...
+                                                    "00-53a187d2cdce28a5b556d8ab6b7f8bdc-3e1db6da82ef60...
 
-POST     /api/songs                          201    {"id": "7ac0bec2-8925-43f6-aea9-a43470b4810e", "title": "Тестова
+POST     /api/songs                          201    {"id": "a432ecf9-f305-49c4-a728-91e1cc5e5517", "title": "Тестова
                                                     українська пісня", "originalArtist": "Навчальний конкурс",
                                                     "durationSeconds": 184, "key": "до маж...
 
-GET      /api/songs/7ac0bec2-8925-43f6-aea   200    {"id": "7ac0bec2-8925-43f6-aea9-a43470b4810e", "title": "Тестова
-         9-a43470b4810e                             українська пісня", "originalArtist": "Навчальний конкурс",
+GET      /api/songs/a432ecf9-f305-49c4-a72   200    {"id": "a432ecf9-f305-49c4-a728-91e1cc5e5517", "title": "Тестова
+         8-91e1cc5e5517                             українська пісня", "originalArtist": "Навчальний конкурс",
                                                     "durationSeconds": 184, "key": "до маж...
 
-PUT      /api/songs/7ac0bec2-8925-43f6-aea   204    Без тіла відповіді
-         9-a43470b4810e
+PUT      /api/songs/a432ecf9-f305-49c4-a72   204    Без тіла відповіді
+         8-91e1cc5e5517
 
-DELETE   /api/songs/7ac0bec2-8925-43f6-aea   204    Без тіла відповіді
-         9-a43470b4810e
+DELETE   /api/songs/a432ecf9-f305-49c4-a72   204    Без тіла відповіді
+         8-91e1cc5e5517
 
-GET      /api/songs/7ac0bec2-8925-43f6-aea   404    {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title":
-         9-a43470b4810e                             "Not Found", "status": 404, "traceId":
-                                                    "00-666b043bf6e4436cf5924d5147f23852-b724b8b11ac9d8...
+GET      /api/songs/a432ecf9-f305-49c4-a72   404    {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title":
+         8-91e1cc5e5517                             "Not Found", "status": 404, "traceId":
+                                                    "00-659b4511780dffcde631fc23dbe742ea-e2eb56d7b49fdd...
 
-GET      /api/performances?page=1&amount     200    [{"id": "1f125389-90eb-4c40-a55c-c97b64af94cd",
+GET      /api/performances?page=1&amount     200    [{"id": "00574c76-0dba-4d40-a591-b4da6766f5a3",
          =3                                         "participantDatabaseId": 1, "songDatabaseId": 4, "score": 85,
-                                                    "isCompleted": true}, {"id": "6642f6b9-0ac0-426c-968...
+                                                    "isCompleted": true}, {"id": "2e81c9ca-0853-4ee0-8a3...
 
 GET      /api/performances?amount=0          400    "page має бути не менше 1, amount від 1 до 100."
 
-POST     /api/performances                   201    {"id": "8b43a749-e300-484e-9c79-10d91a3b5bf2",
+POST     /api/performances                   201    {"id": "dba63daf-8deb-4117-8138-069e3b1b7454",
                                                     "participantDatabaseId": 1, "songDatabaseId": 1, "score": 81.5,
                                                     "isCompleted": false}
 
-GET      /api/performances/8b43a749-e300-    200    {"id": "8b43a749-e300-484e-9c79-10d91a3b5bf2",
-         484e-9c79-10d91a3b5bf2                     "participantDatabaseId": 1, "songDatabaseId": 1, "score": 81.5,
+GET      /api/performances/dba63daf-8deb-4   200    {"id": "dba63daf-8deb-4117-8138-069e3b1b7454",
+         117-8138-069e3b1b7454                      "participantDatabaseId": 1, "songDatabaseId": 1, "score": 81.5,
                                                     "isCompleted": false}
 
-PUT      /api/performances/8b43a749-e300-    204    Без тіла відповіді
-         484e-9c79-10d91a3b5bf2
+PUT      /api/performances/dba63daf-8deb-4   204    Без тіла відповіді
+         117-8138-069e3b1b7454
 
-DELETE   /api/performances/8b43a749-e300-    204    Без тіла відповіді
-         484e-9c79-10d91a3b5bf2
+DELETE   /api/performances/dba63daf-8deb-4   204    Без тіла відповіді
+         117-8138-069e3b1b7454
 
-GET      /api/performances/8b43a749-e300-    404    {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title":
-         484e-9c79-10d91a3b5bf2                     "Not Found", "status": 404, "traceId":
-                                                    "00-208fc2a1297b27cf486e4f3dffe13620-952ea483250983...
+GET      /api/performances/dba63daf-8deb-4   404    {"type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title":
+         117-8138-069e3b1b7454                      "Not Found", "status": 404, "traceId":
+                                                    "00-eea442e997181a8235e1715ea0157f72-3ddd49a5d364fa...
 
 
 
