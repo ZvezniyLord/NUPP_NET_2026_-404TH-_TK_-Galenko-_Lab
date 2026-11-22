@@ -10,11 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<MusicContestContext>(_ =>
-{
-    // Використовується та сама SQLite-база, що й у лабораторній роботі №3.
-    // DbContext реєструється як scoped.
-}, ServiceLifetime.Scoped);
+// Контекст SQLite має життєвий цикл scoped для кожного HTTP-запиту.
 builder.Services.AddScoped(sp => new MusicContestContext(MusicContestDatabase.Options()));
 builder.Services.AddScoped<IRepository<SongModel>, EfRepository<SongModel>>();
 builder.Services.AddScoped<IRepository<PerformanceModel>, EfRepository<PerformanceModel>>();
